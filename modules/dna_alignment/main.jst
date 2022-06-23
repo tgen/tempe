@@ -1,0 +1,44 @@
+# DNA Alignment with BWA MEM
+# Take DNA fastq data files to aligned bams with qc data
+{% from 'modules/dna_alignment/bwa_mem2_samtools.jst' import bwa_mem2_samtools with context %}
+{% from 'modules/dna_alignment/pb_fq2bam.jst' import fq2bam with context %}
+{% from 'modules/dna_alignment/split_fastq.jst' import split_fastqs with context %}
+
+
+{% macro dna_alignment(samples) %}
+
+  {# Not configurable by LIMS #}
+  {% set reads_per_chunk = reads_per_chunk|default(40000000) %}
+
+  {% for sample in samples.values() if sample.gltype in ['genome', 'exome'] %}
+
+    {% set alignment_style = [] %}
+    {% if dnaAlignmentStyle == 'all' %}
+      {% do alignment_style.append('pcrfree') %}
+      {% do alignment_style.append('tgen') %}
+      {% do alignment_style.append('parabricks') %}
+    {% else %}
+      {% do alignment_style.append(dnaAlignmentStyle|default('tgen')|lower) %}
+    {% endif %}
+
+    {% set platform = (sample.read_groups.values()|first).rgpm|default('') %}
+    {% if platform|lower in ['hiseq4000', 'novaseq6000'] %}
+      {% set opt_dup_distance = 2500 %}
+    {% else %}
+      {% set opt_dup_distance = 100 %}
+    {% endif %}
+
+    {% if dnaAlignmentStyle != 'parabricks' %}
+    {{- split_fastqs(sample, reads_per_chunk) }}
+    {% endif %}
+
+    {% if 'tgen' in alignment_style %}
+      {{- bwa_mem2_samtools(sample, reads_per_chunk, opt_dup_distance, aligner='bwa_mem2') }}
+    {% endif %}
+    {% if 'parabricks' in alignment_style %}
+      {{- fq2bam(sample, opt_dup_distance, aligner='parabricks') }}
+    {% endif %}
+
+  {% endfor %}
+
+{% endmacro %}

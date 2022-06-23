@@ -1,0 +1,122 @@
+{% from 'modules/annotation/main.jst' import annotate_vcfs with context %}
+{% from 'utilities/remove_files.jst' import remove_files with context %}
+{% from 'utilities/vcf_stats.jst' import vcf_stats with context %}
+
+{%- macro freebayes(sample, aligner='bwa', taskPrefix='Genome') %}
+
+{%- set bam %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
+{%- set temp_dir %}temp/{{ sample.gltype }}/constitutional_variant_calls/freebayes/{{ sample.name }}_{{ aligner }}{% endset %}
+{%- set results_dir %}{{ sample.gltype }}/constitutional_variant_calls/freebayes/{{ sample.name }}{% endset %}
+{%- set all_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.freebayes.all.vcf.gz{% endset %}
+{%- set pass_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.freebayes.pass.vcf.gz{% endset %}
+
+{% for batch in constants.phoenix.calling_intervals %}
+
+- name: freebayes_{{ sample.name }}_{{ aligner }}_{{ loop.index }}
+  tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, freebayes, {{ sample.name }}]
+  input: {{ bam }}
+  output: {{ temp_dir }}/{{ loop.index }}.vcf
+  walltime: "24:00:00"
+  cpus: 1
+  mem: 4G
+  container:
+  digest:
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    module load {{ constants.tools.freebayes.module }}
+
+    mkdir -p "{{ temp_dir }}"
+
+    TAB=$'\t'
+    cat <<EOF > "{{ temp_dir }}/{{ loop.index }}.bed"
+    {% for interval in batch %}
+    {{ interval.contig }}${TAB}{{ interval.start - 1 }}${TAB}{{ interval.stop }}
+    {% endfor %}
+    EOF
+
+    freebayes \
+      --bam "{{ bam }}" \
+      --fasta-reference "{{ constants.phoenix.reference_fasta }}" \
+      --targets "{{ temp_dir }}/{{ loop.index }}.bed" \
+      --ploidy 2 \
+      --min-repeat-entropy 1 \
+      > "{{ temp_dir }}/{{ loop.index }}.vcf"
+
+{% endfor %}
+
+
+- name: freebayes_merge_{{ sample.name }}_{{ aligner }}
+  tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, freebayes, {{ sample.name }}]
+  reset: predecessors
+  input:
+    {% for batch in constants.phoenix.calling_intervals %}
+    - {{ temp_dir }}/{{ loop.index }}.vcf
+    {% endfor %}
+  output:
+    - {{ all_vcf }}
+    - {{ all_vcf }}.tbi
+  walltime: "24:00:00"
+  cpus: 1
+  mem: 4G
+  container:
+  digest:
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    module load {{ constants.tools.bcftools.module }}
+
+    mkdir -p "{{ results_dir }}"
+
+    bcftools concat \
+      --output-type z \
+      --output "{{ all_vcf }}" \
+      {% for batch in constants.phoenix.calling_intervals %}
+      {% if not loop.last %}
+      "{{ temp_dir }}/{{ loop.index }}.vcf" \
+      {% else %}
+      "{{ temp_dir }}/{{ loop.index }}.vcf"
+      {% endif %}
+      {% endfor %}
+
+    bcftools index --tbi --force "{{ all_vcf }}"
+
+
+- name: freebayes_filter_variants_{{ sample.name }}_{{ aligner }}
+  tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, freebayes, {{ sample.name }}]
+  input:
+    - {{ all_vcf }}
+    - {{ all_vcf }}.tbi
+  output:
+    - {{ pass_vcf }}
+    - {{ pass_vcf }}.tbi
+  walltime: "24:00:00"
+  cpus: 1
+  mem: 4G
+  container:
+  digest:
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    module load {{ constants.tools.bcftools.module }}
+
+    bcftools filter \
+      --output-type z \
+      --include 'QUAL > 20' \
+      {% if sample.gltype == 'exome' %}
+      --targets-file "{{ sample.capture_kit.extended_bed }}" \
+      {% endif %}
+      "{{ all_vcf }}" \
+      > "{{ pass_vcf }}"
+
+    bcftools index --tbi --force "{{ pass_vcf }}"
+
+
+{{- annotate_vcfs(sample, temp_dir, results_dir, pass_vcf, taskPrefix, aligner, 'freebayes', 'constitutional', 'snp_indel_caller') }}
+{{- vcf_stats(pass_vcf, results_dir) }}
+{{- vcf_stats(all_vcf, results_dir) }}
+
+{% endmacro %}

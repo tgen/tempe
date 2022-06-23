@@ -1,0 +1,41 @@
+# This macro is used to run the samStats2json.py script on individual
+# stats files produced by bam_qc steps to get a structured json file
+# that help facilitate downstream analysis and upload to LIMS via REST api integration.
+
+{% from 'modules/qc/stats2lims.jst' import stats2lims with context %}
+
+{% macro stats2json(tag1, tag2, task, input_file, output_file, file_type, sample_name=none, library_name=none, read_group_name=none, lims_upload=true ) %}
+
+- name: stats2json_{{ task }}_{{ file_type }}
+  tags: [{{ tag1 }}, quality_control, stats, stats2json, {{ tag2 }}]
+  input: {{ input_file }}
+  output: {{ output_file }}
+  walltime: "0:10:00"
+  cpus: 1
+  mem: 2G
+  container: {{ constants.tools.bam_qc_stats2json.container }}
+  container:
+  digest:
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.stats2json }} \
+      --output {{ output_file }} \
+      {% if sample_name is not none %}
+      --samplename {{ sample_name }} \
+      {% endif %}
+      {% if library_name is not none %}
+      --libraryname {{ library_name }} \
+      {% endif %}
+      {% if read_group_name is not none %}
+      --readgroupname {{ read_group_name }} \
+      {% endif %}
+      {{ input_file }} \
+      {{ file_type }}
+
+    {% if lims_upload is sameas true %}
+      {{ stats2lims(tag1, tag2, task, output_file, file_type) }}
+    {% endif %}
+
+{% endmacro %}

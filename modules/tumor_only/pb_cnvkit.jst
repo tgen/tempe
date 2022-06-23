@@ -1,0 +1,38 @@
+{% macro pb_cnvkit_tumor_only(tumor, aligner='bwa') %}
+{% set tumor_bam %}{{ tumor.gltype }}/alignment/{{ aligner }}/{{ tumor.name }}/{{ tumor.name }}.{{ aligner }}.bam{% endset %}
+{% set temp_dir %}temp/{{ tumor.gltype }}/tumor_only_copy_number/cnvkit/{{ tumor.name }}_{{ aligner }}{% endset %}
+{% set results_dir %}{{ tumor.gltype }}/tumor_only_copy_number/cnvkit/{{ tumor.name }}_{{ aligner }}{% endset %}
+
+{# Step 1 #}
+- name: pb_cnvkit_{{ tumor.name }}_{{ aligner }}
+  tags: [{{ tumor.gltype }}, tumor_only, cna_caller, cnvkit, {{ tumor.name }}]
+  input:
+    - {{ tumor_bam }}
+  cpus: 4
+  mem: 16G
+  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
+  container: {{ constants.tools.parabricks.container }}
+  backend_args: ['-B', '/packages/parabricks-v3.7.0_V100/:/INSTALL/']
+  container:
+  digest:
+  cmd: |
+    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
+    set -eu
+    set -o pipefail
+
+    {# Load modules #}
+    
+
+    {# Make working and temp directories #}
+    mkdir -p "{{ temp_dir }}"
+    mkdir -p "{{ results_dir }}"
+
+    {# No threading options? Single threaded? #}
+    /parabricks/run_pipeline.py cnvkit \
+      --ref {{ constants.tempe.reference_fasta }} \
+      --in-bam {{ tumor_bam }} \
+      --generate-vcf \
+      --tmp-dir {{ temp_dir }} \
+      --output-dir {{ results_dir }}
+
+{% endmacro %}

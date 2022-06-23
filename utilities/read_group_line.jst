@@ -1,0 +1,39 @@
+{% macro read_group_line(rg, format='bwa') -%}
+{% if format == 'singleCellRNA' %}
+{% set tags = [
+  'ID:{}'.format(rg.rgid),
+  'LB:{}'.format(rg.rglb),
+  'PU:{}'.format(rg.rgpu),
+  'SM:{}'.format(rg.sampleName),
+  'PL:{}'.format(rg.rgpl),
+  'CN:{}'.format(rg.rgcn|default('tgen')),
+  'PM:{}'.format(rg.rgpm),
+  'BC:{}'.format(rg.rgbc|default('unknown'))
+] %}
+{% else %}
+{% set tags = [
+  'ID:{}'.format(rg.rgid),
+  'LB:{}'.format(rg.rglb),
+  'PU:{}'.format(rg.rgpu),
+  'SM:{}'.format(rg.rgsm|default(rg.sampleName)),
+  'PL:{}'.format(rg.rgpl),
+  'CN:{}'.format(rg.rgcn|default('tgen')),
+  'PM:{}'.format(rg.rgpm),
+  'BC:{}'.format(rg.rgbc|default('unknown'))
+] %}
+{% endif %}
+{% if format == 'bwa' %}
+  {# BWA requires one argument with fields separated by \t #}
+  {% set rg_line = '\\t'.join(['@RG'] + tags) %}
+{% elif format == 'star' or format == 'singleCellRNA' %}
+  {# STAR requires one argument per field #}
+  {% set wrapped_tags = [] %}
+  {% for tag in tags %}
+    {% do wrapped_tags.append('"' + tag + '"') %}
+  {% endfor %}
+  {% set rg_line = ' '.join(wrapped_tags) %}
+{% else %}
+  {{ raise('Read group line format should be "bwa" or "star"') }}
+{% endif %}
+{{ rg_line }}
+{%- endmacro %}

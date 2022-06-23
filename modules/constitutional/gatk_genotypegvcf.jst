@@ -1,0 +1,167 @@
+{% from 'modules/annotation/main.jst' import annotate_vcfs with context %}
+{% from 'utilities/remove_files.jst' import remove_files with context %}
+{% from 'utilities/vcf_stats.jst' import vcf_stats with context %}
+
+{%- macro genotypegvcf(sample, aligner='bwa', taskPrefix='Genome') %}
+
+{%- set bam %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
+{%- set temp_dir %}temp/{{ sample.gltype }}/constitutional_variant_calls/haplotypecaller/{{ sample.name }}_{{ aligner }}{% endset %}
+{%- set results_dir %}{{ sample.gltype }}/constitutional_variant_calls/haplotypecaller/{{ sample.name }}{% endset %}
+{%- set all_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.hc.all.vcf.gz{% endset %}
+{%- set pass_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.hc.pass.vcf.gz{% endset %}
+{%- set gvcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.hc.g.vcf.gz{% endset %}
+
+{% for batch in constants.phoenix.calling_intervals %}
+
+- name: genotypegvcf_{{ sample.name }}_{{ aligner }}_{{ loop.index }}
+  tags: [{{ sample.gltype}}, constitutional, genotype_hc_gvcf, gatk_GenotypeGVCFs, {{ sample.name }}]
+  input:
+    - {{ gvcf }}
+    - {{ gvcf }}.tbi
+  output: {{ temp_dir }}/{{ loop.index }}.vcf.gz
+  walltime: "24:00:00"
+  cpus: 4
+  mem: 16G
+  container:
+  digest:
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    module load {{ constants.tools.gatk.module }}
+
+    mkdir -p "{{ temp_dir }}"
+
+    gatk GenotypeGVCFs \
+      --tmp-dir "temp" \
+      --java-options "-Xmx14G" \
+      --reference "{{ constants.phoenix.reference_fasta }}" \
+      {% for interval in batch %}
+      --intervals "{{ interval.contig }}:{{ interval.start }}-{{ interval.stop }}" \
+      {% endfor %}
+      --variant "{{ gvcf }}" \
+      --output "{{ temp_dir }}/{{ loop.index }}.vcf.gz"
+
+
+- name: cnnscorevariants2d_{{ sample.name }}_{{ aligner }}_{{ loop.index }}
+  tags: [{{ sample.gltype}}, constitutional, genotype_hc_gvcf, gatk_GenotypeGVCFs, {{ sample.name }}]
+  reset: genotypegvcf_{{ sample.name }}_{{ aligner }}_{{ loop.index }}
+  input:
+    - {{ bam }}
+    - {{ temp_dir }}/{{ loop.index }}.vcf.gz
+  output: {{ temp_dir }}/{{ loop.index }}.scored.vcf.gz
+  after: genotypegvcf_{{ sample.name }}_{{ aligner }}_{{ loop.index }}
+  walltime: "24:00:00"
+  cpus: 8
+  mem: 32G
+  container:
+  digest:
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    module load {{ constants.tools.gatk.module }}
+
+    source activate gatk
+
+    gatk CNNScoreVariants \
+      --java-options "-Xmx28G" \
+      --tensor-type read_tensor \
+      {% for interval in batch %}
+      --intervals "{{ interval.contig }}:{{ interval.start }}-{{ interval.stop }}" \
+      {% endfor %}
+      --reference "{{ constants.phoenix.reference_fasta }}" \
+      --input "{{ bam }}" \
+      --variant "{{ temp_dir }}/{{ loop.index }}.vcf.gz" \
+      --output "{{ temp_dir }}/{{ loop.index }}.scored.vcf.gz"
+
+{% endfor %}
+
+
+- name: haplotypecaller_merge_{{ sample.name }}_{{ aligner }}
+  tags: [{{ sample.gltype}}, constitutional, genotype_hc_gvcf, gatk_GenotypeGVCFs, {{ sample.name }}]
+  reset: predecessors
+  input:
+    {% for batch in constants.phoenix.calling_intervals %}
+    - {{ temp_dir }}/{{ loop.index }}.scored.vcf.gz
+    {% endfor %}
+  output:
+    - {{ all_vcf }}
+    - {{ all_vcf }}.tbi
+  walltime: "24:00:00"
+  cpus: 1
+  mem: 4G
+  container:
+  digest:
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    module load {{ constants.tools.bcftools.module }}
+
+    mkdir -p "{{ results_dir }}"
+
+    bcftools concat \
+      --output-type z \
+      --output "{{ all_vcf }}" \
+      {% for batch in constants.phoenix.calling_intervals %}
+      {% if not loop.last %}
+      "{{ temp_dir }}/{{ loop.index }}.scored.vcf.gz" \
+      {% else %}
+      "{{ temp_dir }}/{{ loop.index }}.scored.vcf.gz"
+      {% endif %}
+      {% endfor %}
+
+    bcftools index --tbi --force "{{ all_vcf }}"
+
+
+- name: haplotypecaller_filter_variants_{{ sample.name }}_{{ aligner }}
+  tags: [{{ sample.gltype}}, constitutional, genotype_hc_gvcf, gatk_GenotypeGVCFs, {{ sample.name }}]
+  input:
+    - {{ all_vcf }}
+    - {{ all_vcf }}.tbi
+  output:
+    - {{ pass_vcf }}
+    - {{ pass_vcf }}.tbi
+  walltime: "24:00:00"
+  cpus: 4
+  mem: 16G
+  container:
+  digest:
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    module load {{ constants.tools.gatk.module }}
+    module load {{ constants.tools.bcftools.module }}
+
+    {# Annotate with FilterVariantTranches #}
+    gatk FilterVariantTranches \
+      --java-options "-Xmx14G" \
+      --info-key CNN_2D \
+      --snp-tranche 99.9 \
+      --indel-tranche 99.5 \
+      {% for resource in constants.phoenix.gatk_cnn_resources %}
+      --resource "{{ resource }}" \
+      {% endfor %}
+      --variant "{{ all_vcf }}" \
+      --output "{{ temp_dir }}/{{ sample.name }}.hc.fvt.vcf.gz" \
+       
+    {# Then filter out the passing variants to a separate file #}
+    bcftools filter \
+      --output-type z \
+      --include 'FILTER == "."' \
+      {% if sample.gltype == 'exome' %}
+      --targets-file "{{ sample.capture_kit.extended_bed }}" \
+      {% endif %}
+      "{{ temp_dir }}/{{ sample.name }}.hc.fvt.vcf.gz" \
+      > "{{ pass_vcf }}"
+
+    bcftools index --tbi --force "{{ pass_vcf }}"
+
+
+{{- annotate_vcfs(sample, temp_dir, results_dir, pass_vcf, taskPrefix, aligner, 'hc', 'constitutional', 'genotype_hc_gvcf') }}
+{{- vcf_stats(pass_vcf, results_dir) }}
+{{- vcf_stats(all_vcf, results_dir) }}
+
+{% endmacro %}

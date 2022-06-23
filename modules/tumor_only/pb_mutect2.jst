@@ -1,0 +1,62 @@
+{% macro pb_mutect2_tumor_only(tumor, aligner='bwa') %}
+{% set tumor_bam %}{{ tumor.gltype }}/alignment/{{ aligner }}/{{ tumor.name }}/{{ tumor.name }}.{{ aligner }}.bam{% endset %}
+{% set temp_dir %}temp/{{ tumor.gltype }}/tumor_only_variant_calls/pb_mutect2/{{ tumor.name }}_{{ aligner }}{% endset %}
+{% set results_dir %}{{ tumor.gltype }}/tumor_only_variant_calls/pb_mutect2/{{ tumor.name }}_{{ aligner }}{% endset %}
+{% set all_vcf %}{{ results_dir }}/{{ tumor.name }}.{{ aligner }}.mutect2.all.vcf.gz{% endset %}
+{% set pass_vcf %}{{ results_dir }}/{{ tumor.name }}.{{ aligner }}.mutect2.pass.vcf.gz{% endset %}
+
+- name: pb_mutect2_tumor_only_{{ tumor.name }}_{{ aligner }}
+  tags: [{{ tumor.gltype }}, tumor_only, snp_indel_caller, gatk_mutect2, {{ tumor.name }}]
+  input:
+    - {{ tumor_bam }}
+  output:
+    - {{ all_vcf }}
+  walltime: "24:00:00"
+  sbatch_args: ['-p', 'gpu', '--exclusive', '--profile=ltask', '--acctg-freq=task=1']
+  container: {{ constants.tools.parabricks.container }}
+  backend_args: ['-B', '/packages/parabricks-v3.7.0_V100/:/INSTALL/']
+  container:
+  digest:
+  cmd: |
+    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
+    set -eu
+    set -o pipefail
+
+    /parabricks/run_pipeline.py mutectcaller \
+      --ref {{ constants.tempe.reference_fasta }} \
+      --tumor-name {{ tumor.rgsm }} \
+      --in-tumor-bam {{ tumor_bam }} \
+      --out-vcf {{ all_vcf }}
+
+
+- name: pb_mutect2_tumor_only_filter_variants_{{ tumor.name }}_{{ aligner }}
+  tags: [{{ tumor.gltype }}, tumor_only, snp_indel_caller, gatk_mutect2, {{ tumor.name }}]
+  input:
+    - {{ all_vcf }}
+    - {{ all_vcf }}.tbi
+  output:
+    - {{ pass_vcf }}
+    - {{ pass_vcf }}.tbi
+  cpu: 1
+  mem: 4G
+  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
+  container: {{ constants.tools.bcftools.container }}
+  container:
+  digest:
+  cmd: |
+    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
+    set -eu
+    set -o pipefail
+    
+    bcftools filter \
+      --output-type z \
+      --include 'FILTER == "PASS"' \
+      {% if tumor.gltype == 'exome' %}
+      --targets-file "{{ tumor.capture_kit.extended_bed }}" \
+      {% endif %}
+      "{{ all_vcf }}" \
+      > "{{ pass_vcf }}"
+    
+    bcftools index --tbi --force "{{ pass_vcf }}"
+
+{% endmacro %}

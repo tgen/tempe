@@ -1,0 +1,494 @@
+{% from 'utilities/read_group_line.jst' import read_group_line %}
+{% from 'utilities/remove_files.jst' import remove_files with context %}
+{% from 'modules/qc/stats2json.jst' import stats2json with context %}
+
+# Run STAR RNA Alignment for quantification
+{% macro star_quant(sample, opt_dup_distance) %}
+{% set star_index_size %}{{ sample.read1Length|default(100, true) }}bpReads{% endset %}
+{% set sjdb_overhang %}{{ sample.read1Length - 1|default(99, true) }}{% endset %}
+{% set results_dir %}{{ sample.gltype }}/alignment/star/{{ sample.name }}{% endset %}
+{% set star_finalcountsdir %}{{ sample.gltype }}/quant/star/{{ sample.name }}{% endset %}
+{% set temp_dir %}temp/{{ sample.gltype }}/quant/star/{{ sample.name }}{% endset %}
+{% set star_bam_unsort %}{{ temp_dir }}/{{ sample.name }}.Aligned.out.bam{% endset %}
+{% set star_bam_transcript %}{{ temp_dir }}/{{ sample.name }}.Aligned.toTranscriptome.out.bam{% endset %}
+{% set star_bam_sorted %}{{ temp_dir }}/{{ sample.name }}.Aligned.sorted.bam{% endset %}
+{% set star_bam_md %}{{ temp_dir }}/{{ sample.name }}.md.bam{% endset %}
+{% set star_bam_final %}{{ results_dir }}/{{ sample.name }}.star.bam{% endset %}
+
+{# Here we build up lists of all the fastq files and rg lines for this sample #}
+{% set r1fqlist = [] %}
+{% set r2fqlist = [] %}
+{% set rglinelist = [] %}
+
+{% for rgid, rg in sample.read_groups.items() %}
+  {% if rg.data_files|length < 2 %}
+      {{ raise('Read group did not have 2 data files: {}'.format(rgid)) }}
+  {% endif %}
+  {% do rglinelist.append(read_group_line(rg, format='star')) %}
+
+  {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
+  {% do r1fastq.update({"path": "temp/fastqs/" + r1fastq.basename}) %}
+  {% do r1fqlist.append(r1fastq) %}
+
+  {% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
+  {% do r2fastq.update({"path": "temp/fastqs/" + r2fastq.basename}) %}
+  {% do r2fqlist.append(r2fastq) %}
+{% endfor %}
+
+- name: star_quant_{{ sample.name }}
+  tags: [{{ sample.gltype }}, alignment, rna_alignment, STAR, {{ sample.name }}]
+  methods: >
+    Transcript quantification for {{ sample.name }} was performed with
+    {{ constants.tools.star.verbose }} followed by TODO...
+  reset: predecessors
+  input:
+    {% for fq in r1fqlist %}
+    - {{ fq.path }}
+    {% endfor %}
+    {% for fq in r2fqlist %}
+    - {{ fq.path }}
+    {% endfor %}
+  output:
+    - {{ star_bam_unsort }}
+    - {{ star_finalcountsdir }}/{{ sample.name }}.ReadsPerGene.out.tab
+    - {{ star_finalcountsdir }}/{{ sample.name }}.star.junctions
+    - {{ star_finalcountsdir }}/{{ sample.name }}_star.Log.final.out
+    {% if tasks.RNA_transcriptome_quantify_expression_salmon_bam or tasks.RNA_transcriptome_quantify_expression_RSEM %}
+    - {{ star_bam_transcript }}
+    {% elif tasks.RNA_transcriptome_quantify_expression_RSEM is not defined %}
+    - {{ star_bam_transcript }}
+    {% endif %}
+  cpus: 20
+  mem: 80G
+  walltime: "48:00:00"
+  container:
+  digest:
+  cmd: |
+    set -eu
+    set -o pipefail
+    module load {{ constants.tools.star.module }}
+
+    {% if r1fqlist[0].fileType == "fasterq" %}
+      export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
+      module load {{ constants.tools.petagene.module }}
+
+    {% endif %}
+    {#
+      This comment is here for protect render spacing, do not remove.
+    #}
+    mkdir -p "{{ temp_dir }}"
+    mkdir -p "{{ results_dir }}/stats"
+    mkdir -p "{{ star_finalcountsdir }}"
+
+    {#
+      If the star_index directory exists then set the global varaible for it or else
+      make the star_index on the with the working temp folder for use with STAR
+    #}
+    if [ -d {{ constants.phoenix.star_indices_path }}/{{ star_index_size }} ]
+    then
+      STAR_INDEX={{ constants.phoenix.star_indices_path }}/{{ star_index_size }}
+    else
+      CURRENT_DIR=`pwd`
+
+      mkdir -p {{ temp_dir }}/star_index
+
+      cd {{ temp_dir }}/star_index
+
+      STAR \
+        --runMode genomeGenerate \
+        --genomeDir ../star_index \
+        --runThreadN 19 \
+        --sjdbOverhang {{ sjdb_overhang }} \
+        --genomeFastaFiles {{ constants.phoenix.star_fasta }} \
+        --sjdbGTFfile {{ constants.phoenix.gtf }}
+
+      STAR_INDEX=${CURRENT_DIR}/{{ temp_dir }}/star_index
+
+      cd ${CURRENT_DIR}
+    fi
+
+    {#
+    # Custom STAR Code Options ; defaults and source justification
+    # Star Manual v2.7.0f Encode Recommendations:
+    # --outFilterType BySJout ; default=Normal ; reduces the number of spurious junctions
+    # --outFilterMultimapNmax 20 ; default=10 ; max number of multiple alignments allowed for a read,
+    #   otherwise considered unmapped
+    # --alignSJoverhangMin 8 ; default=5 ; min overhang for unannotated junctions
+    # --alignSJDBoverhangMin 1 ; default=3 ; min overhang for annotated junctions
+    # --outFilterMismatchNmax 999 ; default=10 ; max number of mismatches per pair, large number
+    #   switches off this filter (--outFilterMismatchNoverReadLmax enables a percentage filter)
+    # --outFilterMismatchNoverReadLmax 0.04 ; default=1.0 ; max number of mismatches per pair relative
+    #   to read length (ie. 0.04*200=8 for the paired reads)
+    # --alignIntronMin 20 ; default=21 ; minimum intron length
+    # --alignIntronMax 1000000 ; default=0(enables calculation) ; maximum intron length
+    # --alignMatesGapMax 1000000 ; default=0(enables calculation) ; max genomic distance between mates
+    #
+    # Star Fusion Parameters
+    # --chimJunctionOverhangMin 12 ; default=20 ; minimum overhang for a chimeric junction
+    # --chimMultimapNmax 10 ; default=0 ; maximum number of chimeric multi-alignments
+    # --chimSegmentMin 12 ; default=0, GDC=15 ; Needs to be a positive value to detect a fusion, min
+    #  alignment on BOTH regions to define chimeric
+    # --outSAMstrandField intronMotif ; default=None ; allows support for cufflinks using unstranded libraries
+    # --twopassMode Basic ; default=- GDC=Basic GATKsnv=Basic ; all 1st pass junctions inserted into the
+    #   genome indices on the fly
+    # --chimSegmentReadGapMax 3 ; default=0 ; maximum gap in the read sequence between chimeric segments
+    # --chimMultimapScoreRange 10 ; default=1 ; the score range for multi-mapping chimeras below the best chimeric
+    #   score. Only works with {chimMultimapNmax > 1
+    # --chimNonchimScoreDropMin 10 ; default=20 ; to trigger chimeric detection, the drop in the best non-chimeric
+    #   alignment score with respect to the read length has to be smaller than this value
+    # --chimOutJunctionFormat 1 ; default=0 ; required as of STAR v2.6.1 for usage with STAR-fusion
+    # --peOverlapNbasesMin 12 ; default=0 ; minimum number of overlap bases to trigger mates merging and realignment
+    # --peOverlapMMp 0.1 ; default=0.01 ; maximum proportion of mismatched bases in the overlap area
+    #
+    # GDC
+    # --chimOutType Junctions SeparateSAMold WithinBAM SoftClip ; #default=Junctions ;
+    #   NOTE: Did not enable SeparateSAMold as this will be deprecated
+    # --quantMode TranscriptomeSAM GeneCounts, default=- ; GeneCounts=count reads per gene
+    #}
+
+    STAR \
+      --runMode alignReads \
+      --twopassMode Basic \
+      --runThreadN 19 \
+      --genomeLoad NoSharedMemory \
+      --readFilesType Fastx \
+      --readFilesCommand zcat \
+      --limitOutSAMoneReadBytes 90000000 \
+      --outSAMtype BAM Unsorted \
+      --outSAMmode Full \
+      --outSAMstrandField intronMotif \
+      --outSAMunmapped Within \
+      --outSAMmapqUnique 255 \
+      --outFilterType BySJout \
+      --outFilterMultimapNmax 20 \
+      --outFilterMismatchNmax 999 \
+      --outFilterMismatchNoverReadLmax 0.04 \
+      --alignIntronMin 20 \
+      --alignIntronMax 1000000 \
+      --alignMatesGapMax 1000000 \
+      --alignSJoverhangMin 8 \
+      --alignSJDBoverhangMin 1 \
+      --peOverlapNbasesMin 12 \
+      --peOverlapMMp 0.1 \
+      --chimOutType WithinBAM SoftClip \
+      --chimSegmentMin 12 \
+      --chimJunctionOverhangMin 12 \
+      --chimSegmentReadGapMax 3 \
+      --chimMultimapNmax 0 \
+      --chimMultimapScoreRange 10 \
+      --chimNonchimScoreDropMin 10 \
+      --chimOutJunctionFormat 1 \
+      {% if tasks.RNA_transcriptome_quantify_expression_salmon_bam or tasks.RNA_transcriptome_quantify_expression_RSEM %}
+      --quantMode TranscriptomeSAM GeneCounts \
+      {% elif tasks.RNA_transcriptome_quantify_expression_RSEM is not defined %}
+      --quantMode TranscriptomeSAM GeneCounts \
+      {% else %}
+      --quantMode GeneCounts \
+      {% endif %}
+      --outSAMattrRGline {{ rglinelist|join(' , ') }} \
+      --sjdbOverhang "{{ sjdb_overhang }}" \
+      --genomeDir ${STAR_INDEX} \
+      --readFilesIn "{{ r1fqlist|map(attribute='path')|join(',') }}" "{{ r2fqlist|map(attribute='path')|join(',') }}" \
+      --outFileNamePrefix "{{ temp_dir }}/{{ sample.name }}."
+
+    mv {{ temp_dir }}/{{ sample.name }}.ReadsPerGene.out.tab {{ star_finalcountsdir }}/
+    mv {{ temp_dir }}/{{ sample.name }}.SJ.out.tab {{ star_finalcountsdir }}/{{ sample.name }}.star.junctions
+    mv {{ temp_dir }}/{{ sample.name }}.Log.final.out {{ results_dir }}/stats/{{ sample.name }}_star.Log.final.out
+
+
+- name: fixmate_sort_star_{{ sample.name }}
+  tags: [{{ sample.gltype }}, alignment, rna_alignment, STAR, {{ sample.name }}]
+  reset: predecessors
+  input: {{ star_bam_unsort }}
+  output: {{ star_bam_sorted }}
+  cpus: 8
+  mem: 16G
+  container:
+  digest:
+  cmd: |
+    set -eu
+    set -o pipefail
+    module load {{ constants.tools.samtools.module }}
+
+    {#
+    # If this task was interrupted previously, temp files may exist
+    # that will cause errors with samtools markdup. Here, we purge any
+    # existing temp files before making the directory again.
+    #}
+    rm -r "{{ temp_dir }}/sort" || true
+    mkdir -p "{{ temp_dir }}/sort"
+
+    samtools fixmate \
+      --threads 8 \
+      -m \
+      "{{ star_bam_unsort }}" \
+      - |\
+    samtools sort \
+      -l 5 \
+      -m 1G \
+      --threads 8 \
+      -T "{{ temp_dir }}/sort" \
+      - \
+      -o "{{ star_bam_sorted }}"
+
+{#
+- name: markduplicates_star_{{ sample.name }}
+  tags: [{{ sample.gltype }}, alignment, rna_alignment, STAR, {{ sample.name }}]
+  input: {{ star_bam_sorted }}
+  output: {{ star_bam_final }}
+  cpus: 10
+  mem: 80G
+  container:
+  digest:
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    module load {{ constants.tools.samtools.module }}
+#}
+    {#
+    # If this task was interrupted previously, temp files may exist
+    # that will cause errors with samtools markdup. Here, we purge any
+    # existing temp files before making the directory again.
+    #}
+{#
+    if [ -d "{{ temp_dir }}/markdup_samtools" ]
+    then
+      rm -r "{{ temp_dir }}/markdup_samtools"
+    fi
+
+    if [ -f "{{ star_bam_final }}" ]
+    then
+      mv "{{ star_bam_final }}" "{{ star_bam_sorted }}"
+    fi
+
+    mkdir -p "{{ temp_dir }}/markdup"
+    mkdir -p "{{ results_dir }}/stats/"
+
+    samtools markdup \
+      -d {{ opt_dup_distance }} \
+      -s \
+      --threads 10 \
+      -T "{{ temp_dir }}/markdup" \
+      "{{ star_bam_sorted }}" \
+      "{{ star_bam_final }}" \
+      2> "{{ results_dir }}/stats_samtools/{{ sample.name }}.star.bam.markdup.txt"
+
+    samtools index -@ 10 "{{ star_bam_final }}"
+#}
+
+
+{#
+This task works, and was tested with MMRF_1499, but it was made as a backup for samtools markdups
+which appears to be working now after some code changes, keeping this here in case we need a backup
+#}
+{% set task %}markduplicates_star_gatk_{{ sample.name }}{% endset %}
+{% set rna_md_metrics %}{{ results_dir }}/stats/{{ sample.name }}.star.bam.md_metrics{% endset %}
+{% set rna_md_metrics_json %}{{ rna_md_metrics }}.json{% endset %}
+- name: markduplicates_star_gatk_{{ sample.name }}
+  tags: [{{ sample.gltype }}, alignment, rna_alignment, STAR, {{ sample.name }}]
+  reset: predecessors
+  input: {{ star_bam_sorted }}
+  output:
+    - {{ star_bam_final }}
+    - {{ star_bam_final }}.bai
+    - {{ rna_md_metrics }}
+  cpus: 10
+  mem: 40G
+  container:
+  digest:
+  cmd: |
+    set -eu
+    set -o pipefail
+    module load {{ constants.tools.samtools.module }}
+
+    {#
+    # If this task was interrupted previously, temp files may exist
+    # that will cause errors with samtools markdup. Here, we purge any
+    # existing temp files before making the directory again.
+    #}
+    if [ -d "{{ temp_dir }}/markdup" ]
+    then
+      rm -r "{{ temp_dir }}/markdup"
+    fi
+
+    mkdir -p "{{ temp_dir }}/markdup"
+
+    module load {{ constants.tools.gatk.module }}
+
+    gatk MarkDuplicates \
+      --java-options "-Xmx31G" \
+      --TMP_DIR "temp" \
+      --ASSUME_SORT_ORDER queryname \
+      --CLEAR_DT false \
+      --ADD_PG_TAG_TO_READS false \
+      --OPTICAL_DUPLICATE_PIXEL_DISTANCE {{ opt_dup_distance }} \
+      --INPUT "{{ star_bam_sorted }}" \
+      --METRICS_FILE "{{ results_dir }}/stats/{{ sample.name }}.star.bam.md_metrics" \
+      --OUTPUT "{{ star_bam_final }}"
+
+    samtools index -@ 10 "{{ star_bam_final }}"
+
+    {{- stats2json(sample.gltype, sample.name, task, rna_md_metrics, rna_md_metrics_json, "picard_mark_duplicates_metrics", sample_name=sample.name) }}
+
+    {% set task_list = [] %}
+
+    {% if tasks.RNA_transcriptome_quantify_expression_HTseq|default(true) %}
+      {% set task %}htseq_{{ sample.name }}{% endset %}
+      {% do task_list.append(task) %}
+      {{- htseq(sample) }}
+    {% endif %}
+
+    {% if tasks.RNA_transcriptome_quantify_expression_subread_featureCounts|default(true) %}
+      {% set task %}featurecounts_{{ sample.name }}{% endset %}
+      {% do task_list.append(task) %}
+      {{- featurecounts(sample) }}
+    {% endif %}
+
+    {% if tasks.RNA_transcriptome_quantify_expression_RSEM|default(true) %}
+      {% set task %}rsem_calculate_expression_{{ sample.name }}{% endset %}
+      {% do task_list.append(task) %}
+      {{- rsem_calculate_expression(sample) }}
+    {% endif %}
+
+    {% set task %}markduplicates_star_gatk_{{ sample.name }}{% endset %}
+    {% do task_list.append(task) %}
+
+    {% set task_name %}{{ sample.name }}_star_quant{% endset %}
+    {{- remove_files(temp_dir, none, task_list, task_name) }}
+{% endmacro %}
+
+{% macro htseq(sample) %}
+{% set temp_dir %}temp/{{ sample.gltype }}/quant/star/{{ sample.name }}{% endset %}
+{% set star_bam_unsort %}{{ temp_dir }}/{{ sample.name }}.Aligned.out.bam{% endset %}
+
+- name: htseq_{{ sample.name }}
+  tags: [{{ sample.gltype }}, transcriptome, quantify_expression, HTseq, {{ sample.name }}]
+  reset: predecessors
+  input: {{ star_bam_unsort }}
+  output: {{ sample.gltype }}/quant/htseq/{{ sample.name }}/{{ sample.name }}.htseq_counts.txt
+  cpus: 2
+  mem: 4G
+  walltime: "48:00:00"
+  container:
+  digest:
+  cmd: |
+    set -eu
+    set -o pipefail
+    module load {{ constants.tools.htseq.module }}
+
+    mkdir -p "{{ sample.gltype }}/quant/htseq/{{ sample.name }}/"
+
+    {#
+    # Notes about command options:
+    # --nprocesses ; default=1 ; number of threads based on number of input files
+    # -r --order=pos ; default=name ; GDC=name (bam unsorted)
+    # -s --stranded=<yes/no/reverse> ; default=yes ; GDC=no (Dumb)
+    # -a --a=<minaqual> ; default=10 ; skip all reads with alignment quality lower than the given minimum value
+    # --additional-attr=gene_name ; default=none ; will be printed as an additional column after the primary
+    #   attribute column but before the counts column(s)
+    # --mode=<union/intersection-strict/intersection-nonempty> ; default=union ; Pegasus=union, GDC=intersection-nonempty
+    # --nonunique=<none/all> ; default=none ; Mode to handle reads that align to or are assigned to more than
+    #   one feature in the overlap
+    # --secondary-alignments=<score/ignore> ; default=score
+    # --supplementary-alignments=<score/ignore> ; default=score
+    #}
+    htseq-count \
+      --nprocesses 2 \
+      --quiet \
+      --format=bam \
+      --order=name \
+      --minaqual=10 \
+      --type=exon \
+      --idattr=gene_id \
+      --additional-attr=gene_name \
+      --mode=union \
+      --nonunique=none \
+      --stranded={{ constants.phoenix.strandedness_options[sample.strandedness].htseq }} \
+      "{{ star_bam_unsort }}" \
+      "{{ constants.phoenix.gtf }}" \
+      > "{{ sample.gltype }}/quant/htseq/{{ sample.name }}/{{ sample.name }}.htseq_counts.txt"
+{% endmacro %}
+
+{% macro featurecounts(sample) %}
+{% set temp_dir %}temp/{{ sample.gltype }}/quant/star/{{ sample.name }}{% endset %}
+{% set star_bam_unsort %}{{ temp_dir }}/{{ sample.name }}.Aligned.out.bam{% endset %}
+
+- name: featurecounts_{{ sample.name }}
+  tags: [{{ sample.gltype }}, transcriptome, quantify_expression, subread_featureCounts, {{ sample.name }}]
+  reset: predecessors
+  input: {{ star_bam_unsort }}
+  output:
+    - {{ sample.gltype }}/quant/featurecounts/{{ sample.name }}/{{ sample.name }}.exon.counts.tsv
+    - {{ sample.gltype }}/quant/featurecounts/{{ sample.name }}/{{ sample.name }}.gene.counts.tsv
+  cpus: 8
+  mem: 8G
+  walltime: "8:00:00"
+  container:
+  digest:
+  cmd: |
+    set -eu
+    set -o pipefail
+    module load {{ constants.tools.subread.module }}
+
+    mkdir -p "{{ sample.gltype }}/quant/featurecounts/{{ sample.name }}/"
+
+    {# TODO -p should only be set for paired-end #}
+    featureCounts \
+      -T 7 \
+      -p \
+      -t "exon" \
+      -s "{{ constants.phoenix.strandedness_options[sample.strandedness].featurecounts }}" \
+      -a "{{ constants.phoenix.gtf }}" \
+      -o "{{ sample.gltype }}/quant/featurecounts/{{ sample.name }}/{{ sample.name }}.exon.counts.tsv" \
+      "{{ star_bam_unsort }}"
+
+    {#
+    # If walltime for these cmds is substantial, we'll split them into 2 separate
+    # tasks. For now just testing them out vs HTSeq
+    #}
+    featureCounts \
+      -T 7 \
+      -p \
+      -t "gene" \
+      -s "{{ constants.phoenix.strandedness_options[sample.strandedness].featurecounts }}" \
+      -a "{{ constants.phoenix.gtf }}" \
+      -o "{{ sample.gltype }}/quant/featurecounts/{{ sample.name }}/{{ sample.name }}.gene.counts.tsv" \
+      "{{ star_bam_unsort }}"
+{% endmacro %}
+
+{% macro rsem_calculate_expression(sample) %}
+{% set temp_dir %}temp/{{ sample.gltype }}/quant/star/{{ sample.name }}{% endset %}
+{% set star_bam_transcript %}{{ temp_dir }}/{{ sample.name }}.Aligned.toTranscriptome.out.bam{% endset %}
+- name: rsem_calculate_expression_{{ sample.name }}
+  tags: [{{ sample.gltype }}, transcriptome, quantify_expression, rsem_star_bam, {{ sample.name }}]
+  reset: predecessors
+  input: {{ star_bam_transcript }}
+  output:
+    - {{ sample.gltype }}/quant/rsem/{{ sample.name }}/{{ sample.name }}.isoforms.results
+    - {{ sample.gltype }}/quant/rsem/{{ sample.name }}/{{ sample.name }}.genes.results
+    - {{ sample.gltype }}/quant/rsem/{{ sample.name }}/{{ sample.name }}.stat/{{ sample.name }}.cnt
+    - {{ sample.gltype }}/quant/rsem/{{ sample.name }}/{{ sample.name }}.stat/{{ sample.name }}.model
+    - {{ sample.gltype }}/quant/rsem/{{ sample.name }}/{{ sample.name }}.stat/{{ sample.name }}.theta
+  cpus: 8
+  mem: 8G
+  walltime: "8:00:00"
+  container:
+  digest:
+  cmd: |
+    set -eu
+    set -o pipefail
+    module load {{ constants.tools.rsem.module }}
+
+    mkdir -p "{{ sample.gltype }}/quant/rsem/{{ sample.name }}/"
+
+    rsem-calculate-expression \
+      --num-threads 7 \
+      --alignments \
+      --paired-end \
+      --no-bam-output \
+      --strandedness "{{ constants.phoenix.strandedness_options[sample.strandedness].rsem }}" \
+      {{ star_bam_transcript }} \
+      {{ constants.phoenix.rsem_index }} \
+      "{{ sample.gltype }}/quant/rsem/{{ sample.name }}/{{ sample.name }}"
+{% endmacro %}

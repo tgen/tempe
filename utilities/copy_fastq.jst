@@ -1,0 +1,25 @@
+{% macro copy_fastq(fastq) %}
+
+- name: copy_fastqs_{{ fastq.basename | replace(".", "_") }}
+  input: {{ fastq.fastqPath }}
+  output: temp/fastqs/{{ fastq.basename }}
+  tags: [rsync,]
+  sbatch_args: ['-p', 'overflow,defq']
+  retry: 2
+  cpus: 6
+  walltime: "4:00:00"
+  container: {{ constants.tools.base.container }}
+  container:
+  digest:
+  cmd: |
+    set -uev
+
+    mkdir -p temp/fastqs/
+
+    {% if fastq.fileType == "fasterq" %}
+    rsync "{{ fastq.fastqPath|replace(".fastq.gz",".fasterq") }}" "temp/fastqs/"
+    {% else %}
+    cp "{{ fastq.fastqPath }}" "temp/fastqs/"
+    {% endif %}
+
+{% endmacro %}

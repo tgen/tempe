@@ -1,0 +1,87 @@
+{% macro manta_tumor_only(tumor, aligner='bwa') %}
+{% set tumor_bam %}{{ tumor.gltype }}/alignment/{{ aligner }}/{{ tumor.name }}/{{ tumor.name }}.{{ aligner }}.bam{% endset %}
+{% set results_dir %}{{ tumor.gltype }}/tumor_only_structural_calls/manta/{{ tumor.name }}_{{ aligner }}{% endset %}
+{% set temp_dir %}temp/{{ tumor.gltype }}/tumor_only_structural_calls/manta/{{ tumor.name }}_{{ aligner }}{% endset %}
+
+- name: tumor_only_manta_{{ tumor.name }}_{{ aligner }}
+  tags: [{{ tumor.gltype }}, tumor_only, structural_caller, manta, {{ tumor.name }}]
+  input:
+    - {{ tumor_bam }}
+  output:
+    - {{ results_dir }}/{{ tumor.name }}.{{ aligner }}.manta.candidateSmallIndels.vcf.gz
+    - {{ results_dir }}/{{ tumor.name }}.{{ aligner }}.manta.candidateSmallIndels.vcf.gz.tbi
+    - {{ results_dir }}/{{ tumor.name }}.{{ aligner }}.manta.candidateSV.vcf.gz
+    - {{ results_dir }}/{{ tumor.name }}.{{ aligner }}.manta.candidateSV.vcf.gz.tbi
+    - {{ results_dir }}/{{ tumor.name }}.{{ aligner }}.manta.diploidSV.vcf.gz
+    - {{ results_dir }}/{{ tumor.name }}.{{ aligner }}.manta.diploidSV.vcf.gz.tbi
+    - {{ results_dir }}/{{ tumor.name }}.{{ aligner }}.manta.somaticSV.vcf.gz
+    - {{ results_dir }}/{{ tumor.name }}.{{ aligner }}.manta.somaticSV.vcf.gz.tbi
+  cpus: 40
+  mem: 80G
+  walltime: "24:00:00"
+  container: {{ constants.tools.manta.container }}
+  sbatch_args: ['-C', '40core', '--profile=ltask', '--acctg-freq=task=1']
+  container:
+  digest:
+  cmd: |
+    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
+    set -eu
+    set -o pipefail
+
+    {# Purge any existing run files prior to starting #}
+    rm -r "{{ temp_dir }}" || true
+    mkdir -p "{{ temp_dir }}"
+
+    {#
+    # In order to restrict calling to only the specified regions
+    # Manta requires a bed file (that has been bgzipped and indexed
+    # with tabix). Here we generate that file on the fly, store in
+    # the run dir, and pass the path to Manta.
+    #}
+    MANTA_BED="{{ temp_dir }}/callRegions.bed"
+    TAB=$'\t'
+    cat <<EOF > "${MANTA_BED}"
+    {% for contig in constants.tempe.calling_contigs %}
+    {{ contig.contig }}${TAB}0${TAB}{{ contig.length }}
+    {% endfor %}
+    EOF
+
+    bgzip -f "${MANTA_BED}"
+    tabix -f -p bed "${MANTA_BED}.gz"
+
+    {#
+    # Some settings are only configurable via tha ini file. Here
+    # we generate this ini file and save it to the run dir.
+    #}
+    MANTA_CONFIG="{{ temp_dir }}/config.ini"
+    cat <<EOF > "${MANTA_CONFIG}"
+    [manta]
+    enableRemoteReadRetrievalForInsertionsInCancerCallingModes = 0
+    EOF
+
+    {# Build the Manta run file #}
+    configManta.py \
+      {% if tumor.gltype == 'exome' %}
+      --exome \
+      {% endif %}
+      --callRegions "${MANTA_BED}.gz" \
+      --config "${MANTA_CONFIG}" \
+      --tumorBam "{{ tumor_bam }}" \
+      --referenceFasta "{{ constants.tempe.reference_fasta }}" \
+      --runDir "{{ temp_dir }}"
+
+    {# Execute on the local machine with 39 parallel jobs #}
+    "{{ temp_dir }}/runWorkflow.py" -m local -j 39
+
+    {# Save all the vcs in the sample dir #}
+    mkdir -p "{{ results_dir }}" || true
+
+    mv "{{ temp_dir }}/results/variants/candidateSmallIndels.vcf.gz" "{{ results_dir }}/{{ tumor.name }}.{{ aligner }}.manta.candidateSmallIndels.vcf.gz"
+    mv "{{ temp_dir }}/results/variants/candidateSmallIndels.vcf.gz.tbi" "{{ results_dir }}/{{ tumor.name }}.{{ aligner }}.manta.candidateSmallIndels.vcf.gz.tbi"
+    mv "{{ temp_dir }}/results/variants/candidateSV.vcf.gz" "{{ results_dir }}/{{ tumor.name }}.{{ aligner }}.manta.candidateSV.vcf.gz"
+    mv "{{ temp_dir }}/results/variants/candidateSV.vcf.gz.tbi" "{{ results_dir }}/{{ tumor.name }}.{{ aligner }}.manta.candidateSV.vcf.gz.tbi"
+    mv "{{ temp_dir }}/results/variants/tumorSV.vcf.gz" "{{ results_dir }}/{{ tumor.name }}.{{ aligner }}.manta.tumorSV.vcf.gz"
+    mv "{{ temp_dir }}/results/variants/tumorSV.vcf.gz.tbi" "{{ results_dir }}/{{ tumor.name }}.{{ aligner }}.manta.tumorSV.vcf.gz.tbi"
+
+
+{% endmacro %}

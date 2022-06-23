@@ -1,0 +1,84 @@
+{% from 'utilities/variant_filtering.jst' import filter_variants with context %}
+
+{% macro admixture(pair, vcf_prefix, variant_caller, aligner) %}
+
+{% set temp_dir %}temp/{{ pair.gltype }}/metrics/admixture/{{ pair.name }}{% endset %}
+{% set temp_vcf_dir %}{{ temp_dir }}/vcfs{% endset %}
+{% set results_dir %}{{ pair.gltype }}/metrics/admixture/{{ pair.name }}{% endset %}
+{% set all_vcf %}{{ vcf_prefix }}.vcf.gz{% endset %}
+{% set filt_vcf %}{{ temp_vcf_dir }}/{{ vcf_prefix|basename }}.pass.vcf{% endset %}
+
+{% set task %}admixture_{{ variant_caller }}_{{ pair.name }}_{{ aligner }}{% endset %}
+{{- filter_variants(pair, all_vcf, temp_vcf_dir, filt_vcf, task) }}
+
+- name: admixture_{{ variant_caller }}_{{ pair.name }}_{{ aligner }}
+  tags:
+  input:
+    - {{ filt_vcf }}
+  walltime: "24:00:00"
+  cpus: 10
+  mem: 8G
+  container:
+  digest:
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    module load {{ constants.tools.admixture.module }}
+    module load {{ constants.tools.plink.module }}
+
+    {# Should already exist #}
+    mkdir -p {{ temp_dir }}/vcfs
+    mkdir -p {{ results_dir }}
+
+    plink --vcf {{ vcf }} --double-id --snps-only --recode 23 --out {{ plinked_vcf }}
+
+    bash processFiles.sh {{ plinked_vcf }} Script
+
+    {# processFiles.sh #}
+    fullFileName=$1
+    referenceFileName=$2
+    fileName1=$(echo $fullFileName | sed 's:.*/::') 
+    fileName=`echo "$fileName1" | cut -d'.' -f1`
+
+    echo $fileName
+
+    if  grep -q "23andMe" $fullFileName; then
+
+    sh clean23file.sh $fullFileName $fileName
+
+    
+    else
+
+    if grep -q "AncestryDNA" $fullFileName; then
+
+    sh ancestry_to_23.sh  $fullFileName $fileName
+
+    else
+
+    sh ftdna_to_23.sh $fullFileName 
+
+    fi
+
+    fi
+
+    ./plink --23file $fullFileName $fileName $fileName --make-bed --out INDIVPLINKFILES/$fileName
+
+    cp INDIVPLINKFILES/$fileName* ../ancestry_supervised/
+
+    perl runadmixture.pl $fileName $referenceFileName
+
+    rm *\.bed
+    rm *\.bim
+    rm *\.fam
+    rm *\.log
+    rm *\.nosex
+
+    rm $DIR/*\.bu
+    rm INDIVPLINKFILES/*log
+    mv *\.csv RESULTFILES/
+    rm *~
+    rm *\.hh
+
+
+{% endmacro %}

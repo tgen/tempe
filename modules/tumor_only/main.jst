@@ -1,0 +1,162 @@
+{% from 'utilities/prepare_tumor_only.jst' import prepare_tumor_only with context %}
+{% from 'modules/tumor_only/strelka2.jst' import strelka2_tumor_only with context %}
+{# {% from 'modules/tumor_only/deepvariant.jst' import deepvariant_tumor_only with context %}
+{% from 'modules/tumor_only/gatk_cnv.jst' import gatk_cnv_tumor_only with context %} #}
+{% from 'modules/tumor_only/manta.jst' import manta_tumor_only with context %}
+{% from 'modules/tumor_only/ichorcna.jst' import ichorcna with context %}
+{# {% from 'modules/tumor_only/mutect2.jst' import mutect2_tumor_only with context %} #}
+{% from 'modules/tumor_only/pb_cnvkit.jst' import pb_cnvkit_tumor_only with context %}
+{% from 'modules/tumor_only/pb_manta.jst' import pb_manta_tumor_only with context %}
+{% from 'modules/tumor_only/pb_mutect2.jst' import pb_mutect2_tumor_only with context %}
+
+
+{% macro tumor_only_variant_calling(samples) %}
+
+{% set normSamples = {} %}
+
+{% if controlDataFiles is defined %}
+{% for file in controlDataFiles %}
+
+    {% set name %}{{ study }}_{{ file.assayCode }}{% endset %}
+    {% do file.update({'name': name}) %}
+
+    {% if name not in normSamples %}
+        {% do normSamples.update({name: {}}) %}
+        {% do normSamples[name].update(file) %}
+    {% endif %}
+{% endfor %}
+{% endif %}
+
+{% set alignment_style = [] %}
+{% if dnaAlignmentStyle == 'all' %}
+    {% do alignment_style.append('pcrfree') %}
+    {% do alignment_style.append('tgen') %}
+    {% do alignment_style.append('broad') %}
+    {% do alignment_style.append('parabricks') %}
+    {% do alignment_style.append('dragmap') %}
+{% else %}
+    {% do alignment_style.append(dnaAlignmentStyle|default('tgen')|lower) %}
+{% endif %}
+
+{# Setup calculated props for samples #}
+{% for sample in samples.values() if sample.gltype == 'exome' %}
+    {% do sample.update({'library_code': sample.assayCode[0:2]|upper}) %}
+    {% do sample.update({'capture_kit_code': sample.assayCode[2:5]|upper}) %}
+
+    {% set targets_interval_list %}{{ constants.tempe.capture_kit_path }}/{{ sample.capture_kit_code }}/{{ sample.capture_kit_code }}_{{ constants.tempe.genome_subversion_name }}_{{ constants.tempe.gene_model_name }}.targets.interval_list{% endset %}
+    {% set no_header_targets_interval_list %}{{ constants.tempe.capture_kit_path }}/{{ sample.capture_kit_code }}/{{ sample.capture_kit_code }}_{{ constants.tempe.genome_subversion_name }}_{{ constants.tempe.gene_model_name }}.no.header.targets.interval_list{% endset %}
+    {% set baits_interval_list %}{{ constants.tempe.capture_kit_path }}/{{ sample.capture_kit_code }}/{{ sample.capture_kit_code }}_{{ constants.tempe.genome_subversion_name }}_{{ constants.tempe.gene_model_name }}.baits.interval_list{% endset %}
+    {% set extended_bed %}{{ constants.tempe.capture_kit_path }}/{{ sample.capture_kit_code }}/{{ sample.capture_kit_code }}_{{ constants.tempe.genome_subversion_name }}_{{ constants.tempe.gene_model_name }}.extended.bed{% endset %}
+
+    {% do sample.update({'capture_kit': {}}) %}
+    {% do sample['capture_kit'].update({'targets_interval_list': targets_interval_list}) %}
+    {% do sample['capture_kit'].update({'no_header_targets_interval_list': no_header_targets_interval_list}) %}
+    {% do sample['capture_kit'].update({'baits_interval_list': baits_interval_list}) %}
+    {% do sample['capture_kit'].update({'extended_bed': extended_bed}) %}
+{% endfor %}
+
+{% for sample in samples.values() if sample.gltype == 'rna' %}
+    {% set readOrientation=sample.readOrientation|default('inward')|lower %}
+    {% set rnaStrandType=sample.rnaStrandType|default('unstranded')|lower %}
+    {% set rnaStrandDirection=sample.rnaStrandDirection|default('notapplicable')|lower %}
+    {% set strandedness %}{{ readOrientation }}-{{ rnaStrandType }}-{{ rnaStrandDirection }}{% endset %}
+    {% do sample.update({'strandedness': strandedness}) %}
+{% endfor %}
+
+{% set pairs = [] %}
+{% for tumor in samples.values() if tumor.subGroup|lower == 'tumor' and tumor.gltype == 'exome' %}
+    {% if tasks['RNA_alignment_rna_alignment_STAR']|default(true) and tumor.dnaRnaMergeKey is defined %}
+        {% for rna in samples.values() if rna.dnaRnaMergeKey is defined and rna.dnaRnaMergeKey == tumor.dnaRnaMergeKey and rna.gltype == 'rna' %}
+            {% if 'rna_samples' not in tumor %}
+               {% do tumor.update({'rna_samples': []}) %}
+            {% endif %}
+            {% do tumor.rna_samples.append({'rna_name': rna.name}) %}
+       {% endfor %}
+    {% endif %}
+
+    {% for normal in normSamples.values() if normal.assayCode == tumor.assayCode %}
+        {% set pair_name = tumor.name %}
+        {% do pairs.append({'name': pair_name, 'gltype': tumor.gltype, 'normal': normal, 'tumor': tumor}) %}
+    {% endfor %}
+{% endfor %}
+{% for tumor in samples.values() if tumor.subGroup|lower == 'tumor' and tumor.gltype == 'genome' %}
+    {% if tasks['RNA_alignment_rna_alignment_STAR']|default(true) and tumor.dnaRnaMergeKey is defined %}
+        {% for rna in samples.values() if rna.dnaRnaMergeKey is defined and rna.dnaRnaMergeKey == tumor.dnaRnaMergeKey and rna.gltype == 'rna' %}
+            {% if 'rna_samples' not in tumor %}
+               {% do tumor.update({'rna_samples': []}) %}
+            {% endif %}
+            {% do tumor.rna_samples.append({'rna_name': rna.name}) %}
+       {% endfor %}
+    {% endif %}
+
+    {% for normal in normSamples.values() if normal.assayCode == tumor.assayCode %}
+        {% set pair_name = tumor.name %}
+        {% do pairs.append({'name': pair_name, 'gltype': tumor.gltype, 'normal': normal, 'tumor': tumor}) %}
+    {% endfor %}
+{% endfor %}
+
+{% for normal in normSamples.values() %}
+    {{- prepare_tumor_only(normal) }}
+{% endfor %}
+
+{# Tasks that do not require a pair #}
+{% for tumor in samples.values() if tumor.subGroup|lower == 'tumor' and tumor.gltype in ('exome', 'genome') %}
+    {% if tumor.gltype in 'exome' %}
+        {% set taskPrefix = 'Exome' %}
+    {% elif tumor.gltype in 'genome' %}
+        {% set taskPrefix = 'Genome' %}
+    {% endif %}
+
+    {% for aligner in alignment_style %}
+
+        {{- ichorcna(tumor, aligner) }}
+        {#
+        {%- if tasks[taskPrefix+"_tumor_only_snp_indel_caller_deepvariant"]|default(true) %}
+            {{- deepvariant_tumor_only(tumor, aligner, taskPrefix=taskPrefix) }}
+        {% endif %}
+        #}
+
+        {% if tasks[taskPrefix+"_tumor_only_snp_indel_caller_gatk_mutect2"]|default(true) %}
+            {# skipping for now #}
+            {# {{- mutect2_tumor_only(tumor, aligner) }} #}
+            {{- pb_mutect2_tumor_only(tumor, aligner) }}
+        {% endif %}
+
+        {% if tasks[taskPrefix+"_tumor_only_structural_caller_manta"]|default(true) %}
+            {{- manta_tumor_only(tumor, aligner) }}
+            {{- pb_manta_tumor_only(tumor, aligner) }}
+        {% endif %}
+
+        {# Designed for normal, skipping conversion to true tumor only for now #}
+        {#
+        {% if tasks[taskPrefix+"_tumor_only_cna_caller_gatk"]|default(true) %}
+            {{- gatk_cnv_tumor_only(tumor, aligner) }}
+        {% endif %}
+        #}
+
+        {% if tasks[taskPrefix+"_tumor_only_cna_caller_cnvkit"]|default(true) %}
+            {{- pb_cnvkit_tumor_only(tumor, aligner) }}
+        {% endif %}
+
+    {% endfor %}
+
+{% endfor %}
+
+{% for pair in pairs %}
+    {% if pair.gltype in 'exome' %}
+        {% set taskPrefix = 'Exome' %}
+    {% elif pair.gltype in 'genome' %}
+        {% set taskPrefix = 'Genome' %}
+    {% endif %}
+
+    {% for aligner in alignment_style %}
+
+        {% if tasks[taskPrefix+"_tumor_only_snp_indel_caller_strelka2"]|default(true) %}
+            {{- strelka2_tumor_only(pair, aligner) }}
+        {% endif %}
+
+    {% endfor %}
+
+{% endfor %}
+
+{% endmacro %}

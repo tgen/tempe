@@ -1,0 +1,104 @@
+# Aligns fastqs from a sample using Parabricks fq2BAM. This aligns all samples
+# in on large run. No need to split or merge. It will also run
+# mark duplicatese and BQSR if needed
+
+# This alignment command prefix is shared by all modules using bwa
+{% from 'utilities/read_group_line.jst' import read_group_line with context %}
+{% from 'utilities/remove_files.jst' import remove_files with context %}
+{% from 'modules/dna_alignment/gatk_baserecalibration.jst' import nobaserecalibration with context %}
+{% from 'utilities/bam_to_cram.jst' import bam_to_cram with context %}
+{% from 'utilities/read_group_line.jst' import read_group_line %}
+{% from 'modules/qc/main.jst' import bam_qc with context %}
+
+{% macro fq2bam(sample, opt_dup_distance, aligner) %}
+
+{% set temp_dir %}temp/{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}{% endset %}
+{% set results_dir %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}{% endset %}
+
+- name: fq2bam_{{ sample.name }}_{{ aligner }}
+  tags: [{{ sample.gltype }}, alignment, dna_alignment, bwa, {{ sample.name }}]
+  reset: predecessors
+  input:
+  {% for rgid, rg in sample.read_groups.items() %}
+    {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
+    {% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
+    - temp/fastqs/{{ r1fastq.basename }}
+    - temp/fastqs/{{ r2fastq.basename }}
+  {% endfor %}
+  output:
+    - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam
+    {% if tasks.Genome_alignment_base_recalibration_gatk | default(false) or tasks.Exome_alignment_base_recalibration_gatk | default(false) %}
+    - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.recal_data.table
+    {% endif %}
+  walltime: "24:00:00"
+  sbatch_args: ['-p', 'gpu', '--exclusive', '--profile=ltask', '--acctg-freq=task=1']
+  container: {{ constants.tools.parabricks.container }}
+  backend_args: ['-B', '/packages/parabricks-v3.7.0_V100/:/INSTALL/']
+  container:
+  digest:
+  cmd: |
+    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
+    set -eu
+    set -o pipefail
+
+    rm -r "{{ temp_dir }}/markdup_temp/" || true
+    mkdir -p "{{ temp_dir }}/markdup_temp/"
+    mkdir -p "{{ results_dir }}/stats/"
+
+    /parabricks/run_pipeline.py fq2bam \
+    --tmp-dir "{{ temp_dir }}/markdup_temp/" \
+    --ref "{{ constants.tempe.bwa_index }}" \
+    --bwa-options "-Y -K 100000000" \
+    {% for rgid, rg in sample.read_groups.items() %}
+      {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
+      {% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
+      --in-fq "temp/fastqs/{{ r1fastq.basename }}" "temp/fastqs/{{ r2fastq.basename }}" "{{ read_group_line(rg, format='bwa') }}" \
+    {% endfor %}
+    {% if tasks.Genome_alignment_base_recalibration_gatk | default(false) or tasks.Exome_alignment_base_recalibration_gatk | default(false) %}
+    --out-recal-file {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.recal_data.table \
+    {% for vcf in constants.tempe.gatk_known_sites %}
+    --knownSites "{{ vcf }}" \
+    {% endfor %}
+    {% endif %}
+    --out-duplicate-metrics "{{ results_dir }}/stats/{{ sample.name }}.mdmetrics.txt" \
+    --optical-duplicate-pixel-distance {{ opt_dup_distance }} \
+    --out-bam "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam"
+
+{% if tasks.Genome_alignment_base_recalibration_gatk | default(false) or tasks.Exome_alignment_base_recalibration_gatk | default(false) %}
+
+- name: pbrun_applybqsr_{{ sample.name }}_{{ aligner }}
+  tags: [{{ sample.gltype }}, alignment, dna_alignment, bwa, {{ sample.name }}]
+  reset: predecessors
+  input:
+    - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam
+    - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.recal_data.table
+  output:
+    - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.bam
+    - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.bam.bai
+  walltime: "24:00:00"
+  sbatch_args: ['-p', 'gpu', '--exclusive', '--profile=ltask', '--acctg-freq=task=1']
+  container: {{ constants.tools.parabricks.container }}
+  container:
+  digest:
+  cmd: |
+    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
+    set -eu
+    set -o pipefail
+
+    pbrun applybqsr \
+      --ref "{{ constants.tempe.bwa_index }}" \
+      --in-bam {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam \
+      --in-recal-file {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.recal_data.table  \
+      --out-bam {{ results_dir }}/{{ sample.name }}.{{ aligner }}.bam
+
+    samtools index -@ 10 "{{ results_dir }}/{{ sample.name }}.{{ aligner }}.bam"
+
+{% else %}
+  {{- nobaserecalibration(sample, aligner) }}
+{% endif %}
+{#
+{{- bam_to_cram(sample, aligner) }}
+
+{{- bam_qc(sample, aligner) }}
+#}
+{% endmacro %}

@@ -1,0 +1,42 @@
+{% from 'utilities/md5sum_bam_cram.jst' import md5sum_bam_cram with context %}
+
+{% macro bam_to_cram(sample, aligner='bwa') %}
+{% if cram|default(true) %}
+{% set bam_path %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
+{% set cram_path %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.cram{% endset %}
+
+- name: bam_to_cram_{{ sample.name }}_{{ aligner }}
+  tags: [{{ sample.gltype }}, {{ sample.name }}, bam_to_cram ]
+  input: {{ bam_path }}
+  output:
+    - {{ cram_path }}
+    - {{ cram_path }}.crai
+  walltime: "8:00:00"
+  cpus: 8
+  mem: 4G
+  container: {{ constants.tools.bwa_mem_samtools.container }}
+  container:
+  digest:
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    samtools view \
+      -C \
+      -@ 8 \
+      {% if sample.gltype == 'rna' or sample.gltype == 'singlecellrna' %}
+      --reference "{{ constants.tempe.star_fasta }}" \
+      {% elif sample.gltype == 'chip' %}
+      --reference "{{ constants.tempe.chip_fasta }}" \
+      {% else %}
+      --reference "{{ constants.tempe.reference_fasta }}" \
+      {% endif %}
+      -o "{{ cram_path }}" \
+      "{{ bam_path }}"
+
+    samtools index "{{ cram_path }}"
+
+    {{- md5sum_bam_cram(sample, aligner) }}
+{% endif %}
+
+{% endmacro %}

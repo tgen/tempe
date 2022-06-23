@@ -1,0 +1,140 @@
+{% from 'modules/annotation/main.jst' import annotate_vcfs with context %}
+{% from 'utilities/remove_files.jst' import remove_files with context %}
+{% from 'utilities/vcf_stats.jst' import vcf_stats with context %}
+
+{%- macro octopus_constitutional(sample, aligner='bwa', taskPrefix='Genome') %}
+{%- set bam %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
+{%- set temp_dir %}temp/{{ sample.gltype }}/constitutional_variant_calls/octopus/{{ sample.name }}_{{ aligner }}{% endset %}
+{%- set results_dir %}{{ sample.gltype }}/constitutional_variant_calls/octopus/{{ sample.name }}{% endset %}
+{%- set all_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.octopus.all.vcf.gz{% endset %}
+{%- set pass_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.octopus.pass.vcf.gz{% endset %}
+
+{% for batch in constants.phoenix.primary_contig_calling_intervals %}
+
+- name: octopus_{{ sample.name }}_{{ aligner }}_{{ loop.index }}
+  tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, octopus, {{ sample.name }}]
+  input: {{ bam }}
+  output:
+    - {{ temp_dir }}/{{ loop.index }}.realigned.bam
+    - {{ temp_dir }}/{{ loop.index }}.octopus.legacy.vcf
+    - {{ temp_dir }}/{{ loop.index }}.octopus.vcf
+  walltime: "24:00:00"
+  cpus: 4
+  mem: 16G
+  container:
+  digest:
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    module load {{ constants.tools.octopus.module }}
+
+    mkdir -p "{{ temp_dir }}"
+
+    {# Write out the regions in this batch to a file #}
+    TAB=$'\t'
+    cat <<EOF > "{{ temp_dir }}/{{ loop.index }}.bed"
+    {% for interval in batch %}
+    {{ interval.contig }}${TAB}{{ interval.start - 1 }}${TAB}{{ interval.stop }}
+    {% endfor %}
+    EOF
+
+    octopus \
+      --caller individual \
+      --threads 4 \
+      --max-reference-cache-footprint 4GB \
+      --target-read-buffer-footprint 6GB \
+      --ignore-unmapped-contigs \
+      --legacy \
+      --annotations AD ADP AF SB \
+      --filter-expression "QUAL < 10 | MQ < 10 | MP < 10 | BQ < 15 | DP < 1 | AD < -1 | AF < -1 | ADP > 100000000 | SB < -1 " \
+      --working-directory {{ temp_dir }} \
+      --reference "{{ constants.phoenix.reference_fasta }}" \
+      --temp-directory-prefix "{{ loop.index }}" \
+      --reads "{{ bam }}" \
+      --regions-file "{{ loop.index }}.bed" \
+      --skip-regions-file {{ constants.phoenix.black_list }} \
+      --bamout "{{ loop.index }}.realigned.bam" \
+      --output "{{ loop.index }}.octopus.vcf"
+
+{% endfor %}
+
+- name: octopus_merge_chunks_{{ sample.name }}_{{ aligner }}
+  tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, octopus, {{ sample.name }}]
+  reset: predecessors
+  input:
+    {% for b in constants.phoenix.primary_contig_calling_intervals %}
+    - {{ temp_dir }}/{{ loop.index }}.octopus.legacy.vcf
+    {% endfor %}
+  output:
+    - {{ all_vcf }}
+    - {{ all_vcf }}.tbi
+  walltime: "24:00:00"
+  cpus: 1
+  mem: 4G
+  container:
+  digest:
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    module load {{ constants.tools.bcftools.module }}
+
+    mkdir -p "{{ results_dir }}"
+
+    bcftools concat \
+      --output-type z \
+      --output "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.octopus.legacy.all.uns.vcf.gz" \
+      {% for b in constants.phoenix.primary_contig_calling_intervals %}
+      {% if not loop.last %}
+      "{{ temp_dir }}/{{ loop.index }}.octopus.legacy.vcf" \
+      {% else %}
+      "{{ temp_dir }}/{{ loop.index }}.octopus.legacy.vcf"
+      {% endif %}
+      {% endfor %}
+
+    bcftools sort \
+      --output-type z \
+      --output-file "{{ all_vcf }}" \
+      "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.octopus.legacy.all.uns.vcf.gz"
+
+    bcftools index --tbi --force "{{ all_vcf }}"
+
+
+- name: octopus_filter_variants_{{ sample.name }}_{{ aligner }}
+  tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, octopus, {{ sample.name }}]
+  input:
+    - {{ all_vcf }}
+    - {{ all_vcf }}.tbi
+  output:
+    - {{ pass_vcf }}
+    - {{ pass_vcf }}.tbi
+  walltime: "24:00:00"
+  cpus: 1
+  mem: 4G
+  container:
+  digest:
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    module load {{ constants.tools.bcftools.module }}
+
+    {# Then filter out the passing variants to a separate file #}
+    bcftools filter \
+      --output-type z \
+      --include 'FILTER == "PASS"' \
+      {% if sample.gltype == 'exome' %}
+      --targets-file "{{ sample.capture_kit.extended_bed }}" \
+      {% endif %}
+      "{{ all_vcf }}" \
+      > "{{ pass_vcf }}"
+
+    bcftools index --tbi --force "{{ pass_vcf }}"
+
+
+{{- annotate_vcfs(sample, temp_dir, results_dir, pass_vcf, taskPrefix, aligner, 'octopus', 'constitutional', 'snp_indel_caller') }}
+{{- vcf_stats(pass_vcf, results_dir) }}
+{{- vcf_stats(all_vcf, results_dir) }}
+
+{% endmacro -%}
