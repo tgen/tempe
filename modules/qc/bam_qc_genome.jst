@@ -33,8 +33,6 @@
   cpus: 2
   mem: 8G
   container: {{ constants.tools.bam_qc_genome.container }}
-  container:
-  digest:
   cmd: |
     set -eu
     set -o pipefail
@@ -91,8 +89,6 @@
   cpus: 2
   mem: 8G
   container: {{ constants.tools.bam_qc_genome.container }}
-  container:
-  digest:
   cmd: |
     set -eu
     set -o pipefail
@@ -152,8 +148,6 @@
   cpus: 2
   mem: 8G
   container: {{ constants.tools.bam_qc_genome.container }}
-  container:
-  digest:
   cmd: |
     set -eu
     set -o pipefail

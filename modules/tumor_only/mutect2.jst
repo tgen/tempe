@@ -22,8 +22,6 @@
   walltime: "24:00:00"
   container: {{ constants.tools.mutect.container }}
   sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
-  container:
-  digest:
   cmd: |
     sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
@@ -73,8 +71,6 @@
   walltime: "24:00:00"
   container: {{ constants.tools.mutect.container }}
   sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
-  container:
-  digest:
   cmd: |
     sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
@@ -114,8 +110,6 @@
   walltime: "24:00:00"
   container: {{ constants.tools.mutect.container }}
   sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
-  container:
-  digest:
   cmd: |
     sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
@@ -149,8 +143,6 @@
   walltime: "24:00:00"
   container: {{ constants.tools.mutect.container }}
   sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
-  container:
-  digest:
   cmd: |
     sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
@@ -180,8 +172,6 @@
   walltime: "24:00:00"
   container: {{ constants.tools.mutect.container }}
   sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
-  container:
-  digest:
   cmd: |
     sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
@@ -214,8 +204,6 @@
   walltime: "24:00:00"
   container: {{ constants.tools.mutect.container }}
   sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
-  container:
-  digest:
   cmd: |
     sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
@@ -258,8 +246,6 @@
   walltime: "24:00:00"
   container: {{ constants.tools.mutect.container }}
   sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
-  container:
-  digest:
   cmd: |
     sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
@@ -293,8 +279,6 @@
   walltime: "24:00:00"
   container: {{ constants.tools.mutect.container }}
   sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
-  container:
-  digest:
   cmd: |
     sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
@@ -331,8 +315,6 @@
   mem: 4G
   container: {{ constants.tools.mutect.container }}
   sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
-  container:
-  digest:
   cmd: |
     sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu

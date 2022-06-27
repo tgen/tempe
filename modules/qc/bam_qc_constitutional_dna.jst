@@ -42,8 +42,6 @@
   mem: 4G
   walltime: "8:00:00"
   container: {{ constants.tools.bam_qc_constitutional_dna.container }}
-  container:
-  digest:
   cmd: |
     set -eu
     set -o pipefail
@@ -132,8 +130,6 @@
   cpus: 1
   mem: 2G
   container: {{ constants.tools.bam_qc_constitutional_dna.container }}
-  container:
-  digest:
   cmd: |
     set -eu
     set -o pipefail

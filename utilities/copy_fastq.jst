@@ -8,10 +8,7 @@
   retry: 2
   cpus: 6
   walltime: "4:00:00"
-  container: {{ constants.tools.base.container }}
-  container:
-  digest:
-  cmd: |
+  container: {{ constants.tools.base.container }}  cmd: |
     set -uev
 
     mkdir -p temp/fastqs/

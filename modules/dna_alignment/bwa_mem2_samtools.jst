@@ -37,8 +37,6 @@
   mem: 80G
   container: {{ constants.tools.bwa_mem2_samtools.container }}
   sbatch_args: ['-C', '40core', '--profile=ltask', '--acctg-freq=task=1']
-  container:
-  digest:
   cmd: |
     sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
@@ -116,8 +114,6 @@
   mem: 8G
   container: {{ constants.tools.bwa_mem2_samtools.container }}
   sbatch_args: ['-C', '40core', '--profile=ltask', '--acctg-freq=task=1']
-  container:
-  digest:
   cmd: |
     sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
@@ -162,8 +158,6 @@
   mem: 20G
   container: {{ constants.tools.bwa_mem2_samtools.container }}
   sbatch_args: ['-C', '40core', '--profile=ltask', '--acctg-freq=task=1']
-  container:
-  digest:
   cmd: |
     sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu

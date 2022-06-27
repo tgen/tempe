@@ -34,8 +34,6 @@
   sbatch_args: ['-p', 'gpu', '--exclusive', '--profile=ltask', '--acctg-freq=task=1']
   container: {{ constants.tools.parabricks.container }}
   backend_args: ['-B', '/packages/parabricks-v3.7.0_V100/:/INSTALL/']
-  container:
-  digest:
   cmd: |
     sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
@@ -78,8 +76,6 @@
   walltime: "24:00:00"
   sbatch_args: ['-p', 'gpu', '--exclusive', '--profile=ltask', '--acctg-freq=task=1']
   container: {{ constants.tools.parabricks.container }}
-  container:
-  digest:
   cmd: |
     sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu

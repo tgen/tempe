@@ -61,8 +61,6 @@
   cpus: 20
   mem: 80G
   walltime: "48:00:00"
-  container:
-  digest:
   cmd: |
     set -eu
     set -o pipefail
@@ -203,8 +201,6 @@
   output: {{ star_bam_sorted }}
   cpus: 8
   mem: 16G
-  container:
-  digest:
   cmd: |
     set -eu
     set -o pipefail
@@ -238,8 +234,6 @@
   output: {{ star_bam_final }}
   cpus: 10
   mem: 80G
-  container:
-  digest:
   cmd: |
     set -eu
     set -o pipefail
@@ -295,8 +289,6 @@ which appears to be working now after some code changes, keeping this here in ca
     - {{ rna_md_metrics }}
   cpus: 10
   mem: 40G
-  container:
-  digest:
   cmd: |
     set -eu
     set -o pipefail
@@ -370,8 +362,6 @@ which appears to be working now after some code changes, keeping this here in ca
   cpus: 2
   mem: 4G
   walltime: "48:00:00"
-  container:
-  digest:
   cmd: |
     set -eu
     set -o pipefail
@@ -424,8 +414,6 @@ which appears to be working now after some code changes, keeping this here in ca
   cpus: 8
   mem: 8G
   walltime: "8:00:00"
-  container:
-  digest:
   cmd: |
     set -eu
     set -o pipefail
@@ -473,8 +461,6 @@ which appears to be working now after some code changes, keeping this here in ca
   cpus: 8
   mem: 8G
   walltime: "8:00:00"
-  container:
-  digest:
   cmd: |
     set -eu
     set -o pipefail

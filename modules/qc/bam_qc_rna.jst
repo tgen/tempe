@@ -35,8 +35,6 @@
   cpus: 2
   mem: 16G
   container: {{ constants.tools.bam_qc_rna.container }}
-  container:
-  digest:
   cmd: |
     set -eu
     set -o pipefail
@@ -113,8 +111,6 @@
   cpus: 4
   mem: 4G
   container: {{ constants.tools.bam_qc_rna.container }}
-  container:
-  digest:
   cmd: |
     set -eu
     set -o pipefail

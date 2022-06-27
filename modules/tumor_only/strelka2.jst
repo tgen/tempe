@@ -34,8 +34,6 @@
   mem: 40G
   walltime: "24:00:00"
   container: {{ constants.tools.strelka.container }}
-  container:
-  digest:
   cmd: |
     set -eu
     set -o pipefail
@@ -128,8 +126,6 @@
   cpus: 1
   mem: 2G
   container: {{ constants.tools.strelka.container }}
-  container:
-  digest:
   cmd: |
     set -eu
     set -o pipefail
