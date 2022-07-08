@@ -1,0 +1,139 @@
+{% macro vep(sample_or_pair, results_dir, input_vcf, variant_caller, final_vcf_prefix, aligner, task_type, analysis_type) %}
+
+- name: vep_all_{{ variant_caller }}_{{ sample_or_pair.name }}_{{ aligner }}
+  tags: [{{ sample_or_pair.gltype }}, {{ analysis_type }}, {{ task_type }}, annotate_vcfs, {{ variant_caller }}, {{ sample_or_pair.name }}]
+  input: {{ input_vcf }}
+  output:
+    - {{ final_vcf_prefix }}.vep.full.vcf.gz
+    - {{ final_vcf_prefix }}.vep.full.vcf.gz.tbi
+  walltime: "8:00:00"
+  cpus: 4
+  mem: 8G
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    module load {{ constants.tools.bcftools.module }}
+    module load {{ constants.tools.vep.module }}
+
+    {# Use VEP to create full annotation file with all transcripts #}
+    vep --fork 4 \
+        --input_file "{{ input_vcf }}" \
+        --format vcf \
+        --output_file "{{ final_vcf_prefix }}.vep.full.vcf" \
+        --vcf \
+        --vcf_info_field CSQ \
+        --species homo_sapiens \
+        --force_overwrite \
+        --no_stats \
+        --cache \
+        --dir_cache "{{ constants.tempe.vep_data }}" \
+        --cache_version 98 \
+        --offline \
+        --fasta "{{ constants.tempe.reference_fasta }}" \
+        --buffer_size 10000 \
+        --terms SO \
+        --hgvs \
+        --hgvsg \
+        --symbol \
+        --sift b \
+        --polyphen b \
+        --humdiv \
+        --uniprot \
+        --domains \
+        --canonical \
+        --flag_pick_allele_gene \
+        --pick_order canonical,appris,tsl,biotype,rank,ccds,length
+
+    {# Convert to compressed VCF #}
+    bcftools view \
+        --threads 4 \
+        --output-type z \
+        --output-file "{{ final_vcf_prefix }}.vep.full.vcf.gz" \
+        "{{ final_vcf_prefix }}.vep.full.vcf"
+
+    rm  "{{ final_vcf_prefix }}.vep.full.vcf"
+
+    bcftools index --threads 4 --force --tbi "{{ final_vcf_prefix }}.vep.full.vcf.gz"
+
+- name: vep_con_{{ variant_caller }}_{{ sample_or_pair.name }}_{{ aligner }}
+  tags: [{{ sample_or_pair.gltype }}, {{ analysis_type }}, {{ task_type }}, annotate_vcfs, {{ variant_caller }}, {{ sample_or_pair.name }}]
+  input: {{ input_vcf }}
+  output:
+    - {{ final_vcf_prefix }}.vep.pick.vcf.gz
+    - {{ final_vcf_prefix }}.vep.pick.vcf.gz.tbi
+  walltime: "8:00:00"
+  cpus: 4
+  mem: 8G
+  cmd: |
+    set -euv
+    set -o pipefail
+
+    module load {{ constants.tools.bcftools.module }}
+    module load {{ constants.tools.vep.module }}
+
+    {# Use VEP to create full annotation file with all transcripts #}
+    vep --fork 4 \
+        --input_file "{{ input_vcf }}" \
+        --format vcf \
+        --output_file "{{ final_vcf_prefix }}.vep.pick.vcf" \
+        --vcf \
+        --vcf_info_field CSQ \
+        --species homo_sapiens \
+        --force_overwrite \
+        --no_stats \
+        --cache \
+        --dir_cache "{{ constants.tempe.vep_data }}" \
+        --cache_version 98 \
+        --offline \
+        --fasta "{{ constants.tempe.reference_fasta }}" \
+        --buffer_size 10000 \
+        --terms SO \
+        --hgvs \
+        --hgvsg \
+        --symbol \
+        --sift b \
+        --polyphen b \
+        --humdiv \
+        --uniprot \
+        --domains \
+        --canonical \
+        --pick_allele_gene \
+        --pick_order canonical,appris,tsl,biotype,rank,ccds,length
+
+    {# Convert to compressed VCF #}
+    bcftools view \
+        --threads 4 \
+        --output-type z \
+        --output-file "{{ final_vcf_prefix }}.vep.pick.vcf.gz" \
+        "{{ final_vcf_prefix }}.vep.pick.vcf"
+
+    rm "{{ final_vcf_prefix }}.vep.pick.vcf"
+
+    bcftools index --threads 4 --force --tbi "{{ final_vcf_prefix }}.vep.pick.vcf.gz"
+
+{% if study == "STAMINA" %}
+- name: vep_pick_STAMINA_table_{{ variant_caller }}_{{ sample_or_pair.name }}_{{ aligner }}
+  input:
+    - {{ final_vcf_prefix }}.vep.pick.vcf.gz
+  output:
+    - {{ final_vcf_prefix }}.vep.pick_STAMINA.tsv
+  cmd: |
+    set -euv
+    set -o pipefail
+
+    module load {{ constants.tools.bcftools.module }}
+    
+    {## Make a table for filtering and summary in R
+    # Create a .tsv header #}
+    echo -e SAMPLE"\t"CHROM"\t"POS"\t"REF"\t"ALT"\t"QUAL"\t"ID"\t"TYPE"\t"DP"\t"VD"\t"AF"\t"BIAS"\t"REFBIAS"\t"VARBIAS"\t"PMEAN"\t"PSTD"\t"INFO_QUAL"\t"QSTD"\t"SBF"\t"ODDRATIO"\t"MQ"\t"SN"\t"HIAF"\t"MSI"\t"MSILEN"\t"LSEQ"\t"RSEQ"\t"HICNT"\t"HICOV"\t"FMT_DP"\t"FMT_VD"\t"FMT_AD_REF"\t"FMT_AD_ALT"\t"FMT_AF"\t"FMT_RD_FWD"\t"FMT_RD_REV"\t"FMT_ALD_FWD"\t"FMT_ALD_REV"\t"GNOMAD_GENOME"\t"GNOMAD_GENOME_AF"\t"TOPMED"\t"TOPMED_AF"\t"COSMIC_NC"\t"COSMIC_NC_CNT"\t"CLINVAR"\t"Allele"\t"Consequence"\t"IMPACT"\t"SYMBOL"\t"Gene"\t"Transcript"\t"HGVSg"\t"HGVSc"\t"HGVSp"\t"cDNA_position"\t"CDS_position"\t"Protein_position"\t"Amino_acids"\t"Codons"\t"STRAND"\t"CANONICAL > STAMINA_TEST.tsv
+
+    {# Extract fields from VCF into file with header #}
+    bcftools +split-vep \
+      --duplicate \
+      --format '%SAMPLE\t%CHROM\t%POS\t%REF\t%ALT\t%QUAL\t%ID\t%TYPE\t%DP\t%VD\t%AF\t%BIAS\t%REFBIAS\t%VARBIAS\t%PMEAN\t%PSTD\t%INFO/QUAL\t%QSTD\t%SBF\t%ODDRATIO\t%MQ\t%SN\t%HIAF\t%MSI\t%MSILEN\t%LSEQ\t%RSEQ\t%HICNT\t%HICOV[\t%DP\t%VD\t%AD{0}\t%AD{1}\t%AF\t%RD{0}\t%RD{1}\t%ALD{0}\t%ALD{1}]\t%GNOMAD_GENOME\t%GNOMAD_GENOME_AF\t%TOPMED\t%TOPMED_AF\t%COSMIC_NC\t%COSMIC_NC_CNT\t%CLINVAR\t%Allele\t%Consequence\t%IMPACT\t%SYMBOL\t%Gene\t%Feature\t%HGVSg\t%HGVSc\t%HGVSp\t%cDNA_position\t%CDS_position\t%Protein_position\t%Amino_acids\t%Codons\t%STRAND\t%CANONICAL\n' \
+      {{ final_vcf_prefix }}.vep.pick.vcf.gz >> {{ final_vcf_prefix }}.vep.pick_STAMINA.tsv
+
+{% endif %}
+
+{% endmacro %}
