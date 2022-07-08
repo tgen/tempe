@@ -1,5 +1,5 @@
 {% from 'utilities/remove_files.jst' import remove_files with context %}
-{% from 'utilities/vcf_stats.jst' import vcf_stats with context %}
+{# {% from 'utilities/vcf_stats.jst' import vcf_stats with context %} #}
 
 {% macro mutect2_tumor_only(tumor, aligner='bwa') %}
 {% set tumor_bam %}{{ tumor.gltype }}/alignment/{{ aligner }}/{{ tumor.name }}/{{ tumor.name }}.{{ aligner }}.bam{% endset %}
