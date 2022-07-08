@@ -10,7 +10,7 @@
 {% set pass_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.vardict.pass.vcf.gz{% endset %}
 {% set chip_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.vardict.chip.vcf.gz{% endset %}
 
-{% for batch in constants.phoenix.calling_intervals %}
+{% for batch in constants.tempe.calling_intervals %}
 - name: vardict_{{ sample.name }}_{{ aligner }}_{{ loop.index }}
   tags: [{{ sample.gltype }}, constitutional, snp_indel_caller, VarDict, {{ sample.name }}]
   input:
@@ -155,7 +155,7 @@
       -th 4 \
       -b "{{ bam }}" \
       -N "{{ sample.rgsm }}" \
-      -G "{{ constants.phoenix.reference_fasta }}" \
+      -G "{{ constants.tempe.reference_fasta }}" \
       -A 4 \
       -B 2 \
       -F 0x500 \
@@ -207,7 +207,7 @@
   tags: [{{ sample.gltype }}, constitutional, snp_indel_caller, VarDict, {{ sample.name }}]
   reset: predecessors
   input:
-    {% for b in constants.phoenix.calling_intervals %}
+    {% for b in constants.tempe.calling_intervals %}
     - {{ temp_dir }}/{{ loop.index }}.vardict.vcf.gz
     {% endfor %}
   output:
@@ -228,7 +228,7 @@
       --allow-overlaps \
       --output-type z \
       --output "{{ all_vcf }}" \
-      {% for b in constants.phoenix.calling_intervals %}
+      {% for b in constants.tempe.calling_intervals %}
       {% if not loop.last %}
       "{{ temp_dir }}/{{ loop.index }}.vardict.vcf.gz" \
       {% else %}
@@ -271,8 +271,10 @@
      
     bcftools index --tbi --force "{{ pass_vcf }}"
 
+{#
 {{- annotate_vcfs(sample, temp_dir, results_dir, pass_vcf, taskPrefix, aligner, 'vardict', 'constitutional', 'snp_indel_caller') }}
 {{- vcf_stats(pass_vcf, results_dir) }}
 {{- vcf_stats(all_vcf, results_dir) }}
+#}
 
 {% endmacro %}

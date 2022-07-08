@@ -10,7 +10,7 @@
 {% set all_vcf %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.vardict.all.vcf.gz{% endset %}
 {% set pass_vcf %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.vardict.pass.vcf.gz{% endset %}
 
-{% for batch in constants.phoenix.calling_intervals %}
+{% for batch in constants.tempe.calling_intervals %}
 - name: vardict_{{ pair.name }}_{{ aligner }}_{{ loop.index }}
   tags: [{{ pair.gltype }}, somatic, snp_indel_caller, VarDict, {{ pair.name }}]
   input:
@@ -142,7 +142,7 @@
       -th 4 \
       -b "{{ tumor_bam }}|{{ normal_bam }}" \
       -N "{{ pair.tumor.rgsm }}" \
-      -G "{{ constants.phoenix.reference_fasta }}" \
+      -G "{{ constants.tempe.reference_fasta }}" \
       -A 4 \
       -B 2 \
       -F 0x500 \
@@ -194,7 +194,7 @@
   tags: [{{ pair.gltype }}, somatic, snp_indel_caller, VarDict, {{ pair.name }}]
   reset: predecessors
   input:
-    {% for b in constants.phoenix.calling_intervals %}
+    {% for b in constants.tempe.calling_intervals %}
     - {{ temp_dir }}/{{ loop.index }}.vardict.vcf.gz
     {% endfor %}
   output:
@@ -215,7 +215,7 @@
       --allow-overlaps \
       --output-type z \
       --output "{{ all_vcf }}" \
-      {% for b in constants.phoenix.calling_intervals %}
+      {% for b in constants.tempe.calling_intervals %}
       {% if not loop.last %}
       "{{ temp_dir }}/{{ loop.index }}.vardict.vcf.gz" \
       {% else %}

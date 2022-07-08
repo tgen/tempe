@@ -119,7 +119,7 @@
 
     {# Merging pdfs #}
     pdfunite \
-      {% for contig in constants.phoenix.calling_contigs %}
+      {% for contig in constants.tempe.calling_contigs %}
       {# Stopping at chrX #}
       {% if loop.index < 24 %}
       {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA/{{ sample.name }}.{{ aligner }}.ichorCNA_CNA_chr{{ contig.contig }}.pdf \

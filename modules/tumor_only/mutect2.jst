@@ -21,9 +21,7 @@
   mem: 16G
   walltime: "24:00:00"
   container: {{ constants.tools.mutect.container }}
-  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
   cmd: |
-    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
     set -o pipefail
 
@@ -70,9 +68,7 @@
   mem: 8G
   walltime: "24:00:00"
   container: {{ constants.tools.mutect.container }}
-  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
   cmd: |
-    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
     set -o pipefail
 
@@ -109,9 +105,7 @@
   mem: 4G
   walltime: "24:00:00"
   container: {{ constants.tools.mutect.container }}
-  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
   cmd: |
-    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
     set -o pipefail
 
@@ -142,9 +136,7 @@
   mem: 8G
   walltime: "24:00:00"
   container: {{ constants.tools.mutect.container }}
-  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
   cmd: |
-    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
     set -o pipefail
 
@@ -171,9 +163,7 @@
   mem: 8G
   walltime: "24:00:00"
   container: {{ constants.tools.mutect.container }}
-  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
   cmd: |
-    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
     set -o pipefail
 
@@ -203,9 +193,7 @@
   mem: 8G
   walltime: "24:00:00"
   container: {{ constants.tools.mutect.container }}
-  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
   cmd: |
-    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
     set -o pipefail
 
@@ -245,9 +233,7 @@
   mem: 4G
   walltime: "24:00:00"
   container: {{ constants.tools.mutect.container }}
-  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
   cmd: |
-    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
     set -o pipefail
 
@@ -278,9 +264,7 @@
   mem: 8G
   walltime: "24:00:00"
   container: {{ constants.tools.mutect.container }}
-  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
   cmd: |
-    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
     set -o pipefail
 
@@ -314,9 +298,7 @@
   cpu: 1
   mem: 4G
   container: {{ constants.tools.mutect.container }}
-  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
   cmd: |
-    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
     set -o pipefail
 

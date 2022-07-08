@@ -64,7 +64,7 @@
     WORKDIR=`pwd`
 
     ${PREPVCF} \
-      --ref-genome "{{ constants.phoenix.reference_fasta }}" \
+      --ref-genome "{{ constants.tempe.reference_fasta }}" \
       --dir-work "{{ temp_dir }}" \
       --bam ${WORKDIR}/{{ bam }} \
       --toolname "{{ caller }}" \
@@ -134,8 +134,8 @@
       --precedence "{{ pair.callers|join('|') }}" \
       --toolnames "{{ pair.callers|join('|') }}" \
       --vcfs "{{ vcfs_to_merge|map(attribute='filtered_path')|join('|') }}" \
-      -g "{{ constants.phoenix.reference_fasta }}" \
-      --dict "{{ constants.phoenix.reference_dict }}" \
+      -g "{{ constants.tempe.reference_fasta }}" \
+      --dict "{{ constants.tempe.reference_dict }}" \
       --normal-sname "{{ pair.normal.rgsm }}" \
       --tumor-sname "{{ pair.tumor.rgsm }}" \
       -d "{{ temp_dir }}" \

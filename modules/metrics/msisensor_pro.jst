@@ -43,7 +43,7 @@
     samtools index {{ normal_nodup_bam }}
 
     msisensor-pro msi \
-        -d {{ constants.phoenix.reference_msisensor_pro }} \
+        -d {{ constants.tempe.reference_msisensor_pro }} \
         -n {{ normal_nodup_bam }} \
         -t {{ tumor_nodup_bam }} \
         {% if pair.gltype == 'exome' %}

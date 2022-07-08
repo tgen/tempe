@@ -42,7 +42,7 @@
     MANTA_BED="{{ temp_dir }}/callRegions.bed"
     TAB=$'\t'
     cat <<EOF > "${MANTA_BED}"
-    {% for contig in constants.phoenix.calling_contigs %}
+    {% for contig in constants.tempe.calling_contigs %}
     {{ contig.contig }}${TAB}0${TAB}{{ contig.length }}
     {% endfor %}
     EOF
@@ -62,7 +62,7 @@
       --callMemMb 10 \
       --callRegions "${MANTA_BED}.gz" \
       --bam "{{ bam }}" \
-      --referenceFasta "{{ constants.phoenix.reference_fasta }}" \
+      --referenceFasta "{{ constants.tempe.reference_fasta }}" \
       --runDir "{{ temp_dir }}"
 
     {# Execute on the local machine with 19 parallel jobs #}

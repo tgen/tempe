@@ -45,7 +45,7 @@
       --logging_level WARN \
       --mode calling \
       --task {{ i }} \
-      --ref "{{ constants.phoenix.reference_fasta }}" \
+      --ref "{{ constants.tempe.reference_fasta }}" \
       --reads "${PROJECT_ROOT}/{{ bam }}" \
       --examples "${PROJECT_ROOT}/{{ temp_dir }}/{{ sample.name }}.ex.tfrecord@{{ nshards }}.gz" \
       --gvcf "${PROJECT_ROOT}/{{ temp_dir }}/{{ sample.name }}.gvcf.tfrecord@{{ nshards }}.gz"
@@ -80,9 +80,9 @@
     {# Run call_variants #}
     call_variants \
       {% if sample.gltype == 'exome' %}
-      --checkpoint "{{ constants.phoenix.deepvariant_models.exome }}" \
+      --checkpoint "{{ constants.tempe.deepvariant_models.exome }}" \
       {% else %}
-      --checkpoint  "{{ constants.phoenix.deepvariant_models.genome }}" \
+      --checkpoint  "{{ constants.tempe.deepvariant_models.genome }}" \
       {% endif %}
       --examples "{{ sample.name }}.ex.tfrecord@{{ nshards }}.gz" \
       --outfile "{{ sample.name }}.cvo.tfrecord.gz"
@@ -114,7 +114,7 @@
     
     {# Run postprocess_variants with gVCFs #}
     postprocess_variants \
-        --ref "{{ constants.phoenix.reference_fasta }}" \
+        --ref "{{ constants.tempe.reference_fasta }}" \
         --infile "{{ sample.name }}.cvo.tfrecord.gz" \
         --outfile "${PROJECT_ROOT}/{{ all_vcf }}" \
         --nonvariant_site_tfrecord_path "${PROJECT_ROOT}/{{ temp_dir }}/{{ sample.name }}.gvcf.tfrecord@{{ nshards }}.gz" \
@@ -152,8 +152,10 @@
 
     bcftools index --tbi --force "{{ pass_vcf }}"
 
+{#
 {{- annotate_vcfs(sample, temp_dir, results_dir, pass_vcf, taskPrefix, aligner, 'deepvariant', 'constitutional', 'snp_indel_caller') }}
 {{- vcf_stats(pass_vcf, results_dir) }}
 {{- vcf_stats(all_vcf, results_dir) }}
+#}
 
 {% endmacro %}

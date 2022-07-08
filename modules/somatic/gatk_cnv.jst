@@ -100,9 +100,9 @@
 
     if [ ${SEX} == "Female" ]
     then
-      INTERVALS={{ constants.phoenix.gatk_cnv_primary_contigs_female }}
+      INTERVALS={{ constants.tempe.gatk_cnv_primary_contigs_female }}
     else
-      INTERVALS={{ constants.phoenix.gatk_cnv_primary_contigs_male }}
+      INTERVALS={{ constants.tempe.gatk_cnv_primary_contigs_male }}
     fi
 
     {# Set sample specific variables #}
@@ -156,7 +156,7 @@
       --intervals ${INTERVALS} \
       --bin-length ${BIN_LENGTH} \
       {% endif %}
-      --reference {{ constants.phoenix.reference_fasta }} \
+      --reference {{ constants.tempe.reference_fasta }} \
       --output {{ temp_dir }}/preprocessed.interval_list \
       --interval-merging-rule OVERLAPPING_ONLY
 
@@ -172,7 +172,7 @@
 
     {# Filter out Blacklist regions (https://doi.org/10.1038/s41598-019-45839-z) and centromeres #}
     bcftools view \
-      --targets-file ^{{ constants.phoenix.encode_denylist }} \
+      --targets-file ^{{ constants.tempe.encode_denylist }} \
       --output-type v \
       --output-file {{ temp_dir }}/{{ pair.normal.name }}.{{ aligner }}.snps.vcf \
       {{ temp_dir }}/{{ pair.normal.name }}.{{ aligner }}.preFilt.snps.vcf
@@ -191,11 +191,11 @@
 
     gatk --java-options "-Xmx12g" AnnotateIntervals \
       --tmp-dir {{ temp_dir }}/temp/ \
-      --mappability-track {{ constants.phoenix.mappability_track }} \
+      --mappability-track {{ constants.tempe.mappability_track }} \
       --intervals {{ temp_dir }}/preprocessed.interval_list \
       --output {{ temp_dir }}/PreFilter_anno_preprocessed.interval_list \
       --interval-merging-rule OVERLAPPING_ONLY \
-      --reference {{ constants.phoenix.reference_fasta }}
+      --reference {{ constants.tempe.reference_fasta }}
 
     gatk --java-options "-Xmx12g" FilterIntervals \
       --tmp-dir {{ temp_dir }}/temp/ \
@@ -225,7 +225,7 @@
     gatk --java-options "-Xmx12g" FilterIntervals \
       --tmp-dir {{ temp_dir }}/temp/ \
       --intervals {{ temp_dir }}/preprocessed_filt_map.interval_list \
-      --exclude-intervals {{ constants.phoenix.encode_denylist }} \
+      --exclude-intervals {{ constants.tempe.encode_denylist }} \
       --input {{ temp_dir }}/{{ pair.normal.name }}.{{ aligner }}.counts.hdf5 \
       --interval-merging-rule OVERLAPPING_ONLY \
       --low-count-filter-count-threshold ${EXP_1X_COUNTS} \
@@ -241,7 +241,7 @@
       --intervals {{ temp_dir }}/preprocessed_filt.interval_list \
       --output {{ temp_dir }}/anno_preprocessed.interval_list \
       --interval-merging-rule OVERLAPPING_ONLY \
-      --reference {{ constants.phoenix.reference_fasta }}
+      --reference {{ constants.tempe.reference_fasta }}
 
 
 {# Step 2a #}
@@ -303,7 +303,7 @@
       --tmp-dir {{ temp_dir }}/temp2b/ \
       --input {{ normal_bam }} \
       --intervals {{ temp_dir }}/{{ pair.normal.name }}.{{ aligner }}.snps.vcf \
-      --reference {{ constants.phoenix.reference_fasta }} \
+      --reference {{ constants.tempe.reference_fasta }} \
       --output {{ results_dir }}/{{ pair.normal.name }}.{{ aligner }}.allelicCounts.tsv
 
 
@@ -366,7 +366,7 @@
       --tmp-dir {{ temp_dir }}/temp2d/ \
       --input {{ tumor_bam }} \
       --intervals {{ temp_dir }}/{{ pair.normal.name }}.{{ aligner }}.snps.vcf \
-      --reference {{ constants.phoenix.reference_fasta }} \
+      --reference {{ constants.tempe.reference_fasta }} \
       --output {{ results_dir }}/{{ pair.tumor.name }}.{{ aligner }}.allelicCounts.tsv
 
 
@@ -621,8 +621,8 @@
       eval "START=\${START_${CHR}}"
       eval "STOP=\${STOP_${CHR}}"
 
-      START_C=$(gawk -v CHR=$CHR '$1==CHR { print $2 }' {{ constants.phoenix.centromere }})
-      STOP_C=$(gawk -v CHR=$CHR '$1==CHR { print $3 }' {{ constants.phoenix.centromere }})
+      START_C=$(gawk -v CHR=$CHR '$1==CHR { print $2 }' {{ constants.tempe.centromere }})
+      STOP_C=$(gawk -v CHR=$CHR '$1==CHR { print $3 }' {{ constants.tempe.centromere }})
 
       if [[ ${START} -ge ${START_C} ]]
       then
@@ -679,9 +679,9 @@
       mv {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg.temp {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
     done
 
-    python ${JS_PIPELINE_PATH}/required_scripts/{{ constants.phoenix.cna_seg_extend }} {{ constants.phoenix.centromere }} {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
+    python ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.cna_seg_extend }} {{ constants.tempe.centromere }} {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
 
-    Rscript ${JS_PIPELINE_PATH}/required_scripts/{{ constants.phoenix.plotCNVplus_Rscript }} \
+    Rscript ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.plotCNVplus_Rscript }} \
       --hetDPfilter 1 \
       --hetAFlow 0.45 \
       --hetAFhigh 0.55 \

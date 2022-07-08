@@ -82,9 +82,9 @@
       If the star_index directory exists then set the global varaible for it or else
       make the star_index on the with the working temp folder for use with STAR
     #}
-    if [ -d {{ constants.phoenix.star_indices_path }}/{{ star_index_size }} ]
+    if [ -d {{ constants.tempe.star_indices_path }}/{{ star_index_size }} ]
     then
-      STAR_INDEX={{ constants.phoenix.star_indices_path }}/{{ star_index_size }}
+      STAR_INDEX={{ constants.tempe.star_indices_path }}/{{ star_index_size }}
     else
       CURRENT_DIR=`pwd`
 
@@ -97,8 +97,8 @@
         --genomeDir ../star_index \
         --runThreadN 19 \
         --sjdbOverhang {{ sjdb_overhang }} \
-        --genomeFastaFiles {{ constants.phoenix.star_fasta }} \
-        --sjdbGTFfile {{ constants.phoenix.gtf }}
+        --genomeFastaFiles {{ constants.tempe.star_fasta }} \
+        --sjdbGTFfile {{ constants.tempe.gtf }}
 
       STAR_INDEX=${CURRENT_DIR}/{{ temp_dir }}/star_index
 
@@ -394,9 +394,9 @@ which appears to be working now after some code changes, keeping this here in ca
       --additional-attr=gene_name \
       --mode=union \
       --nonunique=none \
-      --stranded={{ constants.phoenix.strandedness_options[sample.strandedness].htseq }} \
+      --stranded={{ constants.tempe.strandedness_options[sample.strandedness].htseq }} \
       "{{ star_bam_unsort }}" \
-      "{{ constants.phoenix.gtf }}" \
+      "{{ constants.tempe.gtf }}" \
       > "{{ sample.gltype }}/quant/htseq/{{ sample.name }}/{{ sample.name }}.htseq_counts.txt"
 {% endmacro %}
 
@@ -426,8 +426,8 @@ which appears to be working now after some code changes, keeping this here in ca
       -T 7 \
       -p \
       -t "exon" \
-      -s "{{ constants.phoenix.strandedness_options[sample.strandedness].featurecounts }}" \
-      -a "{{ constants.phoenix.gtf }}" \
+      -s "{{ constants.tempe.strandedness_options[sample.strandedness].featurecounts }}" \
+      -a "{{ constants.tempe.gtf }}" \
       -o "{{ sample.gltype }}/quant/featurecounts/{{ sample.name }}/{{ sample.name }}.exon.counts.tsv" \
       "{{ star_bam_unsort }}"
 
@@ -439,8 +439,8 @@ which appears to be working now after some code changes, keeping this here in ca
       -T 7 \
       -p \
       -t "gene" \
-      -s "{{ constants.phoenix.strandedness_options[sample.strandedness].featurecounts }}" \
-      -a "{{ constants.phoenix.gtf }}" \
+      -s "{{ constants.tempe.strandedness_options[sample.strandedness].featurecounts }}" \
+      -a "{{ constants.tempe.gtf }}" \
       -o "{{ sample.gltype }}/quant/featurecounts/{{ sample.name }}/{{ sample.name }}.gene.counts.tsv" \
       "{{ star_bam_unsort }}"
 {% endmacro %}
@@ -473,8 +473,8 @@ which appears to be working now after some code changes, keeping this here in ca
       --alignments \
       --paired-end \
       --no-bam-output \
-      --strandedness "{{ constants.phoenix.strandedness_options[sample.strandedness].rsem }}" \
+      --strandedness "{{ constants.tempe.strandedness_options[sample.strandedness].rsem }}" \
       {{ star_bam_transcript }} \
-      {{ constants.phoenix.rsem_index }} \
+      {{ constants.tempe.rsem_index }} \
       "{{ sample.gltype }}/quant/rsem/{{ sample.name }}/{{ sample.name }}"
 {% endmacro %}

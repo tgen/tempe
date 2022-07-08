@@ -92,7 +92,7 @@
       --input {{ sample_bam }} \
       --intervals {{ cnvSnps }} \
       {% endif %}
-      --reference {{ constants.phoenix.reference_fasta }} \
+      --reference {{ constants.tempe.reference_fasta }} \
       --output {{ results_dir }}/{{ sample.name }}.{{ aligner }}.allelicCounts.tsv
 
     {% if sample_exome_bam is defined %}
@@ -242,8 +242,8 @@
       eval "START=\${START_${CHR}}"
       eval "STOP=\${STOP_${CHR}}"
 
-      START_C=$(gawk -v CHR=$CHR '$1==CHR { print $2 }' {{ constants.phoenix.centromere }})
-      STOP_C=$(gawk -v CHR=$CHR '$1==CHR { print $3 }' {{ constants.phoenix.centromere }})
+      START_C=$(gawk -v CHR=$CHR '$1==CHR { print $2 }' {{ constants.tempe.centromere }})
+      STOP_C=$(gawk -v CHR=$CHR '$1==CHR { print $3 }' {{ constants.tempe.centromere }})
 
       if [[ ${START} -ge ${START_C} ]]
       then
@@ -300,9 +300,9 @@
       mv {{ temp_dir }}/results/{{ sample.name }}.{{ aligner }}.modelFinal.genderCorrected.seg.temp {{ temp_dir }}/results/{{ sample.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
     done
 
-    python ${JS_PIPELINE_PATH}/required_scripts/{{ constants.phoenix.cna_seg_extend }} {{ constants.phoenix.centromere }} {{ temp_dir }}/results/{{ sample.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
+    python ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.cna_seg_extend }} {{ constants.tempe.centromere }} {{ temp_dir }}/results/{{ sample.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
 
-    Rscript ${JS_PIPELINE_PATH}/required_scripts/{{ constants.phoenix.plotCNVplus_Rscript }} \
+    Rscript ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.plotCNVplus_Rscript }} \
       --point_size 2 \
       --hetDPfilter 1 \
       --hetAFlow 0.45 \

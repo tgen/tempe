@@ -35,7 +35,7 @@
     rm -r "{{ temp_dir }}" || true
     mkdir -p "{{ temp_dir }}"
 
-    sed 's/$/\tcentromere/' {{ constants.phoenix.centromere }} \
+    sed 's/$/\tcentromere/' {{ constants.tempe.centromere }} \
       > {{ temp_dir }}/genomic_regions.bed
 
     tHReD.py \

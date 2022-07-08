@@ -30,7 +30,7 @@
 
     ExpansionHunter \
       --reads {{ bam }} \
-      --reference {{ constants.phoenix.reference_fasta }} \
+      --reference {{ constants.tempe.reference_fasta }} \
       --variant-catalog ${eh_path}/variant_catalog/grch38/variant_catalog.json \
       --output-prefix {{ temp_dir }}/{{ sample.name }}.expansion_hunter
 

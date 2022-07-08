@@ -45,7 +45,7 @@
     PROJECT_ROOT=$PWD
 
     {% set ns_list = [] %}
-    {% for effect in constants.phoenix.ns_effects %}
+    {% for effect in constants.tempe.ns_effects %}
       {% if annotate_flag == 'snpeff' %}
         {% set ns_effect %}INFO/ANN ~ "{{ effect }}"{% endset %}
       {% else %}
@@ -55,9 +55,9 @@
     {% endfor %}
 
     {% if annotate_flag == 'snpeff' %}
-      {% set canonical_cds_intervals %}{{ constants.phoenix.snpeff_canonical_cds_intervals }}{% endset %}
+      {% set canonical_cds_intervals %}{{ constants.tempe.snpeff_canonical_cds_intervals }}{% endset %}
     {% else %}
-      {% set canonical_cds_intervals %}{{ constants.phoenix.vep_canonical_cds_intervals }}{% endset %}
+      {% set canonical_cds_intervals %}{{ constants.tempe.vep_canonical_cds_intervals }}{% endset %}
     {% endif %}
 
     bcftools filter \

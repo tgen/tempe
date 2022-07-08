@@ -35,7 +35,6 @@
   container: {{ constants.tools.parabricks.container }}
   backend_args: ['-B', '/packages/parabricks-v3.7.0_V100/:/INSTALL/']
   cmd: |
-    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
     set -o pipefail
 
@@ -77,7 +76,6 @@
   sbatch_args: ['-p', 'gpu', '--exclusive', '--profile=ltask', '--acctg-freq=task=1']
   container: {{ constants.tools.parabricks.container }}
   cmd: |
-    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
     set -o pipefail
 

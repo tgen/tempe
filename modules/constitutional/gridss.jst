@@ -27,7 +27,7 @@
     mkdir -p {{ results_dir }}
 
     gridss CallVariants \
-      -r {{ constants.phoenix.reference_fasta }} \
+      -r {{ constants.tempe.reference_fasta }} \
       -w {{ temp_dir }} \
       -o {{ results_dir }}/{{ sample.name }}.sv.vcf \
       {{ bam }}

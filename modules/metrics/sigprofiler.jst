@@ -58,7 +58,7 @@
     mkdir -p {{ temp_dir }}/vcfs
     mkdir -p {{ results_dir }}
 
-    python3 ${JS_PIPELINE_PATH}/required_scripts/{{ constants.phoenix.sigprofiler }} \
+    python3 ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.sigprofiler }} \
       --threads 10 \
       --vcfpath {{ temp_dir }}/vcfs \
       --output {{ temp_dir }} \

@@ -10,7 +10,7 @@
 {% set all_vcf %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.octopus.all.vcf.gz{% endset %}
 {% set pass_vcf %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.octopus.pass.vcf.gz{% endset %}
 
-{% for batch in constants.phoenix.primary_contig_calling_intervals %}
+{% for batch in constants.tempe.primary_contig_calling_intervals %}
 - name: octopus_{{ pair.name }}_{{ aligner }}_{{ loop.index }}
   tags: [{{ pair.gltype }}, somatic, snp_indel_caller, octopus, {{ pair.name }}]
   input:
@@ -51,9 +51,9 @@
       --annotations AD ADP AF SB \
       --somatic-filter-expression "QUAL < 2 | GQ < 20 | MQ < 30 | SMQ < 40 | SD > 0.9 | BQ < 20 | DP < 3 | MF > 0.2 | NC > 5 | FRF > 0.5 | AD < -1 | AF < -1 | ADP > 100000000 | SB < -1 " \
       --working-directory {{ temp_dir }} \
-      --reference "{{ constants.phoenix.reference_fasta }}" \
+      --reference "{{ constants.tempe.reference_fasta }}" \
       --regions-file "{{ loop.index }}.bed" \
-      --skip-regions-file {{ constants.phoenix.black_list }} \
+      --skip-regions-file {{ constants.tempe.black_list }} \
       --reads "{{ normal_bam }}" "{{ tumor_bam }}" \
       --normal-sample "{{ pair.normal.rgsm }}" \
       --temp-directory-prefix "{{ loop.index }}" \
@@ -67,7 +67,7 @@
   tags: [{{ pair.gltype }}, somatic, snp_indel_caller, octopus, {{ pair.name }}]
   reset: predecessors
   input:
-    {% for b in constants.phoenix.primary_contig_calling_intervals %}
+    {% for b in constants.tempe.primary_contig_calling_intervals %}
     - {{ temp_dir }}/{{ loop.index }}.octopus.legacy.vcf
     {% endfor %}
   output:
@@ -87,7 +87,7 @@
     bcftools concat \
       --output-type z \
       --output "{{ temp_dir }}/{{ pair.name }}.{{ aligner }}.octopus.legacy.all.uns.vcf.gz" \
-      {% for b in constants.phoenix.primary_contig_calling_intervals %}
+      {% for b in constants.tempe.primary_contig_calling_intervals %}
       {% if not loop.last %}
       "{{ temp_dir }}/{{ loop.index }}.octopus.legacy.vcf" \
       {% else %}

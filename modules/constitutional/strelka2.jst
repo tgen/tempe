@@ -55,7 +55,7 @@
     STRELKA_BED="{{ temp_dir }}/callRegions.bed"
     TAB=$'\t'
     cat <<EOF > "${STRELKA_BED}"
-    {% for contig in constants.phoenix.calling_contigs %}
+    {% for contig in constants.tempe.calling_contigs %}
     {{ contig.contig }}${TAB}0${TAB}{{ contig.length }}
     {% endfor %}
     EOF
@@ -81,7 +81,7 @@
       --callRegions "${STRELKA_BED}.gz" \
       --bam "{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam" \
       --indelCandidates "{{ indel_candidates }}" \
-      --ref "{{ constants.phoenix.reference_fasta }}" \
+      --ref "{{ constants.tempe.reference_fasta }}" \
       --runDir "{{ temp_dir }}"
 
     {# Execute on the local machine with 19 parallel jobs #}
@@ -94,7 +94,7 @@
     samtools view \
       -C \
       -@ 16 \
-      --reference {{ constants.phoenix.reference_fasta }} \
+      --reference {{ constants.tempe.reference_fasta }} \
       -o {{ results_dir }}/evidence/{{ sample.name }}.{{ aligner }}.strelka2.realigned.cram \
       {{ temp_dir }}/results/realigned/realigned.S1.bam
 
@@ -137,9 +137,10 @@
 
     bcftools index --tbi --force "{{ pass_vcf }}"
 
-
+{#
 {{- annotate_vcfs(sample, temp_dir, results_dir, pass_vcf, taskPrefix, aligner, 'strelka2', 'constitutional', 'snp_indel_caller' ) }}
 {{- vcf_stats(pass_vcf, results_dir) }}
 {{- vcf_stats(all_vcf, results_dir) }}
+#}
 
 {% endmacro %}

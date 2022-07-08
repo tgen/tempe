@@ -18,11 +18,9 @@
     - {{ results_dir }}/{{ tumor.name }}.{{ aligner }}.manta.somaticSV.vcf.gz.tbi
   cpus: 40
   mem: 80G
-  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
   container: {{ constants.tools.parabricks.container }}
   backend_args: ['-B', '/packages/parabricks-v3.7.0_V100/:/INSTALL/']
   cmd: |
-    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
     set -o pipefail
 
