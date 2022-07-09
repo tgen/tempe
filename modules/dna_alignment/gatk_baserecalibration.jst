@@ -11,7 +11,7 @@
   walltime: "4:00:00"
   cpus: 4
   mem: 16G
-  container: {{ constants.tools.gatk_baserecalibration.container }}
+  container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
     set -o pipefail
@@ -42,7 +42,7 @@
   walltime: "4:00:00"
   cpus: 4
   mem: 16G
-  container: {{ constants.tools.gatk_baserecalibration.container }}
+  container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
     set -o pipefail
@@ -65,7 +65,7 @@
   walltime: "4:00:00"
   cpus: 8
   mem: 32G
-  container: {{ constants.tools.gatk_baserecalibration.container }}
+  container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
     set -o pipefail
@@ -101,7 +101,7 @@
   walltime: "4:00:00"
   cpus: 4
   mem: 16G
-  container: {{ constants.tools.gatk_baserecalibration.container }}
+  container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
     set -o pipefail

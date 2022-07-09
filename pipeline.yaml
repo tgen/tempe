@@ -11,7 +11,7 @@ constants:
       container: /scratch/bturner/AJ_singularity_images/bwa_mem2_samtools_2.2.1.sif
     bwa_mem2_gatk:
       container: /scratch/bturner/AJ_singularity_images/bwa_mem2_gatk.sif
-    gatk_baserecalibration:
+    gatk:
       container: /scratch/bturner/AJ_singularity_images/gatk_4.1.8.0.sif
     parabricks:
       container: /packages/parabricks-v3.7.0_V100/parabricks-release-3.7.0-1.sif
