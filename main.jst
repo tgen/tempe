@@ -47,14 +47,14 @@
 {% from 'utilities/copy_fastq.jst' import copy_fastq with context %}
 {% from 'utilities/finalize.jst' import finalize with context %}
 {% from 'modules/dna_alignment/main.jst' import dna_alignment with context %}
-{% from 'modules/qc/bam_qc_snpsniffer.jst' import snpsniffer_summary with context %}
+{# {% from 'modules/qc/bam_qc_snpsniffer.jst' import snpsniffer_summary with context %} #}
 {% from 'modules/constitutional/main.jst' import constitutional_variant_calling with context %}
-{% from 'modules/somatic/main.jst' import somatic_variant_calling with context %}
+{# {% from 'modules/somatic/main.jst' import somatic_variant_calling with context %}
 {% from 'modules/rna/main.jst' import rna_quant with context %}
 {% from 'modules/rna/main.jst' import rna_fusion_detection with context %}
 {% from 'modules/single_cell/main.jst' import single_cell_rna with context %}
 {% from 'modules/CHIP/main.jst' import chip_workflow with context %}
-{% from 'modules/tumor_only/main.jst' import tumor_only_variant_calling with context %}
+{% from 'modules/tumor_only/main.jst' import tumor_only_variant_calling with context %} #}
 
 {% set samples = {} %}
 {% set fastq_validation = [] %}
@@ -141,19 +141,19 @@
     {{- copy_fastq(fastq) }}
 {% endfor %}
 
-{# project level quality control #}
+{# project level quality control
 {% if samples|length > 1 %}
 {{- snpsniffer_summary(samples) }}
 {% endif %}
-
-{# Finalize after running all other tasks #}
-{{- finalize() }}
+#}
+{# Finalize after running all other tasks
+{{- finalize() }} #}
 
 {# Start of module calls #}
 {{- dna_alignment(samples) }}
-{#
-{{- constitutional_variant_calling(samples) }}
 
+{{- constitutional_variant_calling(samples) }}
+{#
 {{- somatic_variant_calling(samples) }}
 
 {{- rna_quant(samples) }}
