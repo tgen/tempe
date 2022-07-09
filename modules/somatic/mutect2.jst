@@ -117,9 +117,6 @@
   output:
     - {{ temp_dir }}/{{ pair.name }}_{{ aligner }}.mutect2.raw.vcf.gz
     - {{ temp_dir }}/{{ pair.name }}_{{ aligner }}.mutect2.raw.vcf.gz.tbi
-  methods: Somatic variant calls for {{ pair.name }} were called with
-    {{ constants.tools.gatk.verbose }} Mutect2 in parallel chunks and
-    then merged together with {{ constants.tools.samtools.verbose }} concat.
   cpus: 1
   mem: 4G
   walltime: "24:00:00"
@@ -149,9 +146,6 @@
     - {{ temp_dir }}/{{ loop.index }}.mutect2.vcf.gz.stats
     {% endfor %}
   output: {{ temp_dir }}/merged.stats
-  methods: Somatic variant calls for {{ pair.name }} were called with
-    {{ constants.tools.gatk.verbose }} Mutect2 in parallel chunks and
-    then stats files were merged together with {{ constants.tools.gatk.verbose }} for filtering.
   cpus: 2
   mem: 8G
   walltime: "24:00:00"
@@ -177,9 +171,6 @@
     - {{ temp_dir }}/{{ loop.index }}.f1r2.tar.gz
     {% endfor %}
   output: {{ temp_dir }}/artifact-priors.tar.gz
-  methods: Somatic variant calls for {{ pair.name }} were called with
-    {{ constants.tools.gatk.verbose }} Mutect2 in parallel chunks and
-    then read orientation files were merged together with {{ constants.tools.gatk.verbose }} for filtering.
   cpus: 2
   mem: 8G
   walltime: "24:00:00"
@@ -208,9 +199,6 @@
   output:
     - {{ temp_dir }}/merged.tumor-pileups.table.tsv
     - {{ temp_dir }}/merged.normal-pileups.table.tsv
-  methods: Somatic variant calls for {{ pair.name }} were called with
-    {{ constants.tools.gatk.verbose }} Mutect2 in parallel chunks and
-    then pileups for contamination analysis were merged together with {{ constants.tools.gatk.verbose }} .
   cpus: 2
   mem: 8G
   walltime: "24:00:00"
@@ -249,9 +237,6 @@
   output:
     - {{ temp_dir }}/contamination.table
     - {{ temp_dir }}/segments.table
-  methods: Somatic variant calls for {{ pair.name }} were called with
-    {{ constants.tools.gatk.verbose }} Mutect2 in parallel chunks and
-    then pileup files were merged together with {{ constants.tools.gatk.verbose }} for filtering.
   cpus: 1
   mem: 4G
   walltime: "24:00:00"

@@ -18,9 +18,6 @@
 
 - name: salmon_quant_cdna_{{ sample.name }}
   tags: [{{ sample.gltype }}, transcriptome, quantify_expression, salmon_fastqs, {{ sample.name }}]
-  methods: >
-    Transcript quantification for {{ sample.name }} was performed with
-    {{ constants.tools.salmon.verbose }} using the cDNA index.
   reset: predecessors
   input:
   {% for fq in r1fqlist %}

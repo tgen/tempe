@@ -13,9 +13,6 @@
 
 - name: strelka2_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, strelka2, {{ sample.name }}]
-  methods: > 
-    Constitutional variants for {{ sample.name }} ({{ aligner }}) were called with
-    {{ constants.tools.strelka.verbose }}.
   input:
     - {{ bam }}
     - {{ indel_candidates }}

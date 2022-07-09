@@ -9,9 +9,6 @@
 
 - name: manta_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, structural_caller, manta, {{ pair.name }}]
-  methods: > 
-    Somatic structural variants and indels for {{ pair.name }} ({{ aligner }}) 
-    were called with {{ constants.tools.manta.verbose }}.
   input:
     - {{ normal_bam }}
     - {{ tumor_bam }}

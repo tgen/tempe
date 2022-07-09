@@ -13,9 +13,6 @@
 
 - name: strelka2_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, snp_indel_caller, strelka2, {{ pair.name }}]
-  methods: >
-    Somatic variants for {{ pair.name }} ({{ aligner }}) were called with
-    {{ constants.tools.strelka.verbose }}.
   input:
     - {{ normal_bam }}
     - {{ tumor_bam }}

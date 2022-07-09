@@ -37,9 +37,6 @@
 
 - name: star_quant_{{ sample.name }}
   tags: [{{ sample.gltype }}, alignment, rna_alignment, STAR, {{ sample.name }}]
-  methods: >
-    Transcript quantification for {{ sample.name }} was performed with
-    {{ constants.tools.star.verbose }} followed by TODO...
   reset: predecessors
   input:
     {% for fq in r1fqlist %}
