@@ -21,13 +21,10 @@
   cpus: 20
   mem: 20G
   walltime: "48:00:00"
+  container: {{ constants.tools.manta.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.manta.module }}
-    module load {{ constants.tools.htslib.module }}
-    module load {{ constants.tools.python_2_7_15.module }}
 
     {# Purge any existing run files prior to starting #}
     rm -r "{{ temp_dir }}" || true

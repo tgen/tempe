@@ -21,15 +21,11 @@
   cpus: 4
   mem: 32G
   walltime: "48:00:00"
+  container: {{ constants.tools.vardict.container }}
   cmd: |
     set -eu
     set -o pipefail
 
-    module load {{ constants.tools.bcftools.module }}
-    module load {{ constants.tools.R.module }}
-    module load {{ constants.tools.vardict.module }}
-    module load {{ constants.tools.bedtools.module }}
-    
     mkdir -p "{{ temp_dir }}"
 
     {#
@@ -216,11 +212,10 @@
   cpus: 1
   mem: 4G
   walltime: "12:00:00"
+  container: {{ constants.tools.bcftools.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.bcftools.module }}
     
     mkdir -p "{{ results_dir }}"
     
@@ -254,11 +249,10 @@
   cpus: 1
   mem: 4G
   walltime: "12:00:00"
+  container: {{ constants.tools.bcftools.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.bcftools.module }}
     
     bcftools filter \
       --output-type z \

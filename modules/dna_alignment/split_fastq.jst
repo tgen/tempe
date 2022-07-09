@@ -26,7 +26,7 @@
     {% endfor %}
   cpus: 1
   walltime: "4:00:00"
-  container: {{ constants.tools.bwa_mem_samtools.container }}
+  container: {{ constants.tools.samtools.container }}
   cmd: |
     set -eu
     set -o pipefail

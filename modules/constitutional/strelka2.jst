@@ -33,14 +33,10 @@
   cpus: 20
   mem: 20G
   walltime: "24:00:00"
+  container: {{ constants.tools.strelka.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.strelka.module }}
-    module load {{ constants.tools.htslib.module }}
-    module load {{ constants.tools.python_2_7_15.module }}
-    module load {{ constants.tools.samtools.module }}
 
     {# Purge any existing run files prior to starting #}
     rm -r "{{ temp_dir }}" || true
@@ -119,11 +115,10 @@
     - {{ pass_vcf }}.tbi
   cpus: 1
   mem: 2G
+  container: {{ constants.tools.bcftools.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.bcftools.module }}
 
     {# Then filter out the PASS variants to a separate file #}
     bcftools filter \

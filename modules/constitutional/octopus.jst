@@ -21,11 +21,10 @@
   walltime: "24:00:00"
   cpus: 4
   mem: 16G
+  container: {{ constants.tools.octopus.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.octopus.module }}
 
     mkdir -p "{{ temp_dir }}"
 
@@ -70,11 +69,10 @@
   walltime: "24:00:00"
   cpus: 1
   mem: 4G
+  container: {{ constants.tools.bcftools.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.bcftools.module }}
 
     mkdir -p "{{ results_dir }}"
 
@@ -108,11 +106,10 @@
   walltime: "24:00:00"
   cpus: 1
   mem: 4G
+  container: {{ constants.tools.bcftools.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.bcftools.module }}
 
     {# Then filter out the passing variants to a separate file #}
     bcftools filter \

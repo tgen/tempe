@@ -16,11 +16,10 @@
   walltime: "24:00:00"
   cpus: 2
   mem: 16G
+  container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.gatk.module }}
 
     mkdir -p "{{ temp_dir }}"
 
@@ -50,11 +49,10 @@
   walltime: "24:00:00"
   cpus: 1
   mem: 8G
+  container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.gatk.module }}
 
     mkdir -p "{{ results_dir }}"
 

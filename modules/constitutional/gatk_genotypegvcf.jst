@@ -22,11 +22,10 @@
   walltime: "24:00:00"
   cpus: 4
   mem: 16G
+  container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.gatk.module }}
 
     mkdir -p "{{ temp_dir }}"
 
@@ -52,11 +51,10 @@
   walltime: "24:00:00"
   cpus: 8
   mem: 32G
+  container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.gatk.module }}
 
     source activate gatk
 
@@ -87,11 +85,10 @@
   walltime: "24:00:00"
   cpus: 1
   mem: 4G
+  container: {{ constants.tools.bcftools.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.bcftools.module }}
 
     mkdir -p "{{ results_dir }}"
 
@@ -120,12 +117,10 @@
   walltime: "24:00:00"
   cpus: 4
   mem: 16G
+  container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.gatk.module }}
-    module load {{ constants.tools.bcftools.module }}
 
     {# Annotate with FilterVariantTranches #}
     gatk FilterVariantTranches \
