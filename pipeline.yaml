@@ -19,14 +19,20 @@ constants:
       container: /scratch/bturner/AJ_singularity_images/samtools_1.10.sif
     freebayes:
       container: /scratch/bturner/AJ_singularity_images/freebayes_1.3.1.sif
+    lancet:
+      container: /scratch/bturner/AJ_singularity_images/lancet_1.1.x.sif
     manta:
       container: /scratch/bturner/AJ_singularity_images/manta_1.6.0.sif
     mutect:
       container: /scratch/bturner/AJ_singularity_images/gatk_4.1.8.0.sif
+    octopus:
+      container: /scratch/bturner/AJ_singularity_images/octopus_0.6.3.sif
     bcftools:
       container: /scratch/bturner/AJ_singularity_images/bcftools_1.10.2.sif
     strelka:
       container: /scratch/bturner/AJ_singularity_images/strelka_2.9.10.sif
+    vcfmerger:
+      container: /scratch/bturner/AJ_singularity_images/vcfmerger_0.8.7.sif
   tempe:
     species: Homo sapiens
     genome_build: grch38_hg38
