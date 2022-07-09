@@ -33,7 +33,7 @@
     {% endif %}
 
     {% if 'tgen' in alignment_style %}
-      {{- bwa_mem2_samtools(sample, reads_per_chunk, opt_dup_distance, aligner='bwa_mem2') }}
+      {{- bwa_mem2_samtools(sample, reads_per_chunk, opt_dup_distance, aligner='bwa') }}
     {% endif %}
     {% if 'parabricks' in alignment_style %}
       {{- fq2bam(sample, opt_dup_distance, aligner='parabricks') }}
