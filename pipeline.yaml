@@ -31,6 +31,8 @@ constants:
       container: /scratch/bturner/AJ_singularity_images/bcftools_1.10.2.sif
     strelka:
       container: /scratch/bturner/AJ_singularity_images/strelka_2.9.10.sif
+    vardict:
+      container: /scratch/bturner/AJ_singularity_images/vardict_1.7.9.sif
     vcfmerger:
       container: /scratch/bturner/AJ_singularity_images/vcfmerger_0.8.7.sif
   tempe:
