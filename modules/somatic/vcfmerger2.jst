@@ -1,9 +1,9 @@
 {% from 'modules/annotation/main.jst' import annotate_vcfs with context %}
 {% from 'modules/metrics/main.jst' import collect_somatic_metrics with context %}
-{% from 'modules/somatic/rna_variant_check.jst' import add_rna_header_to_vcf with context %}
-{% from 'modules/somatic/rna_variant_check.jst' import add_matched_rna with context %}
+{# {% from 'modules/somatic/rna_variant_check.jst' import add_rna_header_to_vcf with context %}
+{% from 'modules/somatic/rna_variant_check.jst' import add_matched_rna with context %} #}
 {% from 'utilities/remove_files.jst' import remove_files with context %}
-{# {% from 'utilities/vcf_stats.jst' import vcf_stats with context %} #}
+{% from 'utilities/vcf_stats.jst' import vcf_stats with context %}
 
 {% macro vcfmerger2(pair, aligner='bwa', taskPrefix='Genome') %}
 
@@ -43,18 +43,10 @@
   cpus: 4
   mem: 8G
   walltime: "4:00:00"
+  container: {{ constants.tools.vcfmerger.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.vcfmerger2.module }}
-    module load {{ constants.tools.samtools.module }}
-    module load {{ constants.tools.bcftools.module }}
-    module load {{ constants.tools.htslib.module }}
-    module load {{ constants.tools.R.module }}
-    module load {{ constants.tools.phaser.module }}
-    module load {{ constants.tools.bedtools.module }}
-    module load {{ constants.tools.vt.module }}
     
     mkdir -p "{{ temp_dir }}"
     gunzip -c "{{ gzipped_path }}" > "{{ unzipped_path }}"
@@ -82,11 +74,10 @@
   cpus: 1
   mem: 4G
   walltime: "4:00:00"
+  container: {{ constants.tools.bcftools.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.bcftools.module }}
 
     bcftools filter \
       --output-type v \
@@ -109,17 +100,10 @@
   cpus: 4
   mem: 8G
   walltime: "4:00:00"
+  container: {{ constants.tools.vcfmerger.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.vcfmerger2.module }}
-    module load {{ constants.tools.samtools.module }}
-    module load {{ constants.tools.bcftools.module }}
-    module load {{ constants.tools.R.module }}
-    module load {{ constants.tools.phaser.module }}
-    module load {{ constants.tools.bedtools.module }}
-    module load {{ constants.tools.vt.module }}
 
     if [ -d {{ results_dir }} ]
     then
@@ -150,12 +134,12 @@
     mv {{ temp_dir }}/SummaryPlots_* "{{ results_dir }}"
 
 
-{% if 'rna_samples' in pair.tumor %}
+{# {% if 'rna_samples' in pair.tumor %}
   {{- add_matched_rna(merged_vcf_gz, output_vcf, pair, aligner, temp_dir) }}
 {% else %}
   {{- add_rna_header_to_vcf(merged_vcf_gz, output_vcf, pair, aligner , temp_dir)  }}
 {% endif %}
   {{- annotate_vcfs(pair, temp_dir, results_dir, output_vcf, taskPrefix, aligner, 'merged', 'somatic', 'snp_indel_caller') }}
   {{- vcf_stats(output_vcf, results_dir) }}
-  {{- collect_somatic_metrics(pair, normal_bam, tumor_bam, results_dir, taskPrefix, aligner, 'merged') }}
+  {{- collect_somatic_metrics(pair, normal_bam, tumor_bam, results_dir, taskPrefix, aligner, 'merged') }} #}
 {% endmacro %}

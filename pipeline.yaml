@@ -7,10 +7,14 @@ constants:
   tools:
     base:
       container: /packages/easy-build/containers/Phoenix2.0/baseimage.sif
+    bedtools:
+      container: /scratch/bturner/AJ_singularity_images/bedtools_2.29.0.sif
     bwa_mem2_samtools:
       container: /scratch/bturner/AJ_singularity_images/bwa_mem2_samtools_2.2.1.sif
     bwa_mem2_gatk:
       container: /scratch/bturner/AJ_singularity_images/bwa_mem2_gatk.sif
+    delly:
+      container: /scratch/bturner/AJ_singularity_images/delly_0.7.6.sif
     gatk:
       container: /scratch/bturner/AJ_singularity_images/gatk_4.1.8.0.sif
     parabricks:
@@ -23,8 +27,6 @@ constants:
       container: /scratch/bturner/AJ_singularity_images/lancet_1.1.x.sif
     manta:
       container: /scratch/bturner/AJ_singularity_images/manta_1.6.0.sif
-    mutect:
-      container: /scratch/bturner/AJ_singularity_images/gatk_4.1.8.0.sif
     octopus:
       container: /scratch/bturner/AJ_singularity_images/octopus_0.6.3.sif
     bcftools:

@@ -1,5 +1,5 @@
 {% from 'utilities/remove_files.jst' import remove_files with context %}
-{# {% from 'utilities/vcf_stats.jst' import vcf_stats with context %} #}
+{% from 'utilities/vcf_stats.jst' import vcf_stats with context %}
 
 {% macro mutect2(pair, aligner='bwa') %}
 {% do pair.callers.append('mutect2') %}
@@ -23,8 +23,8 @@
   cpus: 4
   mem: 16G
   walltime: "24:00:00"
-  container: {{ constants.tempe.gatk.container }}
-  digest: {{ constants.tempe.gatk.digest }}  cmd: |
+  container: {{ constants.tools.gatk.container }}
+  cmd: |
     set -eu
     set -o pipefail
 
@@ -72,8 +72,8 @@
   cpus: 2
   mem: 8G
   walltime: "24:00:00"
-  container: {{ constants.tempe.gatk.container }}
-  digest: {{ constants.tempe.gatk.digest }}  cmd: |
+  container: {{ constants.tools.gatk.container }}
+  cmd: |
     set -eu
     set -o pipefail
 
@@ -120,8 +120,8 @@
   cpus: 1
   mem: 4G
   walltime: "24:00:00"
-  container: {{ constants.tempe.bcftools.container }}
-  digest: {{ constants.tempe.bcftools.digest }}  cmd: |
+  container: {{ constants.tools.bcftools.container }}
+  cmd: |
     set -eu
     set -o pipefail
 
@@ -149,8 +149,8 @@
   cpus: 2
   mem: 8G
   walltime: "24:00:00"
-  container: {{ constants.tempe.gatk.container }}
-  digest: {{ constants.tempe.gatk.digest }}  cmd: |
+  container: {{ constants.tools.gatk.container }}
+  cmd: |
     set -eu
     set -o pipefail
 
@@ -174,8 +174,8 @@
   cpus: 2
   mem: 8G
   walltime: "24:00:00"
-  container: {{ constants.tempe.gatk.container }}
-  digest: {{ constants.tempe.gatk.digest }}  cmd: |
+  container: {{ constants.tools.gatk.container }}
+  cmd: |
     set -eu
     set -o pipefail
 
@@ -202,8 +202,8 @@
   cpus: 2
   mem: 8G
   walltime: "24:00:00"
-  container: {{ constants.tempe.gatk.container }}
-  digest: {{ constants.tempe.gatk.digest }}  cmd: |
+  container: {{ constants.tools.gatk.container }}
+  cmd: |
     set -eu
     set -o pipefail
 
@@ -240,8 +240,8 @@
   cpus: 1
   mem: 4G
   walltime: "24:00:00"
-  container: {{ constants.tempe.gatk.container }}
-  digest: {{ constants.tempe.gatk.digest }}  cmd: |
+  container: {{ constants.tools.gatk.container }}
+  cmd: |
     set -eu
     set -o pipefail
 
@@ -269,10 +269,11 @@
   cpus: 2
   mem: 8G
   walltime: "24:00:00"
-  container: {{ constants.tempe.gatk.container }}
-  digest: {{ constants.tempe.gatk.digest }}  cmd: |
+  container: {{ constants.tools.gatk.container }}
+  cmd: |
     set -eu
     set -o pipefail
+
 
     mkdir -p "{{ results_dir }}"
     mkdir -p {{ temp_dir }}/temp_filter
@@ -300,8 +301,8 @@
     - {{ pass_vcf }}.tbi
   cpu: 1
   mem: 4G
-  container: {{ constants.tempe.bcftools.container }}
-  digest: {{ constants.tempe.bcftools.digest }}  cmd: |
+  container: {{ constants.tools.bcftools.container }}
+  cmd: |
     set -eu
     set -o pipefail
 

@@ -9,6 +9,9 @@
 
 - name: manta_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, structural_caller, manta, {{ pair.name }}]
+  methods: > 
+    Somatic structural variants and indels for {{ pair.name }} ({{ aligner }}) 
+    were called with {{ constants.tools.manta.verbose }}.
   input:
     - {{ normal_bam }}
     - {{ tumor_bam }}
@@ -24,13 +27,10 @@
   cpus: 20
   mem: 20G
   walltime: "24:00:00"
+  container: {{ constants.tools.manta.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.manta.module }}
-    module load {{ constants.tools.htslib.module }}
-    module load {{ constants.tools.python_2_7_15.module }}
 
     {# Purge any existing run files prior to starting #}
     rm -r "{{ temp_dir }}" || true
@@ -107,13 +107,10 @@
   cpus: 4
   mem: 4G
   walltime: "12:00:00"
+  container: {{ constants.tools.manta.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.bcftools.module }}
-    module load {{ constants.tools.python_3_7_2.module }}
-    module load {{ constants.tools.bedtools.module }}
 
     {# Ensuring that the output dir exists for bcftools filter #}
     mkdir -p {{ temp_dir }}/results/variants
@@ -161,13 +158,10 @@
   cpus: 4
   mem: 16G
   walltime: "12:00:00"
+  container: {{ constants.tools.manta.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.bcftools.module }}
-    module load {{ constants.tools.python_3_7_2.module }}
-    module load {{ constants.tools.bedtools.module }}
 
     mkdir -p {{ temp_dir }}/pybedtools/ || true
 

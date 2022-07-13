@@ -1,5 +1,5 @@
 {% from 'utilities/remove_files.jst' import remove_files with context %}
-{# {% from 'utilities/vcf_stats.jst' import vcf_stats with context %} #}
+{% from 'utilities/vcf_stats.jst' import vcf_stats with context %}
 
 {% macro lancet(pair, aligner='bwa') %}
 {% do pair.callers.append('lancet') %}
@@ -20,12 +20,10 @@
   cpus: 4
   mem: 8G
   walltime: "24:00:00"
+  container: {{ constants.tools.lancet.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.lancet.module }}
-    module load {{ constants.tools.bcftools.module }}
     
     mkdir -p "{{ temp_dir }}"
 
@@ -73,11 +71,10 @@
   cpus: 1
   mem: 4G
   walltime: "24:00:00"
+  container: {{ constants.tools.bcftools.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.bcftools.module }}
 
     mkdir -p "{{ results_dir }}"
 
@@ -121,11 +118,10 @@
     - {{ pass_vcf }}.tbi
   cpus: 1
   mem: 2G
+  container: {{ constants.tools.bcftools.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.bcftools.module }}
 
     bcftools filter \
       --output-type z \
