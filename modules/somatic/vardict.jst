@@ -222,6 +222,8 @@
     --output-type z \
     --output-file {{ temp_dir }}/{{ loop.index }}.vardict.vcf.gz \
     {{ temp_dir }}/{{ loop.index }}.vardict.vcf
+
+    bcftools index --tbi --force {{ temp_dir }}/{{ loop.index }}.vardict.vcf.gz
     {% endfor %}
     
     mkdir -p "{{ results_dir }}"
@@ -232,9 +234,9 @@
       --output "{{ all_vcf }}" \
       {% for b in constants.tempe.calling_intervals %}
       {% if not loop.last %}
-      "{{ temp_dir }}/{{ loop.index }}.vardict.vcf" \
+      "{{ temp_dir }}/{{ loop.index }}.vardict.vcf.gz" \
       {% else %}
-      "{{ temp_dir }}/{{ loop.index }}.vardict.vcf"
+      "{{ temp_dir }}/{{ loop.index }}.vardict.vcf.gz"
       {% endif %}
       {% endfor %}
     
