@@ -21,17 +21,8 @@
   output:
     - {{ temp_dir }}/results/variants/somatic.indels.vcf.gz
     - {{ temp_dir }}/results/variants/somatic.snvs.vcf.gz
-    {% if cram|default(true) %}
-    - {{ results_dir }}/evidence/{{ pair.normal.name }}.{{ aligner }}.strelka2.realigned.cram
-    - {{ results_dir }}/evidence/{{ pair.normal.name }}.{{ aligner }}.strelka2.realigned.cram.crai
-    - {{ results_dir }}/evidence/{{ pair.tumor.name }}.{{ aligner }}.strelka2.realigned.cram
-    - {{ results_dir }}/evidence/{{ pair.tumor.name }}.{{ aligner }}.strelka2.realigned.cram.crai
-    {% else %}
-    - {{ results_dir }}/evidence/{{ pair.normal.name }}.{{ aligner }}.strelka2.realigned.bam
-    - {{ results_dir }}/evidence/{{ pair.normal.name }}.{{ aligner }}.strelka2.realigned.bam.bai
-    - {{ results_dir }}/evidence/{{ pair.tumor.name }}.{{ aligner }}.strelka2.realigned.bam
-    - {{ results_dir }}/evidence/{{ pair.tumor.name }}.{{ aligner }}.strelka2.realigned.bam.bai
-    {% endif %}
+    - {{ temp_dir }}/results/realigned/realigned.normal.bam
+    - {{ temp_dir }}/results/realigned/realigned.tumor.bam
   cpus: 20
   mem: 20G
   walltime: "24:00:00"
@@ -87,11 +78,37 @@
 
     mkdir -p "{{ results_dir }}/evidence"
 
+
+- name: strelka2_save_evidence_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, somatic, snp_indel_caller, strelka2, {{ pair.name }}]
+  reset: predecessors
+  input:
+    - {{ temp_dir }}/results/realigned/realigned.normal.bam
+    - {{ temp_dir }}/results/realigned/realigned.tumor.bam
+  output:
+    {% if cram|default(true) %}
+    - {{ results_dir }}/evidence/{{ pair.normal.name }}.{{ aligner }}.strelka2.realigned.cram
+    - {{ results_dir }}/evidence/{{ pair.normal.name }}.{{ aligner }}.strelka2.realigned.cram.crai
+    - {{ results_dir }}/evidence/{{ pair.tumor.name }}.{{ aligner }}.strelka2.realigned.cram
+    - {{ results_dir }}/evidence/{{ pair.tumor.name }}.{{ aligner }}.strelka2.realigned.cram.crai
+    {% else %}
+    - {{ results_dir }}/evidence/{{ pair.normal.name }}.{{ aligner }}.strelka2.realigned.bam
+    - {{ results_dir }}/evidence/{{ pair.normal.name }}.{{ aligner }}.strelka2.realigned.bam.bai
+    - {{ results_dir }}/evidence/{{ pair.tumor.name }}.{{ aligner }}.strelka2.realigned.bam
+    - {{ results_dir }}/evidence/{{ pair.tumor.name }}.{{ aligner }}.strelka2.realigned.bam.bai
+    {% endif %}
+  cpus: 8
+  mem: 16G
+  container: {{ constants.tools.samtools.container }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
     {# Move and rename the evidence bams or make crams #}
     {% if cram|default(true) %}
     samtools view \
       -C \
-      -@ 16 \
+      -@ 8 \
       --reference {{ constants.tempe.reference_fasta }} \
       -o {{ results_dir }}/evidence/{{ pair.normal.name }}.{{ aligner }}.strelka2.realigned.cram \
       {{ temp_dir }}/results/realigned/realigned.normal.bam
@@ -100,7 +117,7 @@
 
     samtools view \
       -C \
-      -@ 16 \
+      -@ 8 \
       --reference {{ constants.tempe.reference_fasta }} \
       -o {{ results_dir }}/evidence/{{ pair.tumor.name }}.{{ aligner }}.strelka2.realigned.cram \
       {{ temp_dir }}/results/realigned/realigned.tumor.bam

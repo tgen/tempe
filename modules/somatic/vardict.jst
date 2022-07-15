@@ -10,19 +10,19 @@
 {% set all_vcf %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.vardict.all.vcf.gz{% endset %}
 {% set pass_vcf %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.vardict.pass.vcf.gz{% endset %}
 
+
 {% for batch in constants.tempe.calling_intervals %}
-- name: vardict_{{ pair.name }}_{{ aligner }}_{{ loop.index }}
+- name: vardict_makewindows_{{ pair.name }}_{{ aligner }}_{{ loop.index }}
   tags: [{{ pair.gltype }}, somatic, snp_indel_caller, VarDict, {{ pair.name }}]
   input:
     - {{ normal_bam }}
     - {{ tumor_bam }}
   output:
-    - {{ temp_dir }}/{{ loop.index }}.vardict.vcf.gz
-    - {{ temp_dir }}/{{ loop.index }}.vardict.vcf.gz.tbi
-  cpus: 4
-  mem: 32G
+    - {{ temp_dir }}/{{ loop.index }}.bed
+  cpus: 1
+  mem: 2G
   walltime: "48:00:00"
-  container: {{ constants.tools.vardict.container }}
+  container: {{ constants.tools.bedtools.container }}
   cmd: |
     set -eu
     set -o pipefail
@@ -41,6 +41,23 @@
     {{ interval.contig }}${TAB}{{ interval.start - 1 }}${TAB}{{ interval.stop }}
     {% endfor %}
     EOF
+
+
+- name: vardict_{{ pair.name }}_{{ aligner }}_{{ loop.index }}
+  tags: [{{ pair.gltype }}, somatic, snp_indel_caller, VarDict, {{ pair.name }}]
+  input:
+    - {{ normal_bam }}
+    - {{ tumor_bam }}
+    - {{ temp_dir }}/{{ loop.index }}.bed
+  output:
+    - {{ temp_dir }}/{{ loop.index }}.vardict.vcf
+  cpus: 4
+  mem: 32G
+  walltime: "48:00:00"
+  container: {{ constants.tools.vardict.container }}
+  cmd: |
+    set -eu
+    set -o pipefail
 
     {#
     # Custom settings:
@@ -177,11 +194,7 @@
       -f 0.02 \
       -F 0.2 \
       -o 1.5 \
-    | bcftools view \
-      --output-type z \
-      --output-file "{{ temp_dir }}/{{ loop.index }}.vardict.vcf.gz"
-    
-    bcftools index --tbi --force "{{ temp_dir }}/{{ loop.index }}.vardict.vcf.gz"
+    > {{ temp_dir }}/{{ loop.index }}.vardict.vcf
 
 {% endfor %}
 
@@ -191,7 +204,7 @@
   reset: predecessors
   input:
     {% for b in constants.tempe.calling_intervals %}
-    - {{ temp_dir }}/{{ loop.index }}.vardict.vcf.gz
+    - {{ temp_dir }}/{{ loop.index }}.vardict.vcf
     {% endfor %}
   output:
     - {{ all_vcf }}
@@ -212,9 +225,9 @@
       --output "{{ all_vcf }}" \
       {% for b in constants.tempe.calling_intervals %}
       {% if not loop.last %}
-      "{{ temp_dir }}/{{ loop.index }}.vardict.vcf.gz" \
+      "{{ temp_dir }}/{{ loop.index }}.vardict.vcf" \
       {% else %}
-      "{{ temp_dir }}/{{ loop.index }}.vardict.vcf.gz"
+      "{{ temp_dir }}/{{ loop.index }}.vardict.vcf"
       {% endif %}
       {% endfor %}
     

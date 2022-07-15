@@ -16,7 +16,7 @@
   input:
     - {{ normal_bam }}
     - {{ tumor_bam }}
-  output: {{ temp_dir }}/{{ loop.index }}.lancet.vcf
+  output: {{ temp_dir }}/{{ loop.index }}.lancet-uns.vcf
   cpus: 4
   mem: 8G
   walltime: "24:00:00"
@@ -45,16 +45,6 @@
       --tumor "{{ tumor_bam }}" \
       > "{{ temp_dir }}/{{ loop.index }}.lancet-uns.vcf"
 
-    {#
-    # Lancet sorts output in lexicographical order and this does not
-    # match the reference fasta order. Here we resort to match the reference
-    #}
-
-    bcftools reheader \
-      -f "{{ constants.tempe.reference_fai }}" \
-      "{{ temp_dir }}/{{ loop.index }}.lancet-uns.vcf" \
-    | bcftools sort > "{{ temp_dir }}/{{ loop.index }}.lancet.vcf"
-
 {% endfor %}
 
 
@@ -63,7 +53,7 @@
   reset: predecessors
   input:
     {% for b in constants.tempe.calling_intervals %}
-    - {{ temp_dir }}/{{ loop.index }}.lancet.vcf
+    - {{ temp_dir }}/{{ loop.index }}.lancet-uns.vcf
     {% endfor %}
   output:
     - {{ all_vcf }}
@@ -77,6 +67,18 @@
     set -o pipefail
 
     mkdir -p "{{ results_dir }}"
+
+    {#
+    # Lancet sorts output in lexicographical order and this does not
+    # match the reference fasta order. Here we resort to match the reference
+    #}
+
+    {% for b in constants.tempe.calling_intervals %}
+    bcftools reheader \
+      -f "{{ constants.tempe.reference_fai }}" \
+      "{{ temp_dir }}/{{ loop.index }}.lancet-uns.vcf" \
+    | bcftools sort > "{{ temp_dir }}/{{ loop.index }}.lancet.vcf"
+    {% endfor %}
 
     bcftools concat \
       --output-type z \
