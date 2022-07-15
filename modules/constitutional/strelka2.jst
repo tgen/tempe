@@ -99,8 +99,8 @@
     mv "{{ temp_dir }}/results/variants/variants.vcf.gz.tbi" "{{ all_vcf }}.tbi"
 
 
-- name: strelka2_save_evidence_{{ pair.name }}_{{ aligner }}
-  tags: [{{ pair.gltype }}, somatic, snp_indel_caller, strelka2, {{ pair.name }}]
+- name: strelka2_save_evidence_{{ sample.name }}_{{ aligner }}
+  tags: [{{ sample.gltype }}, somatic, snp_indel_caller, strelka2, {{ sample.name }}]
   reset: predecessors
   input:
     - {{ temp_dir }}/results/realigned/realigned.S1.bam
