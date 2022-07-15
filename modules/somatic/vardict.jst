@@ -216,6 +216,13 @@
   cmd: |
     set -eu
     set -o pipefail
+
+    {% for b in constants.tempe.calling_intervals %}
+    bcftools view \
+    --output-type z \
+    --output {{ temp_dir }}/{{ loop.index }}.vardict.vcf.gz \
+    {{ temp_dir }}/{{ loop.index }}.vardict.vcf
+    {% endfor %}
     
     mkdir -p "{{ results_dir }}"
     

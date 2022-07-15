@@ -11,29 +11,22 @@
 {% set all_vcf %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.strelka2.all.vcf.gz{% endset %}
 {% set pass_vcf %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.strelka2.pass.vcf.gz{% endset %}
 
-- name: strelka2_{{ pair.name }}_{{ aligner }}
-  tags: [{{ pair.gltype }}, somatic, snp_indel_caller, strelka2, {{ pair.name }}]
+- name: strelka2_build_call_regions_{{ pair.name }}_{{ aligner }}
   input:
     - {{ normal_bam }}
     - {{ tumor_bam }}
     - {{ indel_candidates }}
     - {{ indel_candidates }}.tbi
   output:
-    - {{ temp_dir }}/results/variants/somatic.indels.vcf.gz
-    - {{ temp_dir }}/results/variants/somatic.snvs.vcf.gz
-    - {{ temp_dir }}/results/realigned/realigned.normal.bam
-    - {{ temp_dir }}/results/realigned/realigned.tumor.bam
-  cpus: 20
-  mem: 20G
-  walltime: "24:00:00"
-  container: {{ constants.tools.strelka.container }}
+    - {{ temp_dir }}/callRegions.bed.gz
+    - {{ temp_dir }}/callRegions.bed.tbi
+  cpus: 1
+  mem: 2G
+  walltime: "1:00:00"
+  container: {{ constants.tools.samtools.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    {# Purge any existing run files prior to starting #}
-    rm -r "{{ temp_dir }}" || true
-    mkdir -p "{{ temp_dir }}"
 
     {#
     # In order to restrict calling to only the specified regions
@@ -50,6 +43,32 @@
 
     bgzip -f "{{ temp_dir }}/callRegions.bed"
     tabix -f -p bed "{{ temp_dir }}/callRegions.bed.gz"
+
+- name: strelka2_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, somatic, snp_indel_caller, strelka2, {{ pair.name }}]
+  input:
+    - {{ normal_bam }}
+    - {{ tumor_bam }}
+    - {{ indel_candidates }}
+    - {{ indel_candidates }}.tbi
+    - {{ temp_dir }}/callRegions.bed.gz
+    - {{ temp_dir }}/callRegions.bed.tbi
+  output:
+    - {{ temp_dir }}/results/variants/somatic.indels.vcf.gz
+    - {{ temp_dir }}/results/variants/somatic.snvs.vcf.gz
+    - {{ temp_dir }}/results/realigned/realigned.normal.bam
+    - {{ temp_dir }}/results/realigned/realigned.tumor.bam
+  cpus: 20
+  mem: 20G
+  walltime: "24:00:00"
+  container: {{ constants.tools.strelka.container }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    {# Purge any existing run files prior to starting #}
+    rm -r "{{ temp_dir }}" || true
+    mkdir -p "{{ temp_dir }}"
 
     {#
     # Some settings are only configurable via an ini file. Here
