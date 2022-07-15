@@ -16,7 +16,6 @@
   input: {{ bam }}
   output:
     - {{ temp_dir }}/{{ loop.index }}.realigned.bam
-    - {{ temp_dir }}/{{ loop.index }}.octopus.legacy.vcf
     - {{ temp_dir }}/{{ loop.index }}.octopus.vcf
   walltime: "24:00:00"
   cpus: 4
@@ -39,10 +38,8 @@
     octopus \
       --caller individual \
       --threads 4 \
-      --max-reference-cache-footprint 4GB \
-      --target-read-buffer-footprint 6GB \
       --ignore-unmapped-contigs \
-      --legacy \
+      --sequence-error-model PCR.NOVASEQ \
       --annotations AD ADP AF SB \
       --filter-expression "QUAL < 10 | MQ < 10 | MP < 10 | BQ < 15 | DP < 1 | AD < -1 | AF < -1 | ADP > 100000000 | SB < -1 " \
       --working-directory {{ temp_dir }} \
@@ -61,7 +58,7 @@
   reset: predecessors
   input:
     {% for b in constants.tempe.primary_contig_calling_intervals %}
-    - {{ temp_dir }}/{{ loop.index }}.octopus.legacy.vcf
+    - {{ temp_dir }}/{{ loop.index }}.octopus.vcf
     {% endfor %}
   output:
     - {{ all_vcf }}
@@ -78,19 +75,19 @@
 
     bcftools concat \
       --output-type z \
-      --output "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.octopus.legacy.all.uns.vcf.gz" \
+      --output "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.octopus.all.uns.vcf.gz" \
       {% for b in constants.tempe.primary_contig_calling_intervals %}
       {% if not loop.last %}
-      "{{ temp_dir }}/{{ loop.index }}.octopus.legacy.vcf" \
+      "{{ temp_dir }}/{{ loop.index }}.octopus.vcf" \
       {% else %}
-      "{{ temp_dir }}/{{ loop.index }}.octopus.legacy.vcf"
+      "{{ temp_dir }}/{{ loop.index }}.octopus.vcf"
       {% endif %}
       {% endfor %}
 
     bcftools sort \
       --output-type z \
       --output-file "{{ all_vcf }}" \
-      "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.octopus.legacy.all.uns.vcf.gz"
+      "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.octopus.all.uns.vcf.gz"
 
     bcftools index --tbi --force "{{ all_vcf }}"
 

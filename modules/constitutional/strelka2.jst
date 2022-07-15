@@ -11,22 +11,50 @@
 {%- set all_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.strelka2.all.vcf.gz{% endset %}
 {%- set pass_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.strelka2.pass.vcf.gz{% endset %}
 
+- name: strelka2_build_call_regions_{{ sample.name }}_{{ aligner }}
+  input:
+    - {{ bam }}
+    - {{ indel_candidates }}
+    - {{ indel_candidates }}.tbi
+  output:
+    - {{ temp_dir }}/callRegions.bed.gz
+    - {{ temp_dir }}/callRegions.bed.tbi
+  cpus: 1
+  mem: 2G
+  walltime: "1:00:00"
+  container: {{ constants.tools.bcftools.container }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    {#
+    # In order to restrict calling to only the specified regions
+    # strelka requires a bed file (that has been bgzipped and indexed
+    # with tabix). Here we generate that file on the fly, store in
+    # the run dir, and pass the path to Strelka.
+    #}
+    TAB=$'\t'
+    cat <<EOF > "{{ temp_dir }}/callRegions.bed"
+    {% for contig in constants.tempe.calling_contigs %}
+    {{ contig.contig }}${TAB}0${TAB}{{ contig.length }}
+    {% endfor %}
+    EOF
+
+    bgzip -f "{{ temp_dir }}/callRegions.bed"
+    tabix -f -p bed "{{ temp_dir }}/callRegions.bed.gz"
+
 - name: strelka2_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, strelka2, {{ sample.name }}]
   input:
     - {{ bam }}
     - {{ indel_candidates }}
     - {{ indel_candidates }}.tbi
+    - {{ temp_dir }}/callRegions.bed.gz
+    - {{ temp_dir }}/callRegions.bed.tbi
   output:
     - {{ all_vcf }}
     - {{ all_vcf }}.tbi
-    {% if cram|default(true) %}
-    - {{ results_dir }}/evidence/{{ sample.name }}.{{ aligner }}.strelka2.realigned.cram
-    - {{ results_dir }}/evidence/{{ sample.name }}.{{ aligner }}.strelka2.realigned.cram.crai
-    {% else %}
-    - {{ results_dir }}/evidence/{{ sample.name }}.{{ aligner }}.strelka2.realigned.bam
-    - {{ results_dir }}/evidence/{{ sample.name }}.{{ aligner }}.strelka2.realigned.bam.bai
-    {% endif %}
+    - {{ temp_dir }}/results/realigned/realigned.S1.bam
   cpus: 20
   mem: 20G
   walltime: "24:00:00"
@@ -38,23 +66,6 @@
     {# Purge any existing run files prior to starting #}
     rm -r "{{ temp_dir }}" || true
     mkdir -p "{{ temp_dir }}"
-
-    {#
-    # In order to restrict calling to only the specified regions
-    # strelka requires a bed file (that has been bgzipped and indexed
-    # with tabix). Here we generate that file on the fly, store in
-    # the run dir, and pass the path to Strelka.
-    #}
-    STRELKA_BED="{{ temp_dir }}/callRegions.bed"
-    TAB=$'\t'
-    cat <<EOF > "${STRELKA_BED}"
-    {% for contig in constants.tempe.calling_contigs %}
-    {{ contig.contig }}${TAB}0${TAB}{{ contig.length }}
-    {% endfor %}
-    EOF
-
-    bgzip -f "${STRELKA_BED}"
-    tabix -f -p bed "${STRELKA_BED}.gz"
 
     {#
     # Some settings are only configurable via an ini file. Here 
@@ -83,6 +94,31 @@
     {# Move and rename the evidence bams or make cram #}
     mkdir -p "{{ results_dir }}/evidence"
 
+    {# Move and rename the the vcfs out of their generic location #}
+    mv "{{ temp_dir }}/results/variants/variants.vcf.gz" "{{ all_vcf }}"
+    mv "{{ temp_dir }}/results/variants/variants.vcf.gz.tbi" "{{ all_vcf }}.tbi"
+
+
+- name: strelka2_save_evidence_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, somatic, snp_indel_caller, strelka2, {{ pair.name }}]
+  reset: predecessors
+  input:
+    - {{ temp_dir }}/results/realigned/realigned.S1.bam
+  output:
+    {% if cram|default(true) %}
+    - {{ results_dir }}/evidence/{{ sample.name }}.{{ aligner }}.strelka2.realigned.cram
+    - {{ results_dir }}/evidence/{{ sample.name }}.{{ aligner }}.strelka2.realigned.cram.crai
+    {% else %}
+    - {{ results_dir }}/evidence/{{ sample.name }}.{{ aligner }}.strelka2.realigned.bam
+    - {{ results_dir }}/evidence/{{ sample.name }}.{{ aligner }}.strelka2.realigned.bam.bai
+    {% endif %}
+  cpus: 8
+  mem: 16G
+  container: {{ constants.tools.samtools.container }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
     {% if cram|default(true) %}
     samtools view \
       -C \
@@ -96,11 +132,6 @@
     mv "{{ temp_dir }}/results/realigned/realigned.S1.bam" "{{ results_dir }}/evidence/{{ sample.name }}.{{ aligner }}.strelka2.realigned.bam"
     mv "{{ temp_dir }}/results/realigned/realigned.S1.bam.bai" "{{ results_dir }}/evidence/{{ sample.name }}.{{ aligner }}.strelka2.realigned.bam.bai"
     {% endif %}
-
-    {# Move and rename the the vcfs out of their generic location #}
-    mv "{{ temp_dir }}/results/variants/variants.vcf.gz" "{{ all_vcf }}"
-    mv "{{ temp_dir }}/results/variants/variants.vcf.gz.tbi" "{{ all_vcf }}.tbi"
-
 
 - name: strelka2_filter_variants_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, strelka2, {{ sample.name }}]

@@ -42,12 +42,9 @@
     octopus \
       --caller cancer \
       --threads 4 \
-      --max-reference-cache-footprint 4GB \
-      --target-read-buffer-footprint 6GB \
       --ignore-unmapped-contigs \
       --somatics-only \
-      --phasing-level minimal \
-      --legacy \
+      --sequence-error-model PCR.NOVASEQ \
       --annotations AD ADP AF SB \
       --somatic-filter-expression "QUAL < 2 | GQ < 20 | MQ < 30 | SMQ < 40 | SD > 0.9 | BQ < 20 | DP < 3 | MF > 0.2 | NC > 5 | FRF > 0.5 | AD < -1 | AF < -1 | ADP > 100000000 | SB < -1 " \
       --working-directory {{ temp_dir }} \
@@ -68,7 +65,7 @@
   reset: predecessors
   input:
     {% for b in constants.tempe.primary_contig_calling_intervals %}
-    - {{ temp_dir }}/{{ loop.index }}.octopus.legacy.vcf
+    - {{ temp_dir }}/{{ loop.index }}.octopus.vcf
     {% endfor %}
   output:
     - {{ all_vcf }}
@@ -86,19 +83,19 @@
     {# Vcf merge #}
     bcftools concat \
       --output-type z \
-      --output "{{ temp_dir }}/{{ pair.name }}.{{ aligner }}.octopus.legacy.all.uns.vcf.gz" \
+      --output "{{ temp_dir }}/{{ pair.name }}.{{ aligner }}.octopus.all.uns.vcf.gz" \
       {% for b in constants.tempe.primary_contig_calling_intervals %}
       {% if not loop.last %}
-      "{{ temp_dir }}/{{ loop.index }}.octopus.legacy.vcf" \
+      "{{ temp_dir }}/{{ loop.index }}.octopus.vcf" \
       {% else %}
-      "{{ temp_dir }}/{{ loop.index }}.octopus.legacy.vcf"
+      "{{ temp_dir }}/{{ loop.index }}.octopus.vcf"
       {% endif %}
       {% endfor %}
 
     bcftools sort \
       --output-type z \
       --output-file "{{ all_vcf }}" \
-      "{{ temp_dir }}/{{ pair.name }}.{{ aligner }}.octopus.legacy.all.uns.vcf.gz"
+      "{{ temp_dir }}/{{ pair.name }}.{{ aligner }}.octopus.all.uns.vcf.gz"
 
     bcftools index --tbi --force "{{ all_vcf }}"
 
