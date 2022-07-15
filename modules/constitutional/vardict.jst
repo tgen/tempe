@@ -208,11 +208,7 @@
       -f 0.005 \
       -F 0.2 \
       -o 1.5 \
-    | bcftools view \
-      --output-type z \
-      --output-file "{{ temp_dir }}/{{ loop.index }}.vardict.vcf.gz"
-    
-    bcftools index --tbi --force "{{ temp_dir }}/{{ loop.index }}.vardict.vcf.gz"
+    > {{ temp_dir }}/{{ loop.index }}.vardict.vcf
 
 {% endfor %}
 
@@ -222,7 +218,7 @@
   reset: predecessors
   input:
     {% for b in constants.tempe.calling_intervals %}
-    - {{ temp_dir }}/{{ loop.index }}.vardict.vcf.gz
+    - {{ temp_dir }}/{{ loop.index }}.vardict.vcf
     {% endfor %}
   output:
     - {{ all_vcf }}
@@ -235,6 +231,13 @@
     set -eu
     set -o pipefail
     
+    {% for b in constants.tempe.calling_intervals %}
+    bcftools view \
+    --output-type z \
+    --output-file {{ temp_dir }}/{{ loop.index }}.vardict.vcf.gz \
+    {{ temp_dir }}/{{ loop.index }}.vardict.vcf
+    {% endfor %}
+
     mkdir -p "{{ results_dir }}"
     
     bcftools concat \
@@ -243,9 +246,9 @@
       --output "{{ all_vcf }}" \
       {% for b in constants.tempe.calling_intervals %}
       {% if not loop.last %}
-      "{{ temp_dir }}/{{ loop.index }}.vardict.vcf.gz" \
+      "{{ temp_dir }}/{{ loop.index }}.vardict.vcf" \
       {% else %}
-      "{{ temp_dir }}/{{ loop.index }}.vardict.vcf.gz"
+      "{{ temp_dir }}/{{ loop.index }}.vardict.vcf"
       {% endif %}
       {% endfor %}
     
