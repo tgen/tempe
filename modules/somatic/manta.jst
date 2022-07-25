@@ -88,19 +88,45 @@
     mv "{{ temp_dir }}/results/variants/somaticSV.vcf.gz.tbi" "{{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.somaticSV.vcf.gz.tbi"
 
 
-- name: manta_flag_{{ pair.name }}_{{ aligner }}
+- name: manta_filter_pass_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, manta, flag, {{ pair.name }}]
   input:
     - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.somaticSV.vcf.gz
     - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.somaticSV.vcf.gz.tbi
+  output:
+    - {{ temp_dir }}/results/variants/somaticSV.pass.vcf.gz
+    - {{ temp_dir }}/results/variants/somaticSV.pass.vcf.gz.tbi
+  cpus: 1
+  mem: 2G
+  walltime: "12:00:00"
+  container: {{ constants.tools.bcftools.container }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    {# Ensuring that the output dir exists for bcftools filter #}
+    mkdir -p {{ temp_dir }}/results/variants
+
+    {# filtering somatic vcf by PASS #}
+    bcftools filter \
+      -i 'FILTER == "PASS"' \
+      -O z \
+      -o {{ temp_dir }}/results/variants/somaticSV.pass.vcf.gz \
+      {{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.somaticSV.vcf.gz
+
+    bcftools index --tbi --force {{ temp_dir }}/results/variants/somaticSV.pass.vcf.gz
+
+
+- name: manta_flag_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, somatic, manta, flag, {{ pair.name }}]
+  input:
+    - {{ temp_dir }}/results/variants/somaticSV.pass.vcf.gz
+    - {{ temp_dir }}/results/variants/somaticSV.pass.vcf.gz.tbi
     - {{ tumor_bam }}
     - {{ normal_bam }}
     - {{ summary_samtools_stats }}
   output:
-    - {{ temp_dir }}/results/variants/somaticSV.pass.vcf.gz
-    - {{ temp_dir }}/results/variants/somaticSV.pass.vcf.gz.tbi
-    - {{ temp_dir }}/results/variants/somaticSV.pass.flag.vcf.gz
-    - {{ temp_dir }}/results/variants/somaticSV.pass.flag.vcf.gz.tbi
+    - {{ temp_dir }}/results/variants/somaticSV.pass.flag.vcf
   cpus: 4
   mem: 4G
   walltime: "12:00:00"
@@ -111,10 +137,6 @@
 
     {# Ensuring that the output dir exists for bcftools filter #}
     mkdir -p {{ temp_dir }}/results/variants
-
-    {# filtering somatic vcf by PASS #}
-    bcftools filter -i 'FILTER == "PASS"' -O z -o {{ temp_dir }}/results/variants/somaticSV.pass.vcf.gz {{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.somaticSV.vcf.gz
-    bcftools index --threads 4 --tbi --force {{ temp_dir }}/results/variants/somaticSV.pass.vcf.gz
 
     {# Capturing the insert_size and its standard deviation from summary samtools stats file #}
     INSERT_SIZE=$(cat {{ summary_samtools_stats }} | tail -n 1 | cut -f9 )
@@ -138,9 +160,29 @@
       --output {{ temp_dir }}/results/variants/somaticSV.pass.flag.vcf \
       --logfile {{ temp_dir }}/results/variants/log_prepare_sv_vcf.txt
 
+
+- name: manta_compress_flag_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, somatic, manta, flag, {{ pair.name }}]
+  input:
+    - {{ temp_dir }}/results/variants/somaticSV.pass.flag.vcf
+  output:
+    - {{ temp_dir }}/results/variants/somaticSV.pass.vcf.gz
+    - {{ temp_dir }}/results/variants/somaticSV.pass.vcf.gz.tbi
+  cpus: 1
+  mem: 2G
+  walltime: "12:00:00"
+  container: {{ constants.tools.bcftools.container }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
     {# compress vcf to vcf.gz #}
-    bcftools view --threads 4 -O z -o {{ temp_dir }}/results/variants/somaticSV.pass.flag.vcf.gz {{ temp_dir }}/results/variants/somaticSV.pass.flag.vcf
-    bcftools index --threads 4 --tbi --force {{ temp_dir }}/results/variants/somaticSV.pass.flag.vcf.gz
+    bcftools view \
+      -O z \
+      -o {{ temp_dir }}/results/variants/somaticSV.pass.flag.vcf.gz \
+      {{ temp_dir }}/results/variants/somaticSV.pass.flag.vcf
+
+    bcftools index --tbi --force {{ temp_dir }}/results/variants/somaticSV.pass.flag.vcf.gz
 
 
 - name: manta_annotate_{{ pair.name }}_{{ aligner }}
@@ -150,8 +192,7 @@
     - {{ temp_dir }}/results/variants/somaticSV.pass.flag.vcf.gz
     - {{ temp_dir }}/results/variants/somaticSV.pass.flag.vcf.gz.tbi
   output:
-    - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.somaticSV.pass.vcf.gz
-    - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.somaticSV.pass.vcf.gz.tbi
+    - {{ temp_dir }}/results/variants/somaticSV.pass.flag.anno.vcf
   cpus: 4
   mem: 16G
   walltime: "12:00:00"
@@ -169,15 +210,36 @@
       --threads 4 \
       --tempdir {{ temp_dir }}/pybedtools/
 
-    bcftools view --threads 4 -O z -o {{ temp_dir }}/results/variants/somaticSV.pass.flag.anno.vcf.gz {{ temp_dir }}/results/variants/somaticSV.pass.flag.anno.vcf
-    bcftools index --threads 4 --tbi --force {{ temp_dir }}/results/variants/somaticSV.pass.flag.anno.vcf.gz
+
+- name: manta_compress_annotate_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, somatic, manta, flag, {{ pair.name }}]
+  input:
+    - {{ temp_dir }}/results/variants/somaticSV.pass.flag.anno.vcf
+  output:
+    - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.somaticSV.pass.vcf.gz
+    - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.somaticSV.pass.vcf.gz.tbi
+  cpus: 1
+  mem: 2G
+  walltime: "12:00:00"
+  container: {{ constants.tools.bcftools.container }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    bcftools view \
+      -O z \
+      -o {{ temp_dir }}/results/variants/somaticSV.pass.flag.anno.vcf.gz \
+      {{ temp_dir }}/results/variants/somaticSV.pass.flag.anno.vcf
+      
+    bcftools index --tbi --force {{ temp_dir }}/results/variants/somaticSV.pass.flag.anno.vcf.gz
 
     {# Save all the vcf in the sample's dir results #}
-    mv "{{ temp_dir }}/results/variants/somaticSV.pass.flag.anno.vcf.gz" "{{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.somaticSV.pass.vcf.gz"
-    mv "{{ temp_dir }}/results/variants/somaticSV.pass.flag.anno.vcf.gz.tbi" "{{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.somaticSV.pass.vcf.gz.tbi"
+    mv {{ temp_dir }}/results/variants/somaticSV.pass.flag.anno.vcf.gz {{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.somaticSV.pass.vcf.gz
+    mv {{ temp_dir }}/results/variants/somaticSV.pass.flag.anno.vcf.gz.tbi {{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.somaticSV.pass.vcf.gz.tbi
+
 
     {# Remove the remaining files #}
-    {% set task %}manta_annotate_{{ pair.name }}_{{ aligner }}{% endset %}
+    {% set task %} manta_compress_annotate_{{ pair.name }}_{{ aligner }}{% endset %}
     {% set directory %}{{ temp_dir }}{% endset %}
     {{- remove_files(directory,none,task) }}
 
