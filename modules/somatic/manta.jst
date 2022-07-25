@@ -239,7 +239,7 @@
 
 
     {# Remove the remaining files #}
-    {% set task %} manta_compress_annotate_{{ pair.name }}_{{ aligner }}{% endset %}
+    {% set task %}manta_compress_annotate_{{ pair.name }}_{{ aligner }}{% endset %}
     {% set directory %}{{ temp_dir }}{% endset %}
     {{- remove_files(directory,none,task) }}
 
