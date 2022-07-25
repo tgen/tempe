@@ -11,18 +11,14 @@
 {%- set all_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.strelka2.all.vcf.gz{% endset %}
 {%- set pass_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.strelka2.pass.vcf.gz{% endset %}
 
+{# empty input, is this okay? #}
 - name: strelka2_build_call_regions_{{ sample.name }}_{{ aligner }}
-  input:
-    - {{ bam }}
-    - {{ indel_candidates }}
-    - {{ indel_candidates }}.tbi
   output:
-    - {{ temp_dir }}/callRegions.bed.gz
-    - {{ temp_dir }}/callRegions.bed.tbi
+    - {{ temp_dir }}/callRegions.bed
   cpus: 1
   mem: 2G
   walltime: "1:00:00"
-  container: {{ constants.tools.bcftools.container }}
+  container: {{ constants.tools.base.container }}
   cmd: |
     set -eu
     set -o pipefail
@@ -40,8 +36,24 @@
     {% endfor %}
     EOF
 
+
+- name: strelka2_process_call_regions_{{ sample.name }}_{{ aligner }}
+  input:
+    - {{ temp_dir }}/callRegions.bed
+  output:
+    - {{ temp_dir }}/callRegions.bed.gz
+    - {{ temp_dir }}/callRegions.bed.tbi
+  cpus: 1
+  mem: 2G
+  walltime: "1:00:00"
+  container: {{ constants.tools.htslib.container }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
     bgzip -f "{{ temp_dir }}/callRegions.bed"
     tabix -f -p bed "{{ temp_dir }}/callRegions.bed.gz"
+
 
 - name: strelka2_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, strelka2, {{ sample.name }}]
