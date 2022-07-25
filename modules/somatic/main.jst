@@ -80,6 +80,16 @@
     {% endfor %}
 {% endif %}
 
+
+{% set alignment_style = [] %}
+{% if dnaAlignmentStyle == 'all' %}
+    {% do alignment_style.append('pcrfree') %}
+    {% do alignment_style.append('bwa') %}
+    {% do alignment_style.append('parabricks') %}
+{% else %}
+    {% do alignment_style.append(dnaAlignmentStyle|default('bwa')|lower|replace("tgen", "bwa")) %}
+{% endif %}
+
 {#
 # Variant caller macros that are used should add their name to the pair.caller list
 # and then vcfmerger will merge all variants for callers that were used.
@@ -97,45 +107,49 @@
         {% set taskPrefix = 'Genome' %}
     {% endif %}
 
+    {% for aligner in alignment_style %}
+
     {% if tasks[taskPrefix+"_somatic_snp_indel_caller_gatk_mutect2"]|default(true) %}
-        {{- mutect2(pair, aligner='bwa') }}
+        {{- mutect2(pair, aligner) }}
     {% endif %}
 
     {% if tasks[taskPrefix+"_somatic_structural_caller_manta"]|default(true) %}
-        {{- manta_somatic(pair, aligner='bwa') }}
+        {{- manta_somatic(pair, aligner) }}
     {% endif %}
 
     {% if tasks[taskPrefix+"_somatic_snp_indel_caller_strelka2"]|default(true) %}
-        {{- strelka2_somatic(pair, aligner='bwa') }}
+        {{- strelka2_somatic(pair, aligner) }}
     {% endif %}
 
     {% if tasks[taskPrefix+"_somatic_snp_indel_caller_lancet"]|default(true) %}
-        {{- lancet(pair, aligner='bwa') }}
+        {{- lancet(pair, aligner) }}
     {% endif %}
 
     {% if tasks[taskPrefix+"_somatic_snp_indel_caller_VarDict"]|default(true) %}
-        {{- vardict_somatic(pair, aligner='bwa') }}
+        {{- vardict_somatic(pair, aligner) }}
     {% endif %}
 
     {% if tasks[taskPrefix+"_somatic_snp_indel_caller_octopus"]|default(true) %}
-        {{- octopus_somatic(pair, aligner='bwa') }}
+        {{- octopus_somatic(pair, aligner) }}
     {% endif %}
 
     {% if tasks[taskPrefix+"_somatic_merge_vcfs_vcfMerger2"]|default(true) %}
-        {{- vcfmerger2(pair, aligner='bwa', taskPrefix=taskPrefix) }}
+        {{- vcfmerger2(pair, aligner, taskPrefix=taskPrefix) }}
     {% endif %}
 
     {% if tasks[taskPrefix+"_somatic_structural_caller_delly"]|default(true) %}
-        {{- delly_somatic(pair, aligner='bwa') }}
+        {{- delly_somatic(pair, aligner) }}
     {% endif %}
 
     {% if tasks[taskPrefix+"_somatic_structural_caller_gridss"]|default(false) %}
-        {{- gridss_somatic(pair, aligner='bwa') }}
+        {{- gridss_somatic(pair, aligner) }}
     {% endif %}
 
     {% if tasks[taskPrefix+"_somatic_cna_caller_gatk"]|default(true) %}
-        {{- gatk_cnv(pair, aligner='bwa') }}
+        {{- gatk_cnv(pair, aligner) }}
     {% endif %}
+
+    {% endfor %}
 
 {% endfor %}
 
