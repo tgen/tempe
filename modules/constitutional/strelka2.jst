@@ -23,6 +23,10 @@
     set -eu
     set -o pipefail
 
+    {# Purge any existing run files prior to starting #}
+    rm -r "{{ temp_dir }}" || true
+    mkdir -p "{{ temp_dir }}"
+
     {#
     # In order to restrict calling to only the specified regions
     # strelka requires a bed file (that has been bgzipped and indexed
@@ -75,16 +79,11 @@
     set -eu
     set -o pipefail
 
-    {# Purge any existing run files prior to starting #}
-    rm -r "{{ temp_dir }}" || true
-    mkdir -p "{{ temp_dir }}"
-
     {#
     # Some settings are only configurable via an ini file. Here 
     # we generate this ini file and save it to the run dir.
     #}
-    STRELKA_CONFIG="{{ temp_dir }}/config.ini"
-    cat <<EOF > "${STRELKA_CONFIG}"
+    cat <<EOF > "{{ temp_dir }}/config.ini"
     [StrelkaGermline]
     isWriteRealignedBam = 1
     EOF
@@ -93,8 +92,8 @@
       {% if sample.gltype == 'exome' %}
       --exome \
       {% endif %}
-      --config "${STRELKA_CONFIG}" \
-      --callRegions "${STRELKA_BED}.gz" \
+      --config "{{ temp_dir }}/config.ini" \
+      --callRegions "{{ temp_dir }}/callRegions.bed.gz" \
       --bam "{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam" \
       --indelCandidates "{{ indel_candidates }}" \
       --ref "{{ constants.tempe.reference_fasta }}" \

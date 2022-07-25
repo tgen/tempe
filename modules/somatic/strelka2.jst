@@ -23,6 +23,10 @@
     set -eu
     set -o pipefail
 
+    {# Purge any existing run files prior to starting #}
+    rm -r "{{ temp_dir }}" || true
+    mkdir -p "{{ temp_dir }}"
+
     {#
     # In order to restrict calling to only the specified regions
     # strelka requires a bed file (that has been bgzipped and indexed
@@ -76,10 +80,6 @@
   cmd: |
     set -eu
     set -o pipefail
-
-    {# Purge any existing run files prior to starting #}
-    rm -r "{{ temp_dir }}" || true
-    mkdir -p "{{ temp_dir }}"
 
     {#
     # Some settings are only configurable via an ini file. Here
