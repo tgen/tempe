@@ -47,8 +47,7 @@
     - {{ bam }}
     - {{ temp_dir }}/{{ loop.index }}.bed
   output:
-    - {{ temp_dir }}/{{ loop.index }}.vardict.vcf.gz
-    - {{ temp_dir }}/{{ loop.index }}.vardict.vcf.gz.tbi
+    - {{ temp_dir }}/{{ loop.index }}.vardict.vcf
   cpus: 4
   mem: 32G
   walltime: "48:00:00"
