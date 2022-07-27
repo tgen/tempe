@@ -13,7 +13,7 @@
   walltime: "0:10:00"
   cpus: 1
   mem: 2G
-  container: {{ constants.tools.bam_qc_stats2json.container }}
+  container: {{ constants.tools.python3.container }}
   cmd: |
     set -eu
     set -o pipefail
