@@ -29,6 +29,8 @@ constants:
       container: /scratch/bturner/AJ_singularity_images/lancet_1.1.x.sif
     manta:
       container: /scratch/bturner/AJ_singularity_images/manta_1.6.0.sif
+    R:
+      container: /scratch/bturner/AJ_singularity_images/r_3.6.1.sif
     octopus:
       container: /scratch/bturner/AJ_singularity_images/octopus_0.7.4.sif
     bcftools:
