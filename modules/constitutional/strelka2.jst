@@ -42,6 +42,7 @@
 
 
 - name: strelka2_process_call_regions_{{ sample.name }}_{{ aligner }}
+  reset: predecessors
   input:
     - {{ temp_dir }}/callRegions.bed
   output:
@@ -61,6 +62,7 @@
 
 - name: strelka2_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, strelka2, {{ sample.name }}]
+  reset: predecessors
   input:
     - {{ bam }}
     - {{ indel_candidates }}
