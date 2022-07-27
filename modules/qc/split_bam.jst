@@ -16,7 +16,7 @@
   walltime: "1:00:00"
   cpus: 10
   mem: 20G
-  container: {{ constants.tools.bam_qc_split_bam.container }}
+  container: {{ constants.tools.samtools.container }}
   cmd: |
     set -eu
     set -o pipefail

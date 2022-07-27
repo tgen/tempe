@@ -3,6 +3,9 @@
 {% from 'modules/dna_alignment/bwa_mem2_samtools.jst' import bwa_mem2_samtools with context %}
 {% from 'modules/dna_alignment/pb_fq2bam.jst' import fq2bam with context %}
 {% from 'modules/dna_alignment/split_fastq.jst' import split_fastqs with context %}
+{# {% from 'utilities/bam_to_cram.jst' import bam_to_cram with context %}
+{% from 'utilities/read_group_line.jst' import read_group_line %} #}
+{% from 'modules/qc/main.jst' import bam_qc with context %}
 
 
 {% macro dna_alignment(samples) %}
@@ -38,6 +41,8 @@
     {% if 'parabricks' in alignment_style %}
       {{- fq2bam(sample, opt_dup_distance, aligner='parabricks') }}
     {% endif %}
+
+    {{- bam_qc(sample, aligner) }}
 
   {% endfor %}
 

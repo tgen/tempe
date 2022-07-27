@@ -435,7 +435,7 @@
   walltime: "24:00:00"
   cpus: 2
   mem: 8G
-  container: {{ constants.tools.bam_qc_all.container }}
+  container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
     set -o pipefail
@@ -533,7 +533,7 @@
   walltime: "24:00:00"
   cpus: 4
   mem: 8G
-  container: {{ constants.tools.bam_qc_all.container }}
+  container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
     set -o pipefail
@@ -628,7 +628,7 @@
   {% endif %}
   cpus: 2
   mem: 4G
-  container: {{ constants.tools.bam_qc_all.container }}
+  container: {{ constants.tools.bcftools.container }}
   cmd: |
     set -eu
     set -o pipefail

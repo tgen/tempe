@@ -41,7 +41,7 @@
   cpus: 1
   mem: 4G
   walltime: "8:00:00"
-  container: {{ constants.tools.bam_qc_constitutional_dna.container }}
+  container: {{ constants.tools.R.container }}
   cmd: |
     set -eu
     set -o pipefail
@@ -129,7 +129,7 @@
   {% endif %}
   cpus: 1
   mem: 2G
-  container: {{ constants.tools.bam_qc_constitutional_dna.container }}
+  container: {{ constants.tools.freebayes.container }}
   cmd: |
     set -eu
     set -o pipefail
