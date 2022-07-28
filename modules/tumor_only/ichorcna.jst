@@ -75,6 +75,7 @@
   cpus: 1
   mem: 2G
   container: {{ constants.tools.ichorcna.container }}
+  backend_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   cmd: |
     set -eu
     set -o pipefail
@@ -88,7 +89,6 @@
     # finds these files dynamically with R system.find before starting
     #}
     EXTDATA=$(Rscript <(echo "cat(system.file('extdata/', package='ichorCNA'))"))
-    JS_PIPELINE_PATH=/home/bturner/jetstream_pipelines/tempe
 
     {#
     # The ichorCNA launcher script does not currently get installed with

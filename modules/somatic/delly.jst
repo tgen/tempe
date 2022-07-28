@@ -117,6 +117,7 @@
   mem: 16G
   walltime: "24:00:00"
   container: {{ constants.tools.bcftools.container }}
+  backend_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   cmd: |
     set -eu
     set -o pipefail

@@ -131,6 +131,7 @@
   mem: 4G
   walltime: "12:00:00"
   container: {{ constants.tools.manta.container }}
+  backend_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   cmd: |
     set -eu
     set -o pipefail
@@ -197,6 +198,7 @@
   mem: 16G
   walltime: "12:00:00"
   container: {{ constants.tools.manta.container }}
+  backend_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   cmd: |
     set -eu
     set -o pipefail
