@@ -119,6 +119,88 @@
 - name: freebayes_sex_check_{{ task }}
   tags: [{{ sample.gltype }}, quality_control, constitutional_sex_check, freebayes, {{ sample.name }}]
   input: {{ bam }}
+  output: {{ vcf }}
+  {% if bam_level is sameas false %}
+  reset: predecessors
+  {% endif %}
+  cpus: 1
+  mem: 2G
+  container: {{ constants.tools.freebayes.container }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    freebayes \
+      --fasta-reference "{{ constants.tempe.reference_fasta }}" \
+      --targets "{{ constants.tempe.sex_check_targets }}" \
+      --variant-input "{{ constants.tempe.sex_check_vcf }}" \
+      --only-use-input-alleles \
+      --min-alternate-count 2 \
+      --min-alternate-fraction 0.05 \
+      --min-coverage 5 \
+      --vcf "{{ vcf }}" \
+      {{ bam }}
+
+
+- name: samtools_process_freebayes_sex_check_{{ task }}
+  tags: [{{ sample.gltype }}, quality_control, constitutional_sex_check, freebayes, {{ sample.name }}]
+  input: {{ bam }}
+  output: {{ temp_dir }}/{{ bam|basename }}.sexCheck.nonPARreadCount.txt
+  {% if bam_level is sameas false %}
+  reset: predecessors
+  {% endif %}
+  cpus: 1
+  mem: 2G
+  container: {{ constants.tools.samtools.container }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    {#
+    ################################################
+    ## Check total read count on Y/(X+Y)
+    ################################################
+
+    ### HUMAN X/Y chromosome lengths
+    ## GRCh38
+    # X = 156040895
+    # Y = 57227415
+    ## GRCh37
+    # X = 155270560
+    # Y = 59373566
+
+    ### HUMAN PAR REGIONS
+
+    # https://www.ncbi.nlm.nih.gov/grc/human
+    ## GRCh38
+    # chrX:10001-2781479         PAR#1	X	10,001	2,781,479
+    # chrX:155701383-156030895   PAR#2	X	155,701,383	156,030,895
+    # chrY:10001-2781479         PAR#1	Y	10,001	2,781,479
+    # chrY:56887903-57217415     PAR#2	Y	56,887,903	57,217,415
+    ## Non-PAR X Intervals = chrX:2781480-155701382,chrX:156030896-156040895
+    ## Non-PAR Y Intervals = chrY:2781480-56887902,chrY:57217416-57227415
+
+    ## GRCh37
+    # X:60001-2699520            PAR#1	X	60,001	2,699,520
+    # X:154931044-155260560      PAR#2	X	154,931,044	155,260,560
+    # Y:10001-2649520            PAR#1	Y	10,001	2,649,520
+    # Y:59034050-59363566        PAR#2	Y	59,034,050	59,363,566
+    ## Non-PAR X Intervals = X:2699521-154931043,X:155260561-155270560
+    ## Non-PAR Y Intervals = Y:2649521-59034049,Y:59363567-59373566
+
+    # Use samtools to count (-c) the first in pair reads from properly paired non-duplicate reads (-f 67) that have mapping quality above 30 (-q 30)
+    # Only count read in the non-PAR regions
+    ### WARNING: the tested regions needs to be a parameter NOT hard coded
+    #}
+    samtools view -c -q 30 -f 67 {{ bam }} chrX:2781480-155701382 chrX:156030896-156040895 > {{ temp_dir }}/{{ bam|basename }}.sexCheck.nonPARreadCount.txt
+    samtools view -c -q 30 -f 67 {{ bam }} chrY:2781480-56887902 chrY:57217416-57227415 >> {{ temp_dir }}/{{ bam|basename }}.sexCheck.nonPARreadCount.txt
+
+
+- name: bcftools_process_freebayes_sex_check_{{ task }}
+  tags: [{{ sample.gltype }}, quality_control, constitutional_sex_check, freebayes, {{ sample.name }}]
+  input: 
+    - {{ vcf }}
+    - {{ temp_dir }}/{{ bam|basename }}.sexCheck.nonPARreadCount.txt
   output:
     - {{ output }}
     {% if libraryCount == 1 %}
@@ -129,7 +211,7 @@
   {% endif %}
   cpus: 1
   mem: 2G
-  container: {{ constants.tools.freebayes.container }}
+  container: {{ constants.tools.bcftools.container }}
   cmd: |
     set -eu
     set -o pipefail
@@ -144,17 +226,6 @@
 
     {# Variable not working, would be nice for dynamic DP settings #}
     DEPTH_REQUIREMENT=5
-
-    freebayes \
-      --fasta-reference "{{ constants.tempe.reference_fasta }}" \
-      --targets "{{ constants.tempe.sex_check_targets }}" \
-      --variant-input "{{ constants.tempe.sex_check_vcf }}" \
-      --only-use-input-alleles \
-      --min-alternate-count 2 \
-      --min-alternate-fraction 0.05 \
-      --min-coverage 5 \
-      --vcf "{{ vcf }}" \
-      {{ bam }}
 
     {# Capture the RG_SM tag that is in the VCF header #}
     SAMPLE=`grep "#CHROM" {{ vcf }} | cut -f10`
@@ -220,44 +291,8 @@
       BB_ALT_RATE_SEX_PREDICTION="Undetermined"
     fi
 
-    {#
-    ################################################
-    ## Check total read count on Y/(X+Y)
-    ################################################
-
-    ### HUMAN X/Y chromosome lengths
-    ## GRCh38
-    # X = 156040895
-    # Y = 57227415
-    ## GRCh37
-    # X = 155270560
-    # Y = 59373566
-
-    ### HUMAN PAR REGIONS
-
-    # https://www.ncbi.nlm.nih.gov/grc/human
-    ## GRCh38
-    # chrX:10001-2781479         PAR#1	X	10,001	2,781,479
-    # chrX:155701383-156030895   PAR#2	X	155,701,383	156,030,895
-    # chrY:10001-2781479         PAR#1	Y	10,001	2,781,479
-    # chrY:56887903-57217415     PAR#2	Y	56,887,903	57,217,415
-    ## Non-PAR X Intervals = chrX:2781480-155701382,chrX:156030896-156040895
-    ## Non-PAR Y Intervals = chrY:2781480-56887902,chrY:57217416-57227415
-
-    ## GRCh37
-    # X:60001-2699520            PAR#1	X	60,001	2,699,520
-    # X:154931044-155260560      PAR#2	X	154,931,044	155,260,560
-    # Y:10001-2649520            PAR#1	Y	10,001	2,649,520
-    # Y:59034050-59363566        PAR#2	Y	59,034,050	59,363,566
-    ## Non-PAR X Intervals = X:2699521-154931043,X:155260561-155270560
-    ## Non-PAR Y Intervals = Y:2649521-59034049,Y:59363567-59373566
-
-    # Use samtools to count (-c) the first in pair reads from properly paired non-duplicate reads (-f 67) that have mapping quality above 30 (-q 30)
-    # Only count read in the non-PAR regions
-    ### WARNING: the tested regions needs to be a parameter NOT hard coded
-    #}
-    READS_ON_X=`samtools view -c -q 30 -f 67 {{ bam }} chrX:2781480-155701382 chrX:156030896-156040895`
-    READS_ON_Y=`samtools view -c -q 30 -f 67 {{ bam }} chrY:2781480-56887902 chrY:57217416-57227415`
+    READS_ON_X=`head -n1 {{ temp_dir }}/{{ bam|basename }}.sexCheck.nonPARreadCount.txt`
+    READS_ON_Y=`tail -n1 {{ temp_dir }}/{{ bam|basename }}.sexCheck.nonPARreadCount.txt`
 
     {# Calculate the Y/(X+Y) read ratio #}
     TOTAL_SEX_CHR_READS=$(echo $READS_ON_X $READS_ON_Y | awk '{printf $1+$2}')
