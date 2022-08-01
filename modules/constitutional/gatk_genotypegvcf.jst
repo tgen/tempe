@@ -53,9 +53,8 @@
   mem: 32G
   container: {{ constants.tools.gatk.container }}
   cmd: |
-    set -eu
-    set -o pipefail
 
+    . /anaconda3/etc/profile.d/conda.sh
     source activate gatk
 
     gatk CNNScoreVariants \
