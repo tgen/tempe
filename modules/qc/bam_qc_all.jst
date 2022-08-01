@@ -58,44 +58,14 @@
   input: {{ bam }}
   output:
     - {{ results_dir }}/{{ bam|basename }}.bamstats.txt
-    - {{ results_dir }}/{{ bam|basename }}.samstats_no_N_1based_target_regions.txt
-    - {{ results_dir }}/{{ bam|basename }}_samtools_baseQualityYield_summary.tsv
-    - {{ results_dir }}/{{ bam|basename }}_samtools_coverage_summary.tsv
-    - {{ results_dir }}/{{ bam|basename }}_samtools_insertSize_summary.tsv
-    - {{ results_dir }}/{{ bam|basename }}_samtools_summaryNumbers_summary.tsv
-    - {{ results_dir }}/{{ bam|basename }}_samtools_baseDistribution_linePlot.png
-    - {{ results_dir }}/{{ bam|basename }}_samtools_baseQualityDistribution_histogram.png
-    - {{ results_dir }}/{{ bam|basename }}_samtools_baseQualityDistribution_histogram.tsv
-    - {{ results_dir }}/{{ bam|basename }}_samtools_coverage_histogram.png
-    - {{ results_dir }}/{{ bam|basename }}_samtools_coverage_histogram.tsv
-    - {{ results_dir }}/{{ bam|basename }}_samtools_gcDepth_histogram.tsv
-    - {{ results_dir }}/{{ bam|basename }}_samtools_gcDepth_plot.png
-    - {{ results_dir }}/{{ bam|basename }}_samtools_indelDistByCycle_linePlot.png
-    - {{ results_dir }}/{{ bam|basename }}_samtools_indelSize_linePlot.png
-    - {{ results_dir }}/{{ bam|basename }}_samtools_insertSize_histogram.png
-    - {{ results_dir }}/{{ bam|basename }}_samtools_insertSize_histogram.tsv
-    - {{ results_dir }}/{{ bam|basename }}_samtools_meanBaseQualityByCycle_histogram.tsv
-    - {{ results_dir }}/{{ bam|basename }}_samtools_meanBaseQualityByCycle_lineplot.png
+    {% if sample.gltype == 'exome' %}
+    - {{ regions }}
+    {% endif %}
     {% if libraryCount == 1 %}
     - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.bamstats.txt
+    {% if sample.gltype == 'exome' %}
     - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.samstats_no_N_1based_target_regions.txt
-    - {{ baseQuality_output }}
-    - {{ coverage_output }}
-    - {{ insertSize_output }}
-    - {{ summaryNumbers_output }}
-    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam_samtools_baseDistribution_linePlot.png
-    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam_samtools_baseQualityDistribution_histogram.png
-    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam_samtools_baseQualityDistribution_histogram.tsv
-    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam_samtools_coverage_histogram.png
-    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam_samtools_coverage_histogram.tsv
-    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam_samtools_gcDepth_histogram.tsv
-    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam_samtools_gcDepth_plot.png
-    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam_samtools_indelDistByCycle_linePlot.png
-    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam_samtools_indelSize_linePlot.png
-    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam_samtools_insertSize_histogram.png
-    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam_samtools_insertSize_histogram.tsv
-    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam_samtools_meanBaseQualityByCycle_histogram.tsv
-    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam_samtools_meanBaseQualityByCycle_lineplot.png
+    {% endif %}
     {% endif %}
   {% if bam_level is sameas false %}
   reset: predecessors
@@ -162,6 +132,69 @@
       --reference "{{ constants.tempe.reference_fasta }}" \
       {% endif %}
       > "{{ results_dir }}/{{ bam|basename }}.bamstats.txt"
+
+    {% if libraryCount == 1 %}
+      cp {{ results_dir }}/{{ bam|basename }}.bamstats.txt {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.bamstats.txt
+    {% endif %}
+
+
+- name: process_samtools_stats_{{ task }}
+  tags: [{{ sample.gltype }}, quality_control, stats, samtools_stats, {{ sample.name }}]
+  methods: Quality control metrics for {{ sample.name }} ({{ aligner }}) were generated with samtools stats.
+  input:
+    - {{ results_dir }}/{{ bam|basename }}.bamstats.txt
+    {% if libraryCount == 1 %}
+    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.bamstats.txt
+    {% endif %}
+  output:
+    - {{ results_dir }}/{{ bam|basename }}.samstats_no_N_1based_target_regions.txt
+    - {{ results_dir }}/{{ bam|basename }}_samtools_baseQualityYield_summary.tsv
+    - {{ results_dir }}/{{ bam|basename }}_samtools_coverage_summary.tsv
+    - {{ results_dir }}/{{ bam|basename }}_samtools_insertSize_summary.tsv
+    - {{ results_dir }}/{{ bam|basename }}_samtools_summaryNumbers_summary.tsv
+    - {{ results_dir }}/{{ bam|basename }}_samtools_baseDistribution_linePlot.png
+    - {{ results_dir }}/{{ bam|basename }}_samtools_baseQualityDistribution_histogram.png
+    - {{ results_dir }}/{{ bam|basename }}_samtools_baseQualityDistribution_histogram.tsv
+    - {{ results_dir }}/{{ bam|basename }}_samtools_coverage_histogram.png
+    - {{ results_dir }}/{{ bam|basename }}_samtools_coverage_histogram.tsv
+    - {{ results_dir }}/{{ bam|basename }}_samtools_gcDepth_histogram.tsv
+    - {{ results_dir }}/{{ bam|basename }}_samtools_gcDepth_plot.png
+    - {{ results_dir }}/{{ bam|basename }}_samtools_indelDistByCycle_linePlot.png
+    - {{ results_dir }}/{{ bam|basename }}_samtools_indelSize_linePlot.png
+    - {{ results_dir }}/{{ bam|basename }}_samtools_insertSize_histogram.png
+    - {{ results_dir }}/{{ bam|basename }}_samtools_insertSize_histogram.tsv
+    - {{ results_dir }}/{{ bam|basename }}_samtools_meanBaseQualityByCycle_histogram.tsv
+    - {{ results_dir }}/{{ bam|basename }}_samtools_meanBaseQualityByCycle_lineplot.png
+    {% if libraryCount == 1 %}
+    - {{ baseQuality_output }}
+    - {{ coverage_output }}
+    - {{ insertSize_output }}
+    - {{ summaryNumbers_output }}
+    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam_samtools_baseDistribution_linePlot.png
+    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam_samtools_baseQualityDistribution_histogram.png
+    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam_samtools_baseQualityDistribution_histogram.tsv
+    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam_samtools_coverage_histogram.png
+    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam_samtools_coverage_histogram.tsv
+    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam_samtools_gcDepth_histogram.tsv
+    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam_samtools_gcDepth_plot.png
+    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam_samtools_indelDistByCycle_linePlot.png
+    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam_samtools_indelSize_linePlot.png
+    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam_samtools_insertSize_histogram.png
+    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam_samtools_insertSize_histogram.tsv
+    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam_samtools_meanBaseQualityByCycle_histogram.tsv
+    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam_samtools_meanBaseQualityByCycle_lineplot.png
+    {% endif %}
+  {% if bam_level is sameas false %}
+  reset: predecessors
+  {% endif %}
+  walltime: "4:00:00"
+  cpus: 4
+  mem: 8G
+  container: {{ constants.tools.R.container }}
+  backend_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
+  cmd: |
+    set -eu
+    set -o pipefail
 
     cd {{ results_dir }}
 
