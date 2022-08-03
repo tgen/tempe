@@ -19,7 +19,6 @@
   tags: [{{ pair.gltype }}, somatic, cna_caller, gatk, {{ pair.name }}]
   input:
     - {{ normal_bam }}
-    - {{ deepvariant_vcf }}
     - {{ normal_bam_stats }}
     - {{ tumor_bam_stats }}
     - {{ normal_sex_check }}
@@ -30,13 +29,10 @@
   cpus: 1
   mem: 16G
   walltime: "24:00:00"
+  container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    {# Load modules #}
-    module load {{ constants.tools.gatk.module }}
-    module load {{ constants.tools.bcftools.module }}
 
     {# Make working and temp directories #}
     mkdir -p "{{ temp_dir }}/temp"
@@ -77,10 +73,10 @@
     {# Set the variable for the --low-count-filter-count-threshold option used in FilterIntervals #}
     {# With the default padding of 250 during PreprocessIntervals set to 500 + min(interval length) #}
     {# If the cpature kits from above are different this could result in a smaller than expected interval length #}
-    MAX_LENGTH=`gawk -F'\t' '$2 ~ /maximum length/ { print $3 ; exit }' {{ normal_bam_stats }}`
+    MAX_LENGTH=`awk -F'\t' '$2 ~ /maximum length/ { print $3 ; exit }' {{ normal_bam_stats }}`
 
     {# From the interect intervals file extract the smallest. If the smallest is less than 100 set the default as 100 #}
-    MIN_INTERVAL=`gawk -F'\t' -v MAX_LENGTH=${MAX_LENGTH} 'BEGIN { MIN = MAX_LENGTH } $1 !~ /@/ { if ( $3-$2 < MIN ) { MIN = $3-$2 }} END { print MIN }' {{ temp_dir }}/pair_intersect.interval_list`
+    MIN_INTERVAL=`awk -F'\t' -v MAX_LENGTH=${MAX_LENGTH} 'BEGIN { MIN = MAX_LENGTH } $1 !~ /@/ { if ( $3-$2 < MIN ) { MIN = $3-$2 }} END { print MIN }' {{ temp_dir }}/pair_intersect.interval_list`
 
     if [[ ${MIN_INTERVAL} -lt 100 ]]
     then
@@ -109,9 +105,9 @@
     COVERAGE_CONSTANT=30
     BIN_LENGTH_CONSTANT=2000
     MIN_BIN_LENGTH=2000
-    MAX_LENGTH=`gawk -F'\t' '$2 ~ /maximum length/ { print $3 ; exit }' {{ normal_bam_stats }}`
-    NORMAL_AVERAGE_DEPTH=`gawk -F'\t' '$1 ~ /^COV/ { TOT=$4 + TOT ; SUM=($3*$4)+SUM} END { print int(SUM/TOT)}' {{ normal_bam_stats }}`
-    TUMOR_AVERAGE_DEPTH=`gawk -F'\t' '$1 ~ /^COV/ { TOT=$4 + TOT ; SUM=($3*$4)+SUM} END { print int(SUM/TOT)}' {{ tumor_bam_stats }}`
+    MAX_LENGTH=`awk -F'\t' '$2 ~ /maximum length/ { print $3 ; exit }' {{ normal_bam_stats }}`
+    NORMAL_AVERAGE_DEPTH=`awk -F'\t' '$1 ~ /^COV/ { TOT=$4 + TOT ; SUM=($3*$4)+SUM} END { print int(SUM/TOT)}' {{ normal_bam_stats }}`
+    TUMOR_AVERAGE_DEPTH=`awk -F'\t' '$1 ~ /^COV/ { TOT=$4 + TOT ; SUM=($3*$4)+SUM} END { print int(SUM/TOT)}' {{ tumor_bam_stats }}`
 
     if [ ${NORMAL_AVERAGE_DEPTH} -lt ${TUMOR_AVERAGE_DEPTH} ]
     then
@@ -121,7 +117,7 @@
     fi
 
     BIN_LENGTH_MODIFYER=`bc -l <<< ${COVERAGE_CONSTANT}/${AVERAGE_DEPTH}`
-    BIN_LENGTH=`gawk -v BIN_LENGTH_CONSTANT=${BIN_LENGTH_CONSTANT} -v BIN_LENGTH_MODIFYER=${BIN_LENGTH_MODIFYER} 'BEGIN { printf("%d\n",BIN_LENGTH_CONSTANT*BIN_LENGTH_MODIFYER)}'`
+    BIN_LENGTH=`awk -v BIN_LENGTH_CONSTANT=${BIN_LENGTH_CONSTANT} -v BIN_LENGTH_MODIFYER=${BIN_LENGTH_MODIFYER} 'BEGIN { printf("%d\n",BIN_LENGTH_CONSTANT*BIN_LENGTH_MODIFYER)}'`
 
     {# If the bin length is shorter than the max read length then set the bin length to the read length #}
     if [[ ${BIN_LENGTH} -lt ${MIN_BIN_LENGTH} ]]
@@ -159,26 +155,6 @@
       --reference {{ constants.tempe.reference_fasta }} \
       --output {{ temp_dir }}/preprocessed.interval_list \
       --interval-merging-rule OVERLAPPING_ONLY
-
-    {# Extract heterozygous snps from the matched normal excluding the PAR regions on XY#}
-    bcftools view \
-      --exclude-types indels,mnps,ref,bnd,other \
-      --genotype het \
-      --targets ^chrX:10001-2781479,chrX:155701383-156030895,chrY:10001-2781479,chrY:56887903-57217415 \
-      --exclude "VAF<${MIN_VAF} | VAF>${MAX_VAF} | DP<${MIN_DP}" \
-      --output-type v \
-      --output-file {{ temp_dir }}/{{ pair.normal.name }}.{{ aligner }}.preFilt.snps.vcf \
-      {{ deepvariant_vcf }}
-
-    {# Filter out Blacklist regions (https://doi.org/10.1038/s41598-019-45839-z) and centromeres #}
-    bcftools view \
-      --targets-file ^{{ constants.tempe.encode_denylist }} \
-      --output-type v \
-      --output-file {{ temp_dir }}/{{ pair.normal.name }}.{{ aligner }}.snps.vcf \
-      {{ temp_dir }}/{{ pair.normal.name }}.{{ aligner }}.preFilt.snps.vcf
-
-    {# Remove preFilt.snps.vcf #}
-    rm {{ temp_dir }}/{{ pair.normal.name }}.{{ aligner }}.preFilt.snps.vcf
 
     {# Perform first round of CollectReadCounts on the normal for filtering intervals with little to no reads #}
     gatk --java-options "-Xmx12g" CollectReadCounts \
@@ -244,6 +220,44 @@
       --reference {{ constants.tempe.reference_fasta }}
 
 
+{# Step 1 continued #}
+- name: gatk_call_cnv_step1_extract_hets_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, somatic, cna_caller, gatk, {{ pair.name }}]
+  input:
+    - {{ deepvariant_vcf }}
+  output:
+    - {{ temp_dir }}/{{ pair.normal.name }}.{{ aligner }}.snps.vcf
+  cpus: 1
+  mem: 16G
+  walltime: "24:00:00"
+  container: {{ constants.tools.bcftools.container }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    mkdir -p {{ temp_dir }}
+
+    {# Extract heterozygous snps from the matched normal excluding the PAR regions on XY#}
+    bcftools view \
+      --exclude-types indels,mnps,ref,bnd,other \
+      --genotype het \
+      --targets ^chrX:10001-2781479,chrX:155701383-156030895,chrY:10001-2781479,chrY:56887903-57217415 \
+      --exclude "VAF<${MIN_VAF} | VAF>${MAX_VAF} | DP<${MIN_DP}" \
+      --output-type v \
+      --output-file {{ temp_dir }}/{{ pair.normal.name }}.{{ aligner }}.preFilt.snps.vcf \
+      {{ deepvariant_vcf }}
+
+    {# Filter out Blacklist regions (https://doi.org/10.1038/s41598-019-45839-z) and centromeres #}
+    bcftools view \
+      --targets-file ^{{ constants.tempe.encode_denylist }} \
+      --output-type v \
+      --output-file {{ temp_dir }}/{{ pair.normal.name }}.{{ aligner }}.snps.vcf \
+      {{ temp_dir }}/{{ pair.normal.name }}.{{ aligner }}.preFilt.snps.vcf
+
+    {# Remove preFilt.snps.vcf #}
+    rm {{ temp_dir }}/{{ pair.normal.name }}.{{ aligner }}.preFilt.snps.vcf
+
+
 {# Step 2a #}
 - name: gatk_call_cnv_step2a_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, cna_caller, gatk, {{ pair.name }}]
@@ -256,12 +270,10 @@
   cpus: 1
   mem: 16G
   walltime: "24:00:00"
+  container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    {# Load modules #}
-    module load {{ constants.tools.gatk.module }}
 
     {# Make working and temp directories #}
     mkdir -p "{{ temp_dir }}/temp2a"
@@ -288,12 +300,10 @@
   cpus: 1
   mem: 16G
   walltime: "24:00:00"
+  container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    {# Load modules #}
-    module load {{ constants.tools.gatk.module }}
 
     {# Make working and temp directories #}
     mkdir -p "{{ temp_dir }}/temp2b"
@@ -319,12 +329,10 @@
   cpus: 1
   mem: 16G
   walltime: "24:00:00"
+  container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    {# Load modules #}
-    module load {{ constants.tools.gatk.module }}
 
     {# Make working and temp directories #}
     mkdir -p "{{ temp_dir }}/temp2c"
@@ -351,12 +359,10 @@
   cpus: 1
   mem: 16G
   walltime: "24:00:00"
+  container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    {# Load modules #}
-    module load {{ constants.tools.gatk.module }}
 
     {# Make working and temp directories #}
     mkdir -p "{{ temp_dir }}/temp2d"
@@ -406,12 +412,10 @@
   cpus: 1
   mem: 16G
   walltime: "24:00:00"
+  container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    {# Load modules #}
-    module load {{ constants.tools.gatk.module }}
 
     {# Make working and temp directories #}
     mkdir -p "{{ temp_dir }}/temp3"
@@ -444,7 +448,7 @@
 
     {# Get the average depth of the normal if it is a genome #}
     {% if pair.gltype in 'genome' %}
-      NORMAL_AVERAGE_DEPTH=`gawk -F'\t' '$1 ~ /^COV/ { TOT=$4 + TOT ; SUM=($3*$4)+SUM} END { print int(SUM/TOT)}' {{ normal_bam_stats }}`
+      NORMAL_AVERAGE_DEPTH=`awk -F'\t' '$1 ~ /^COV/ { TOT=$4 + TOT ; SUM=($3*$4)+SUM} END { print int(SUM/TOT)}' {{ normal_bam_stats }}`
 
       if [ ${NORMAL_AVERAGE_DEPTH} -ge 20 ]
       then
@@ -512,45 +516,15 @@
     - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
     - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.re_centered.cr.igv.seg
     - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.dLRs.tsv
-    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}.hets.density.png
-    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_cna_withhets.png
-    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_cna.png
-    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_baf.png
-    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}.png
-    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr1.png
-    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr2.png
-    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr3.png
-    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr4.png
-    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr5.png
-    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr6.png
-    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr7.png
-    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr8.png
-    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr9.png
-    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr10.png
-    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr11.png
-    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr12.png
-    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr13.png
-    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr14.png
-    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr15.png
-    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr16.png
-    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr17.png
-    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr18.png
-    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr19.png
-    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr20.png
-    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr21.png
-    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr22.png
-    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chrX.png
-    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chrY.png
+    - {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
+    - {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.denoisedCR.genderCorrected.tsv
   cpus: 1
   mem: 16G
   walltime: "24:00:00"
+  container: {{ constants.tools.python3.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    {# Load modules #}
-    module load {{ constants.tools.R.module }}
-    module load {{ constants.tools.python_3_7_2.module }}
 
     {# Make working and temp directories #}
     mkdir -p "{{ temp_dir }}"
@@ -571,10 +545,10 @@
 
     if [ ${SEX} == "Male" ]
     then
-      gawk -F'\t' '{ if ($1 == "chrX" || $1 == "chrY") { $4 = $4-1} ; { OFS = "\t" ; print $0 }}' {{ results_dir }}/{{ pair.name }}.{{ aligner }}.denoisedCR.tsv > \
+      awk -F'\t' '{ if ($1 == "chrX" || $1 == "chrY") { $4 = $4-1} ; { OFS = "\t" ; print $0 }}' {{ results_dir }}/{{ pair.name }}.{{ aligner }}.denoisedCR.tsv > \
         {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.denoisedCR.genderCorrected.tsv
 
-      gawk -F'\t' '{ if ($1 == "chrX" || $1 == "chrY") { $6 = $6-1 ; $7 = $7-1 ; $8 = $8-1 } ; { OFS = "\t" ; print $0 }}' {{ results_dir }}/{{ pair.name }}.{{ aligner }}.modelFinal.seg > \
+      awk -F'\t' '{ if ($1 == "chrX" || $1 == "chrY") { $6 = $6-1 ; $7 = $7-1 ; $8 = $8-1 } ; { OFS = "\t" ; print $0 }}' {{ results_dir }}/{{ pair.name }}.{{ aligner }}.modelFinal.seg > \
         {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
 
       contig_names_string="chr1CONTIG_DELIMITERchr2CONTIG_DELIMITERchr3CONTIG_DELIMITERchr4CONTIG_DELIMITERchr5CONTIG_DELIMITERchr6CONTIG_DELIMITERchr7CONTIG_DELIMITERchr8CONTIG_DELIMITERchr9CONTIG_DELIMITERchr10CONTIG_DELIMITERchr11CONTIG_DELIMITERchr12CONTIG_DELIMITERchr13CONTIG_DELIMITERchr14CONTIG_DELIMITERchr15CONTIG_DELIMITERchr16CONTIG_DELIMITERchr17CONTIG_DELIMITERchr18CONTIG_DELIMITERchr19CONTIG_DELIMITERchr20CONTIG_DELIMITERchr21CONTIG_DELIMITERchr22CONTIG_DELIMITERchrXCONTIG_DELIMITERchrY"
@@ -599,9 +573,9 @@
         CHR="chr${CHR}"
       fi
 
-      declare START_${CHR}=$(gawk -F'\t' -v CHROM=${CHR} '$1 == CHROM' {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg | sort -k2,2n | awk -F'\t' 'NR == 1 { print $2 }')
+      declare START_${CHR}=$(awk -F'\t' -v CHROM=${CHR} '$1 == CHROM' {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg | sort -k2,2n | awk -F'\t' 'NR == 1 { print $2 }')
       export START_${CHR}
-      declare STOP_${CHR}=$(gawk -F'\t' -v CHROM=${CHR} '$1 == CHROM' {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg | sort -k3,3nr | awk -F'\t' 'NR == 1 { print $3 }')
+      declare STOP_${CHR}=$(awk -F'\t' -v CHROM=${CHR} '$1 == CHROM' {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg | sort -k3,3nr | awk -F'\t' 'NR == 1 { print $3 }')
       export STOP_${CHR}
     done
 
@@ -621,8 +595,8 @@
       eval "START=\${START_${CHR}}"
       eval "STOP=\${STOP_${CHR}}"
 
-      START_C=$(gawk -v CHR=$CHR '$1==CHR { print $2 }' {{ constants.tempe.centromere }})
-      STOP_C=$(gawk -v CHR=$CHR '$1==CHR { print $3 }' {{ constants.tempe.centromere }})
+      START_C=$(awk -v CHR=$CHR '$1==CHR { print $2 }' {{ constants.tempe.centromere }})
+      STOP_C=$(awk -v CHR=$CHR '$1==CHR { print $3 }' {{ constants.tempe.centromere }})
 
       if [[ ${START} -ge ${START_C} ]]
       then
@@ -641,7 +615,7 @@
       LINES=$(wc -l < "{{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg")
       HEADER=$(grep -c "@" "{{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg" || :)
 
-      gawk -F'\t' -v HEADER="${HEADER}" -v CHROM="${CHR}" -v START="${START}" -v STOP="${STOP}" -v LINES="${LINES}" -v STARTC="${START_C}" -v STOPC="${STOP_C}" 'BEGIN { INC=1 } ;
+      awk -F'\t' -v HEADER="${HEADER}" -v CHROM="${CHR}" -v START="${START}" -v STOP="${STOP}" -v LINES="${LINES}" -v STARTC="${START_C}" -v STOPC="${STOP_C}" 'BEGIN { INC=1 } ;
         # Skip GATK header
         $0 ~ /^@/ { next } ;
         # Print the header
@@ -680,6 +654,51 @@
     done
 
     python ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.cna_seg_extend }} {{ constants.tempe.centromere }} {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
+
+- name: gatk_call_cnv_step4_plot_cnv_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, somatic, cna_caller, gatk, {{ pair.name }}]
+  reset: gatk_call_cnv_step3_{{ pair.name }}_{{ aligner }}
+  input:
+    - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.hets.tsv
+    - {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
+    - {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.denoisedCR.genderCorrected.tsv
+  output:
+    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}.hets.density.png
+    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_cna_withhets.png
+    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_cna.png
+    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_baf.png
+    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}.png
+    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr1.png
+    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr2.png
+    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr3.png
+    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr4.png
+    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr5.png
+    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr6.png
+    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr7.png
+    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr8.png
+    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr9.png
+    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr10.png
+    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr11.png
+    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr12.png
+    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr13.png
+    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr14.png
+    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr15.png
+    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr16.png
+    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr17.png
+    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr18.png
+    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr19.png
+    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr20.png
+    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr21.png
+    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chr22.png
+    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chrX.png
+    - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_chrY.png
+  cpus: 1
+  mem: 16G
+  walltime: "24:00:00"
+  container: {{ constants.tools.R.container }}
+  cmd: |
+    set -eu
+    set -o pipefail
 
     Rscript ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.plotCNVplus_Rscript }} \
       --hetDPfilter 1 \
