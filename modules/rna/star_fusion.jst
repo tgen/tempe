@@ -36,19 +36,10 @@
   cpus: 20
   mem: 80G
   walltime: "24:00:00"
+  container: {{ constants.tools.star.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    {% if r1fqlist[0].fileType == "fasterq" %}
-      export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
-      module load {{ constants.tools.petagene.module }}
-
-    {% endif %}
-    {#
-      This comment is here for protect render spacing, do not remove.
-    #}
-    module load {{ constants.tools.star_fusion.module }}
 
     rm -r {{ temp_dir }} || true
     mkdir -p {{ temp_dir }}
@@ -116,6 +107,7 @@
   cpus: 2
   mem: 8G
   walltime: "24:00:00"
+  container: {{ constants.tools.star_fusion.container }}
   cmd: |
     set -eu
     set -o pipefail
@@ -123,16 +115,6 @@
     mkdir -p {{ temp_dir }}/_starF_checkpoints
     mkdir -p {{ temp_dir }}/star-fusion.preliminary
 
-    {% if r1fqlist[0].fileType == "fasterq" %}
-      export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
-      module load {{ constants.tools.petagene.module }}
-
-    {% endif %}
-    {#
-      This comment is here for protect render spacing, do not remove.
-    #}
-    module load {{ constants.tools.samtools.module }}
-    module load {{ constants.tools.star_fusion.module }}
     sf_path=$(dirname `which STAR-Fusion`)
 
     export CTAT_GENOME_LIB={{ constants.tempe.starfusion_index }}
@@ -265,11 +247,11 @@
   cpus: 2
   mem: 16G
   walltime: "24:00:00"
+  container: {{ constants.tools.star_fusion.container }}
   cmd: |
     set -eu
     set -o pipefail
 
-    module load {{ constants.tools.star_fusion.module }}
     sf_path=$(dirname `which STAR-Fusion`)
 
     PROJECT_ROOT=$PWD
@@ -336,11 +318,10 @@
   walltime: "8:00:00"
   cpus: 8
   mem: 4G
+  container: {{ constants.tools.samtools.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.samtools.module }}
 
     samtools view \
       -C \

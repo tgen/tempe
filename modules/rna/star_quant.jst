@@ -58,19 +58,11 @@
   cpus: 20
   mem: 80G
   walltime: "48:00:00"
+  container: {{ constants.tools.star.container }}
   cmd: |
     set -eu
     set -o pipefail
-    module load {{ constants.tools.star.module }}
 
-    {% if r1fqlist[0].fileType == "fasterq" %}
-      export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
-      module load {{ constants.tools.petagene.module }}
-
-    {% endif %}
-    {#
-      This comment is here for protect render spacing, do not remove.
-    #}
     mkdir -p "{{ temp_dir }}"
     mkdir -p "{{ results_dir }}/stats"
     mkdir -p "{{ star_finalcountsdir }}"
@@ -198,10 +190,10 @@
   output: {{ star_bam_sorted }}
   cpus: 8
   mem: 16G
+  container: {{ constants.tools.samtools.container }}
   cmd: |
     set -eu
     set -o pipefail
-    module load {{ constants.tools.samtools.module }}
 
     {#
     # If this task was interrupted previously, temp files may exist
@@ -224,55 +216,7 @@
       - \
       -o "{{ star_bam_sorted }}"
 
-{#
-- name: markduplicates_star_{{ sample.name }}
-  tags: [{{ sample.gltype }}, alignment, rna_alignment, STAR, {{ sample.name }}]
-  input: {{ star_bam_sorted }}
-  output: {{ star_bam_final }}
-  cpus: 10
-  mem: 80G
-  cmd: |
-    set -eu
-    set -o pipefail
 
-    module load {{ constants.tools.samtools.module }}
-#}
-    {#
-    # If this task was interrupted previously, temp files may exist
-    # that will cause errors with samtools markdup. Here, we purge any
-    # existing temp files before making the directory again.
-    #}
-{#
-    if [ -d "{{ temp_dir }}/markdup_samtools" ]
-    then
-      rm -r "{{ temp_dir }}/markdup_samtools"
-    fi
-
-    if [ -f "{{ star_bam_final }}" ]
-    then
-      mv "{{ star_bam_final }}" "{{ star_bam_sorted }}"
-    fi
-
-    mkdir -p "{{ temp_dir }}/markdup"
-    mkdir -p "{{ results_dir }}/stats/"
-
-    samtools markdup \
-      -d {{ opt_dup_distance }} \
-      -s \
-      --threads 10 \
-      -T "{{ temp_dir }}/markdup" \
-      "{{ star_bam_sorted }}" \
-      "{{ star_bam_final }}" \
-      2> "{{ results_dir }}/stats_samtools/{{ sample.name }}.star.bam.markdup.txt"
-
-    samtools index -@ 10 "{{ star_bam_final }}"
-#}
-
-
-{#
-This task works, and was tested with MMRF_1499, but it was made as a backup for samtools markdups
-which appears to be working now after some code changes, keeping this here in case we need a backup
-#}
 {% set task %}markduplicates_star_gatk_{{ sample.name }}{% endset %}
 {% set rna_md_metrics %}{{ results_dir }}/stats/{{ sample.name }}.star.bam.md_metrics{% endset %}
 {% set rna_md_metrics_json %}{{ rna_md_metrics }}.json{% endset %}
@@ -282,14 +226,13 @@ which appears to be working now after some code changes, keeping this here in ca
   input: {{ star_bam_sorted }}
   output:
     - {{ star_bam_final }}
-    - {{ star_bam_final }}.bai
     - {{ rna_md_metrics }}
   cpus: 10
   mem: 40G
+  container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
     set -o pipefail
-    module load {{ constants.tools.samtools.module }}
 
     {#
     # If this task was interrupted previously, temp files may exist
@@ -303,8 +246,6 @@ which appears to be working now after some code changes, keeping this here in ca
 
     mkdir -p "{{ temp_dir }}/markdup"
 
-    module load {{ constants.tools.gatk.module }}
-
     gatk MarkDuplicates \
       --java-options "-Xmx31G" \
       --TMP_DIR "temp" \
@@ -316,35 +257,52 @@ which appears to be working now after some code changes, keeping this here in ca
       --METRICS_FILE "{{ results_dir }}/stats/{{ sample.name }}.star.bam.md_metrics" \
       --OUTPUT "{{ star_bam_final }}"
 
+
+- name: markduplicates_star_gatk_index_{{ sample.name }}
+  tags: [{{ sample.gltype }}, alignment, rna_alignment, STAR, {{ sample.name }}]
+  reset: predecessors
+  input: 
+    - {{ star_bam_final }}
+  output:
+    - {{ star_bam_final }}.bai
+  cpus: 10
+  mem: 40G
+  container: {{ constants.tools.samtools.container }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
     samtools index -@ 10 "{{ star_bam_final }}"
 
-    {{- stats2json(sample.gltype, sample.name, task, rna_md_metrics, rna_md_metrics_json, "picard_mark_duplicates_metrics", sample_name=sample.name) }}
 
-    {% set task_list = [] %}
+{{- stats2json(sample.gltype, sample.name, task, rna_md_metrics, rna_md_metrics_json, "picard_mark_duplicates_metrics", sample_name=sample.name) }}
 
-    {% if tasks.RNA_transcriptome_quantify_expression_HTseq|default(true) %}
-      {% set task %}htseq_{{ sample.name }}{% endset %}
-      {% do task_list.append(task) %}
-      {{- htseq(sample) }}
-    {% endif %}
+{% set task_list = [] %}
 
-    {% if tasks.RNA_transcriptome_quantify_expression_subread_featureCounts|default(true) %}
-      {% set task %}featurecounts_{{ sample.name }}{% endset %}
-      {% do task_list.append(task) %}
-      {{- featurecounts(sample) }}
-    {% endif %}
+{% if tasks.RNA_transcriptome_quantify_expression_HTseq|default(true) %}
+  {% set task %}htseq_{{ sample.name }}{% endset %}
+  {% do task_list.append(task) %}
+  {{- htseq(sample) }}
+{% endif %}
 
-    {% if tasks.RNA_transcriptome_quantify_expression_RSEM|default(true) %}
-      {% set task %}rsem_calculate_expression_{{ sample.name }}{% endset %}
-      {% do task_list.append(task) %}
-      {{- rsem_calculate_expression(sample) }}
-    {% endif %}
+{% if tasks.RNA_transcriptome_quantify_expression_subread_featureCounts|default(true) %}
+  {% set task %}featurecounts_{{ sample.name }}{% endset %}
+  {% do task_list.append(task) %}
+  {{- featurecounts(sample) }}
+{% endif %}
 
-    {% set task %}markduplicates_star_gatk_{{ sample.name }}{% endset %}
-    {% do task_list.append(task) %}
+{% if tasks.RNA_transcriptome_quantify_expression_RSEM|default(true) %}
+  {% set task %}rsem_calculate_expression_{{ sample.name }}{% endset %}
+  {% do task_list.append(task) %}
+  {{- rsem_calculate_expression(sample) }}
+{% endif %}
 
-    {% set task_name %}{{ sample.name }}_star_quant{% endset %}
-    {{- remove_files(temp_dir, none, task_list, task_name) }}
+{% set task %}markduplicates_star_gatk_{{ sample.name }}{% endset %}
+{% do task_list.append(task) %}
+
+{% set task_name %}{{ sample.name }}_star_quant{% endset %}
+{{- remove_files(temp_dir, none, task_list, task_name) }}
+
 {% endmacro %}
 
 {% macro htseq(sample) %}
@@ -359,10 +317,10 @@ which appears to be working now after some code changes, keeping this here in ca
   cpus: 2
   mem: 4G
   walltime: "48:00:00"
+  container: {{ constants.tools.htseq.container }}
   cmd: |
     set -eu
     set -o pipefail
-    module load {{ constants.tools.htseq.module }}
 
     mkdir -p "{{ sample.gltype }}/quant/htseq/{{ sample.name }}/"
 
@@ -411,10 +369,10 @@ which appears to be working now after some code changes, keeping this here in ca
   cpus: 8
   mem: 8G
   walltime: "8:00:00"
+  container: {{ constants.tools.subread.container }}
   cmd: |
     set -eu
     set -o pipefail
-    module load {{ constants.tools.subread.module }}
 
     mkdir -p "{{ sample.gltype }}/quant/featurecounts/{{ sample.name }}/"
 
@@ -458,10 +416,10 @@ which appears to be working now after some code changes, keeping this here in ca
   cpus: 8
   mem: 8G
   walltime: "8:00:00"
+  container: {{ constants.tools.rsem.container }}
   cmd: |
     set -eu
     set -o pipefail
-    module load {{ constants.tools.rsem.module }}
 
     mkdir -p "{{ sample.gltype }}/quant/rsem/{{ sample.name }}/"
 

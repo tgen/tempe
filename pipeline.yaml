@@ -17,12 +17,22 @@ constants:
       container: /scratch/bturner/AJ_singularity_images/delly_0.7.6.sif
     gatk:
       container: /scratch/bturner/AJ_singularity_images/gatk_4.1.8.0.sif
+    htseq:
+      container: /scratch/bturner/AJ_singularity_images/htseq.sif
     htslib:
       container: /scratch/bturner/AJ_singularity_images/htslib_1.10.sif
     parabricks:
       container: /packages/parabricks-v3.7.0_V100/parabricks-release-3.7.0-1.sif
+    salmon:
+      container: /scratch/bturner/AJ_singularity_images/salmon_1.2.1sif
     samtools:
       container: /scratch/bturner/AJ_singularity_images/samtools_1.10.sif
+    star:
+      container: /scratch/bturner/AJ_singularity_images/star_2.7.2b.sif
+    star_fusion:
+      container: /scratch/bturner/AJ_singularity_images/star_fusion_1.8.1.sif
+    subread:
+      container: /scratch/bturner/AJ_singularity_images/subread_2.0.0.sif
     freebayes:
       container: /scratch/bturner/AJ_singularity_images/freebayes_1.3.1.sif
     lancet:

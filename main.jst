@@ -50,9 +50,9 @@
 {# {% from 'modules/qc/bam_qc_snpsniffer.jst' import snpsniffer_summary with context %} #}
 {% from 'modules/constitutional/main.jst' import constitutional_variant_calling with context %}
 {% from 'modules/somatic/main.jst' import somatic_variant_calling with context %}
-{# {% from 'modules/rna/main.jst' import rna_quant with context %}
+{% from 'modules/rna/main.jst' import rna_quant with context %}
 {% from 'modules/rna/main.jst' import rna_fusion_detection with context %}
-{% from 'modules/single_cell/main.jst' import single_cell_rna with context %}
+{# {% from 'modules/single_cell/main.jst' import single_cell_rna with context %}
 {% from 'modules/CHIP/main.jst' import chip_workflow with context %}
 {% from 'modules/tumor_only/main.jst' import tumor_only_variant_calling with context %} #}
 
@@ -155,11 +155,11 @@
 {{- constitutional_variant_calling(samples) }}
 
 {{- somatic_variant_calling(samples) }}
-{#
+
 {{- rna_quant(samples) }}
 
 {{- rna_fusion_detection(samples) }}
-
+{#
 {{- single_cell_rna(dataFiles) }}
 
 {{- chip_workflow(samples) }}
