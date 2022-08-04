@@ -24,7 +24,7 @@ constants:
     parabricks:
       container: /packages/parabricks-v3.7.0_V100/parabricks-release-3.7.0-1.sif
     salmon:
-      container: /scratch/bturner/AJ_singularity_images/salmon_1.2.1sif
+      container: /scratch/bturner/AJ_singularity_images/salmon_1.2.1.sif
     samtools:
       container: /scratch/bturner/AJ_singularity_images/samtools_1.10.sif
     star:
