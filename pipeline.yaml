@@ -28,7 +28,7 @@ constants:
     samtools:
       container: /scratch/bturner/AJ_singularity_images/samtools_1.10.sif
     star:
-      container: /scratch/bturner/AJ_singularity_images/star_2.7.2b.sif
+      container: /scratch/bturner/AJ_singularity_images/star_2.7.5b.sif
     star_fusion:
       container: /scratch/bturner/AJ_singularity_images/star_fusion_1.8.1.sif
     subread:
