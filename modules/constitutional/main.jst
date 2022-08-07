@@ -77,7 +77,7 @@
             {{- strelka2_constitutional(sample, aligner, taskPrefix=taskPrefix) }}
         {% endif %}
         {%- if tasks[taskPrefix+"_constitutional_snp_indel_caller_deepvariant"]|default(true) %}
-            {# {{- deepvariant(sample, aligner, taskPrefix=taskPrefix) }} Needs container #}
+            {{- deepvariant(sample, aligner, taskPrefix=taskPrefix) }}
         {% endif %}
         {%- if tasks[taskPrefix+"_constitutional_snp_indel_caller_octopus"]|default(true) %}
             {{- octopus_constitutional(sample, aligner, taskPrefix=taskPrefix) }}

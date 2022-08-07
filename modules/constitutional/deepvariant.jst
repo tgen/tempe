@@ -24,11 +24,10 @@
   cpus: 1
   mem: 4G
   walltime: "24:00:00"
+  container: {{ constants.tools.deepvariant.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.deepvariant.module }}
 
     PROJECT_ROOT=$PWD
 
@@ -67,11 +66,10 @@
   mem: 40G
   sbatch_args: ['-p', 'gpu', '--gres', 'gpu:1', '-N', '1', '--tasks-per-node', '1' ]
   walltime: "24:00:00"
+  container: {{ constants.tools.deepvariant.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.deepvariant.module }}
 
     PROJECT_ROOT=$PWD
 
@@ -94,17 +92,14 @@
   input: {{ temp_dir }}/{{ sample.name }}.cvo.tfrecord.gz
   output:
     - {{ all_vcf }}
-    - {{ all_vcf }}.tbi
     - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.deepvariant.all.g.vcf.gz
   cpus: 1
   mem: 16G
   walltime: "24:00:00"
+  container: {{ constants.tools.deepvariant.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.deepvariant.module }}
-    module load {{ constants.tools.bcftools.module }}
 
     PROJECT_ROOT=$PWD
     
@@ -120,25 +115,24 @@
         --nonvariant_site_tfrecord_path "${PROJECT_ROOT}/{{ temp_dir }}/{{ sample.name }}.gvcf.tfrecord@{{ nshards }}.gz" \
         --gvcf_outfile "${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}.{{ aligner }}.deepvariant.all.g.vcf.gz"
 
-    bcftools index --tbi --force "${PROJECT_ROOT}/{{ all_vcf }}"
-
 
 - name: deepvariant_filter_variants_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, deepvariant, {{ sample.name }}]
   input:
     - {{ all_vcf }}
-    - {{ all_vcf }}.tbi
   output:
+    - {{ all_vcf }}.tbi
     - {{ pass_vcf }}
     - {{ pass_vcf }}.tbi
   cpus: 1
   mem: 4G
   walltime: "24:00:00"
+  container: {{ constants.tools.bcftools.container }}
   cmd: |
     set -eu
     set -o pipefail
 
-    module load {{ constants.tools.bcftools.module }}
+    bcftools index --tbi --force "{{ all_vcf }}"
 
     {# Then filter out the PASS variants to a separate file #}
     bcftools filter \
