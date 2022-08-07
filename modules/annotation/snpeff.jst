@@ -12,12 +12,10 @@
   walltime: "8:00:00"
   cpus: 4
   mem: 8G
+  container: {{ constants.tools.snpeff.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.snpeff.module }}
-    module load {{ constants.tools.bcftools.module }}
 
     {# No long options available for the following:
       -t      Use multiple threads (implies '-noStats')
@@ -25,7 +23,6 @@
       -hgvs   Use HGVS annotations for amino acid sub-field
       -lof    Add loss of function (LOF) and Nonsense mediated decay (NMD) tags
     #}
-
     {# Generate full annotation set #}
     snpEff ann \
       -t \
@@ -35,10 +32,7 @@
       -lof \
       "{{ constants.tempe.snpeff_db }}" \
       "{{ input_vcf }}" \
-      | \
-    bcftools view --output-type z --output-file "{{ final_vcf_prefix }}.snpeff.full.vcf.gz"
-
-    bcftools index --threads 4 --tbi --force "{{ final_vcf_prefix }}.snpeff.full.vcf.gz"
+      > "{{ final_vcf_prefix }}.snpeff.full.vcf"
 
     {# No long options available for the following:
       -t      Use multiple threads (implies '-noStats')
@@ -57,9 +51,48 @@
       -lof \
       "{{ constants.tempe.snpeff_db }}" \
       "{{ input_vcf }}" \
-      | \
-    bcftools view --output-type z --output-file "{{ final_vcf_prefix }}.snpeff.can.vcf.gz"
+      > "{{ final_vcf_prefix }}.snpeff.can.vcf"
 
-    bcftools index --threads 4 --tbi --force "{{ final_vcf_prefix }}.snpeff.can.vcf.gz"
+
+- name: snpeff_bcftools_compress_{{ variant_caller }}_{{ sample_or_pair.name }}_{{ aligner }}
+  tags: [{{ sample_or_pair.gltype }}, {{ analysis_type }}, {{ task_type }}, annotate_vcfs, {{ variant_caller }}, {{ sample_or_pair.name }}]
+  input:
+    - {{ final_vcf_prefix }}.snpeff.full.vcf
+    - {{ final_vcf_prefix }}.snpeff.can.vcf
+  output:
+    - {{ final_vcf_prefix }}.snpeff.full.vcf.gz
+    - {{ final_vcf_prefix }}.snpeff.full.vcf.gz.tbi
+    - {{ final_vcf_prefix }}.snpeff.can.vcf.gz
+    - {{ final_vcf_prefix }}.snpeff.can.vcf.gz.tbi
+  walltime: "8:00:00"
+  cpus: 4
+  mem: 8G
+  container: {{ constants.tools.bcftools.container }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    bcftools view \
+      --output-type z \
+      --output-file "{{ final_vcf_prefix }}.snpeff.full.vcf.gz" \
+      "{{ final_vcf_prefix }}.snpeff.full.vcf"
+
+    bcftools index \
+      --threads 4 \
+      --tbi \
+      --force \
+      "{{ final_vcf_prefix }}.snpeff.full.vcf.gz"
+
+    bcftools view \
+      --output-type z \
+      --output-file "{{ final_vcf_prefix }}.snpeff.can.vcf.gz" \
+      "{{ final_vcf_prefix }}.snpeff.can.vcf"
+
+    bcftools index \
+      --threads 4 \
+      --tbi \
+      --force \
+      "{{ final_vcf_prefix }}.snpeff.can.vcf.gz"
+
 
 {% endmacro %}
