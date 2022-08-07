@@ -12,11 +12,10 @@
   walltime: "8:00:00"
   cpus: 2
   mem: 4G
+  container: {{ constants.tools.bcftools.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.bcftools.module }}
 
     {# Write the needed header lines to a temporary file, which will be inserted into the VCF #}
     echo "##INFO=<ID=RNA_REF_COUNT,Number=.,Type=Integer,Description=\"Count of REF alleles seen in RNA\">" > {{ temp_dir }}/temp_header
@@ -52,19 +51,17 @@
 {% set rna_sample = pair.tumor.rna_samples[0].rna_name %}
 {% set star_bam_final %}rna/alignment/star/{{ rna_sample }}/{{ rna_sample }}.star.bam{% endset %}
 
-- name: add_matched_rna_{{ pair.name }}_{{ aligner }}
+- name: add_matched_rna_bcftools_prep_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, merge_vcfs, vcfMerger2, {{ pair.name }}]
-  reset: vcfmerger2_{{ pair.name }}_{{ aligner }}
-  input:
-    - {{ input_vcf }}
-    - {{ star_bam_final }}
+  reset: predecessors
+  input: {{ input_vcf }}
   output:
-    - {{ output_vcf }}
-    - {{ output_vcf }}.csi
-    - {{ output_vcf }}.tbi
+    - {{ temp_dir }}/contig_lengths.txt
+    - {{ temp_dir }}/temp_variant_pos.bed
   walltime: "8:00:00"
-  cpus: 2
-  mem: 4G
+  cpus: 1
+  mem: 2G
+  container: {{ constants.tools.bcftools.container }}
   cmd: |
     set -eu
     set -o pipefail
@@ -74,7 +71,7 @@
     module load {{ constants.tools.freebayes.module }}
 
     cut -f2,3 "{{ constants.tempe.reference_dict }}" | \
-      gawk 'NR>1' | \
+      awk 'NR>1' | \
       sed 's/SN://g' | \
       sed 's/LN://g' > \
       {{ temp_dir }}/contig_lengths.txt
@@ -89,6 +86,24 @@
       {{ input_vcf }} > \
       {{ temp_dir }}/temp_variant_pos.bed
 
+
+- name: add_matched_rna_bedtools_prep_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, somatic, merge_vcfs, vcfMerger2, {{ pair.name }}]
+  reset: predecessors
+  input:
+    - {{ temp_dir }}/temp_variant_pos.bed
+    - {{ temp_dir }}/contig_lengths.txt
+  output:
+    - {{ temp_dir }}/temp_intervals.bed
+    - {{ temp_dir }}/temp_target_intervals.bed
+  walltime: "8:00:00"
+  cpus: 1
+  mem: 2G
+  container: {{ constants.tools.bedtools.container }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
     {# No long options available for the following:
         bedtools slop
           -i      <bed/gff/vcf>
@@ -99,7 +114,6 @@
         bedtools merge
           -i      <bed/gff/vcf>
     #}
-
     {#
     # Bedtools slop is used to add 100bp padding and ensure padding does not extend off a contig, if so it is trimmed
     # to the contig start or end
@@ -116,8 +130,25 @@
       -i {{ temp_dir }}/temp_intervals.bed > \
       {{ temp_dir }}/temp_target_intervals.bed
 
-    {### Call freebayes forcing genotyping even if only a single alternate allele is seen #}
 
+- name: add_matched_rna_freebayes_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, somatic, merge_vcfs, vcfMerger2, {{ pair.name }}]
+  reset: vcfmerger2_{{ pair.name }}_{{ aligner }}
+  input:
+    - {{ input_vcf }}
+    - {{ star_bam_final }}
+    - {{ temp_dir }}/temp_target_intervals.bed
+  output:
+    - {{ temp_dir }}/{{ rna_sample }}_DnaVarInRNA.vcf
+  walltime: "8:00:00"
+  cpus: 2
+  mem: 4G
+  container: {{ constants.tools.freebayes.container }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    {### Call freebayes forcing genotyping even if only a single alternate allele is seen #}
     {## Limitation: Does not output anything at positions with no reads (ie. DP=0 is not seen) #}
     freebayes \
       --fasta-reference "{{ constants.tempe.reference_fasta }}" \
@@ -129,6 +160,25 @@
       --vcf {{ temp_dir }}/{{ rna_sample }}_DnaVarInRNA.vcf \
       {{ star_bam_final }}
 
+
+- name: add_matched_rna_bcftools_process_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, somatic, merge_vcfs, vcfMerger2, {{ pair.name }}]
+  reset: predecessors
+  input:
+    - {{ input_vcf }}
+    - {{ temp_dir }}/{{ rna_sample }}_DnaVarInRNA.vcf
+  output:
+    - {{ output_vcf }}
+    - {{ output_vcf }}.csi
+    - {{ output_vcf }}.tbi
+  walltime: "8:00:00"
+  cpus: 2
+  mem: 4G
+  container: {{ constants.tools.bcftools.container }}
+  cmd: |
+    set -eu
+    set -o pipefail
+    
     {#
     # Since the input variants are all normalized, use bcftools to normalize the RNA calls and remove any variant line
     # with no ALT allele noted (ie. ALT = ".") (Largely a Seurat related bug)
@@ -203,9 +253,9 @@
     {#
     # Create a temp VCF with RNA INFO keys
     # Need to deal with a variety of observed allele scenarios
-    # gawk if, elseif decision tree to parse the temp_RNA_Counts.txt into a VCF with proper header for final annotation step
+    # awk if, elseif decision tree to parse the temp_RNA_Counts.txt into a VCF with proper header for final annotation step
     #}
-    gawk '{
+    awk '{
       OFS = "\t" ;
       if ( $5 == "." && $6 == "." )
         print $1, $2, ".", $3, $4, ".", ".", "RNA_REF_COUNT=0;RNA_ALT_COUNT=0;RNA_ALT_FREQ=0.00";
@@ -258,5 +308,6 @@
       --threads 2 \
       --force \
       {{ output_vcf }}
+
 
 {% endmacro %}
