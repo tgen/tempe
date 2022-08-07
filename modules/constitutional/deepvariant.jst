@@ -40,7 +40,7 @@
     # This function does not need to be run on a GPU
     # cd here in order to prevent wild temp files from polluting the project
     #}
-    make_examples \
+    /opt/deepvariant/bin/make_examples \
       --logging_level WARN \
       --mode calling \
       --task {{ i }} \
@@ -76,7 +76,7 @@
     cd "{{ temp_dir }}"
 
     {# Run call_variants #}
-    call_variants \
+    /opt/deepvariant/bin/call_variants \
       {% if sample.gltype == 'exome' %}
       --checkpoint "{{ constants.tempe.deepvariant_models.exome }}" \
       {% else %}
@@ -108,7 +108,7 @@
     cd "{{ temp_dir }}"
     
     {# Run postprocess_variants with gVCFs #}
-    postprocess_variants \
+    /opt/deepvariant/bin/postprocess_variants \
         --ref "{{ constants.tempe.reference_fasta }}" \
         --infile "{{ sample.name }}.cvo.tfrecord.gz" \
         --outfile "${PROJECT_ROOT}/{{ all_vcf }}" \
