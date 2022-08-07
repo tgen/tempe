@@ -66,10 +66,6 @@
     set -eu
     set -o pipefail
 
-    module load {{ constants.tools.bcftools.module }}
-    module load {{ constants.tools.bedtools.module }}
-    module load {{ constants.tools.freebayes.module }}
-
     cut -f2,3 "{{ constants.tempe.reference_dict }}" | \
       awk 'NR>1' | \
       sed 's/SN://g' | \
