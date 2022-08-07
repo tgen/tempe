@@ -7,6 +7,8 @@ constants:
   tools:
     base:
       container: /packages/easy-build/containers/Phoenix2.0/baseimage.sif
+    bcftools:
+      container: /scratch/bturner/AJ_singularity_images/bcftools_1.10.2.sif
     bedtools:
       container: /scratch/bturner/AJ_singularity_images/bedtools_2.29.0.sif
     bwa_mem2_samtools:
@@ -15,44 +17,48 @@ constants:
       container: /scratch/bturner/AJ_singularity_images/bwa_mem2_gatk.sif
     delly:
       container: /scratch/bturner/AJ_singularity_images/delly_0.7.6.sif
+    deepvariant:
+      container: /scratch/bturner/AJ_singularity_images/deepvariant_0.10.0-gpu.sif
+    freebayes:
+      container: /scratch/bturner/AJ_singularity_images/freebayes_1.3.1.sif
     gatk:
       container: /scratch/bturner/AJ_singularity_images/gatk_4.1.8.0.sif
     htseq:
       container: /scratch/bturner/AJ_singularity_images/htseq.sif
     htslib:
       container: /scratch/bturner/AJ_singularity_images/htslib_1.10.sif
+    lancet:
+      container: /scratch/bturner/AJ_singularity_images/lancet_1.1.x.sif
+    manta:
+      container: /scratch/bturner/AJ_singularity_images/manta_1.6.0.sif
+    octopus:
+      container: /scratch/bturner/AJ_singularity_images/octopus_0.7.4.sif
+    python3:
+      container: /scratch/bturner/AJ_singularity_images/python_3.7.2.sif
     parabricks:
       container: /packages/parabricks-v3.7.0_V100/parabricks-release-3.7.0-1.sif
+    R:
+      container: /scratch/bturner/AJ_singularity_images/r_3.6.1.sif
     salmon:
       container: /scratch/bturner/AJ_singularity_images/salmon_1.2.1.sif
     samtools:
       container: /scratch/bturner/AJ_singularity_images/samtools_1.10.sif
+    snpeff:
+      container: /scratch/bturner/AJ_singularity_images/snpeff_4_3t.sif
     star:
       container: /scratch/bturner/AJ_singularity_images/star_2.7.5b.sif
     star_fusion:
       container: /scratch/bturner/AJ_singularity_images/star_fusion_1.8.1.sif
     subread:
       container: /scratch/bturner/AJ_singularity_images/subread_2.0.0.sif
-    freebayes:
-      container: /scratch/bturner/AJ_singularity_images/freebayes_1.3.1.sif
-    lancet:
-      container: /scratch/bturner/AJ_singularity_images/lancet_1.1.x.sif
-    manta:
-      container: /scratch/bturner/AJ_singularity_images/manta_1.6.0.sif
-    R:
-      container: /scratch/bturner/AJ_singularity_images/r_3.6.1.sif
-    python3:
-      container: /scratch/bturner/AJ_singularity_images/python_3.7.2.sif
-    octopus:
-      container: /scratch/bturner/AJ_singularity_images/octopus_0.7.4.sif
-    bcftools:
-      container: /scratch/bturner/AJ_singularity_images/bcftools_1.10.2.sif
     strelka:
       container: /scratch/bturner/AJ_singularity_images/strelka_2.9.10.sif
     vardict:
       container: /scratch/bturner/AJ_singularity_images/vardict_1.7.9.sif
     vcfmerger:
       container: /scratch/bturner/AJ_singularity_images/vcfmerger_0.8.7.sif
+    vep:
+      container: /scratch/bturner/AJ_singularity_images/vep.sif
   tempe:
     species: Homo sapiens
     genome_build: grch38_hg38
