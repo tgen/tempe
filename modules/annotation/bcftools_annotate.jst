@@ -14,11 +14,10 @@
   walltime: "8:00:00"
   cpus: 4
   mem: 4G
+  container: {{ constants.tools.bcftools.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.bcftools.module }}
 
     mkdir -p "{{ temp_dir }}"
 
