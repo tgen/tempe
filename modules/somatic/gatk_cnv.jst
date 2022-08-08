@@ -533,6 +533,7 @@
   mem: 16G
   walltime: "24:00:00"
   container: {{ constants.tools.python3.container }}
+  backend_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   cmd: |
     set -eu
     set -o pipefail
@@ -664,7 +665,7 @@
       mv {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg.temp {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
     done
 
-    python ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.cna_seg_extend }} {{ constants.tempe.centromere }} {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
+    python3 ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.cna_seg_extend }} {{ constants.tempe.centromere }} {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
 
 - name: gatk_call_cnv_step4_plot_cnv_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, cna_caller, gatk, {{ pair.name }}]
@@ -707,6 +708,7 @@
   mem: 16G
   walltime: "24:00:00"
   container: {{ constants.tools.R.container }}
+  backend_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   cmd: |
     set -eu
     set -o pipefail
