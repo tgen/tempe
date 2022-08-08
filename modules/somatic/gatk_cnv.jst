@@ -88,10 +88,6 @@
     {# Divide by two to accomidate autosomes then times by 20 to reach an esitmated 20x depth #}
     EXP_1X_COUNTS=$(( BIN_LENGTH/MAX_LENGTH/2*20 ))
 
-    MIN_VAF=0.45
-    MAX_VAF=0.55
-    MIN_DP=20
-
     {% elif pair.gltype in 'genome' %}
 
     if [ ${SEX} == "Female" ]
@@ -127,17 +123,6 @@
 
     {# Set the variable for the --low-count-filter-count-threshold option used in FilterIntervals #}
     EXP_1X_COUNTS=$(( BIN_LENGTH/MAX_LENGTH/2 ))
-
-    if [ ${NORMAL_AVERAGE_DEPTH} -lt 20 ]
-    then
-      MIN_VAF=0.333
-      MAX_VAF=0.666
-      MIN_DP=5
-    else
-      MIN_VAF=0.45
-      MAX_VAF=0.55
-      MIN_DP=20
-    fi
 
     {% endif %}
 
@@ -225,6 +210,8 @@
   tags: [{{ pair.gltype }}, somatic, cna_caller, gatk, {{ pair.name }}]
   input:
     - {{ deepvariant_vcf }}
+    - {{ normal_bam_stats }}
+    - {{ tumor_bam_stats }}
   output:
     - {{ temp_dir }}/{{ pair.normal.name }}.{{ aligner }}.snps.vcf
   cpus: 1
@@ -236,6 +223,30 @@
     set -o pipefail
 
     mkdir -p {{ temp_dir }}
+
+    {% if pair.gltype in 'exome' %}
+
+    MIN_VAF=0.45
+    MAX_VAF=0.55
+    MIN_DP=20
+
+    {% elif pair.gltype in 'genome' %}
+
+    NORMAL_AVERAGE_DEPTH=`awk -F'\t' '$1 ~ /^COV/ { TOT=$4 + TOT ; SUM=($3*$4)+SUM} END { print int(SUM/TOT)}' {{ normal_bam_stats }}`
+    TUMOR_AVERAGE_DEPTH=`awk -F'\t' '$1 ~ /^COV/ { TOT=$4 + TOT ; SUM=($3*$4)+SUM} END { print int(SUM/TOT)}' {{ tumor_bam_stats }}`
+
+    if [ ${NORMAL_AVERAGE_DEPTH} -lt 20 ]
+    then
+      MIN_VAF=0.333
+      MAX_VAF=0.666
+      MIN_DP=5
+    else
+      MIN_VAF=0.45
+      MAX_VAF=0.55
+      MIN_DP=20
+    fi
+
+    {% endif %}
 
     {# Extract heterozygous snps from the matched normal excluding the PAR regions on XY#}
     bcftools view \
