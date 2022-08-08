@@ -112,7 +112,7 @@
       AVERAGE_DEPTH=${TUMOR_AVERAGE_DEPTH}
     fi
 
-    BIN_LENGTH_MODIFYER=`bc -l <<< ${COVERAGE_CONSTANT}/${AVERAGE_DEPTH}`
+    BIN_LENGTH_MODIFYER=`awk "BEGIN { print $COVERAGE_CONSTANT/$AVERAGE_DEPTH }"`
     BIN_LENGTH=`awk -v BIN_LENGTH_CONSTANT=${BIN_LENGTH_CONSTANT} -v BIN_LENGTH_MODIFYER=${BIN_LENGTH_MODIFYER} 'BEGIN { printf("%d\n",BIN_LENGTH_CONSTANT*BIN_LENGTH_MODIFYER)}'`
 
     {# If the bin length is shorter than the max read length then set the bin length to the read length #}
