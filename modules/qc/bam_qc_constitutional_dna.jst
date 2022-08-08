@@ -156,6 +156,8 @@
     set -eu
     set -o pipefail
 
+    mkdir -p "{{ temp_dir }}"
+
     {#
     ################################################
     ## Check total read count on Y/(X+Y)
@@ -206,9 +208,7 @@
     {% if libraryCount == 1 %}
     - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.sexCheck.txt
     {% endif %}
-  {% if bam_level is sameas false %}
   reset: predecessors
-  {% endif %}
   cpus: 1
   mem: 2G
   container: {{ constants.tools.bcftools.container }}
