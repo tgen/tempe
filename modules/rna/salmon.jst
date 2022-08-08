@@ -49,9 +49,9 @@
       --libType "{{ constants.tempe.strandedness_options[sample.strandedness].salmon }}" \
       --index "{{ constants.tempe.salmon_index }}" \
       --geneMap "{{ constants.tempe.gtf }}" \
-      -1 {% for fq in r1fqlist %}"temp/fastqs/{{ fq.basename }}"{% if not loop.last%} {% endif %}{% endfor %} \
+      -1 {% for fq in r1fqlist %}{% if not loop.last%}temp/fastqs/{{ fq.basename }} {% else %}temp/fastqs/{{ fq.basename }}{% endif %}{% endfor %} \
       {% if r2fqlist %}
-      -2 {% for fq in r2fqlist %}"temp/fastqs/{{ fq.basename }}"{% if not loop.last%} {% endif %}{% endfor %} \
+      -2 {% for fq in r2fqlist %}{% if not loop.last%}temp/fastqs/{{ fq.basename }} {% else %}temp/fastqs/{{ fq.basename }}{% endif %}{% endfor %} \
       {% endif %}
       --output "{{ temp_dir }}"
 
