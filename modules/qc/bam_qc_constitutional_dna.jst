@@ -23,7 +23,9 @@
 
 - name: verifybamid2_{{ task }}
   tags: [{{ sample.gltype }}, quality_control, constitutional_contamination_check, VerifyBamID, {{ sample.name }}]
-  input: {{ bam }}
+  input: 
+    - {{ bam }}
+    - {{ bam }}.bai
   output:
     - {{ metrics }}.out
     - {{ metrics }}.selfSM
@@ -41,7 +43,7 @@
   cpus: 1
   mem: 4G
   walltime: "8:00:00"
-  container: {{ constants.tools.R.container }}
+  container: {{ constants.tools.verifybamid2.container }}
   cmd: |
     set -eu
     set -o pipefail
@@ -118,7 +120,9 @@
 
 - name: freebayes_sex_check_{{ task }}
   tags: [{{ sample.gltype }}, quality_control, constitutional_sex_check, freebayes, {{ sample.name }}]
-  input: {{ bam }}
+  input: 
+    - {{ bam }}
+    - {{ bam }}.bai
   output: {{ vcf }}
   {% if bam_level is sameas false %}
   reset: predecessors
@@ -144,7 +148,9 @@
 
 - name: samtools_process_freebayes_sex_check_{{ task }}
   tags: [{{ sample.gltype }}, quality_control, constitutional_sex_check, freebayes, {{ sample.name }}]
-  input: {{ bam }}
+  input: 
+    - {{ bam }}
+    - {{ bam }}.bai
   output: {{ temp_dir }}/{{ bam|basename }}.sexCheck.nonPARreadCount.txt
   {% if bam_level is sameas false %}
   reset: predecessors

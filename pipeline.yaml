@@ -59,6 +59,8 @@ constants:
       container: /scratch/bturner/AJ_singularity_images/vcfmerger_0.8.7.sif
     vep:
       container: /scratch/bturner/AJ_singularity_images/vep.sif
+    verifybamid2:
+      container: /scratch/bturner/AJ_singularity_images/verify-bam-id2_1.0.6.sif
   tempe:
     species: Homo sapiens
     genome_build: grch38_hg38
