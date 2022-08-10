@@ -96,9 +96,6 @@
     - {{ bam }}.bai
     {% if sample.gltype == 'exome' %}
     - {{ regions }}
-      {% if libraryCount == 1 %}
-    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.samstats_no_N_1based_target_regions.txt
-      {% endif %}
     {% endif %}
   output:
     - {{ results_dir }}/{{ bam|basename }}.bamstats.txt
@@ -170,7 +167,6 @@
     - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.bamstats.txt
     {% endif %}
   output:
-    - {{ results_dir }}/{{ bam|basename }}.samstats_no_N_1based_target_regions.txt
     - {{ results_dir }}/{{ bam|basename }}_samtools_baseQualityYield_summary.tsv
     - {{ results_dir }}/{{ bam|basename }}_samtools_coverage_summary.tsv
     - {{ results_dir }}/{{ bam|basename }}_samtools_insertSize_summary.tsv
