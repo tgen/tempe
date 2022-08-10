@@ -54,8 +54,8 @@
       --libType "{{ constants.tempe.strandedness_options[sample.strandedness].salmon }}" \
       --index "{{ constants.tempe.salmon_index }}" \
       --geneMap "{{ constants.tempe.gtf }}" \
-      -1 "{{ r1fqlist|map(attribute='path')|join(' ') }}" \
-      -2 "{{ r2fqlist|map(attribute='path')|join(' ') }}" \
+      -1 "{{ r1fqlist|map(attribute='path')|join('" "') }}" \
+      -2 "{{ r2fqlist|map(attribute='path')|join('" "') }}" \
       --output "{{ temp_dir }}"
 
     {# Remove unwanted ENST #}
