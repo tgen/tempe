@@ -20,7 +20,9 @@
 
 - name: gatk_collectwgsmetrics_{{ task }}
   tags: [{{ sample.gltype }}, quality_control, stats, gatk_CollectWgsMetrics, {{ sample.name }}]
-  input: {{ bam }}
+  input: 
+    - {{ bam }}
+    - {{ bam }}.bai
   output:
     - {{ dna_metrics }}
     {% if libraryCount == 1 %}
@@ -74,7 +76,9 @@
 
 - name: gatk_collectwgsmetricswithnonzerocoverage_{{ task }}
   tags: [{{ sample.gltype }}, quality_control, stats, gatk_CollectWgsMetricsWithNonZeroCoverage, {{ sample.name }}]
-  input: {{ bam }}
+  input: 
+    - {{ bam }}
+    - {{ bam }}.bai
   output:
     - {{ output }}
     - {{ output }}.pdf
@@ -135,7 +139,9 @@
 
 - name: gatk_collectrawwgsmetrics_{{ task }}
   tags: [{{ sample.gltype }}, quality_control, stats, gatk_CollectRawWgsMetrics, {{ sample.name }}]
-  input: {{ bam }}
+  input: 
+    - {{ bam }}
+    - {{ bam }}.bai
   output:
     - {{ dna_metrics }}
     {% if libraryCount == 1 %}

@@ -65,6 +65,7 @@
   reset: predecessors
   input:
     - {{ bam }}
+    - {{ bam }}.bai
     - {{ indel_candidates }}
     - {{ indel_candidates }}.tbi
     - {{ temp_dir }}/callRegions.bed.gz

@@ -13,7 +13,9 @@
 
 - name: octopus_{{ sample.name }}_{{ aligner }}_{{ loop.index }}
   tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, octopus, {{ sample.name }}]
-  input: {{ bam }}
+  input: 
+    - {{ bam }}
+    - {{ bam }}.bai
   output:
     - {{ temp_dir }}/{{ loop.index }}.realigned.bam
     - {{ temp_dir }}/{{ loop.index }}.octopus.vcf

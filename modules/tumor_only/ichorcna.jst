@@ -9,7 +9,9 @@
 {% if loop.index < 24 %}
 - name: hmmcopy_make_wig_{{ aligner }}_{{ sample.name }}_{{ contig.contig }}
   tags: [{{ sample.gltype }}, constitutional, cna_caller, ichor, {{ sample.name }}]
-  input: {{ bam }}
+  input: 
+    - {{ bam }}
+    - {{ bam }}.bai
   output: {{ temp_dir }}/{{ contig.contig }}.wig
   walltime: "24:00:00"
   cpus: 1

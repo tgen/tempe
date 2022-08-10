@@ -6,7 +6,9 @@
 
 - name: expansion_hunter_{{ aligner }}_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype }}, repeats, expansion, SRT, {{ sample.name }}]
-  input: {{ bam }}
+  input: 
+    - {{ bam }}
+    - {{ bam }}.bai
   output:
     - {{ results_dir }}/{{ sample.name }}.expansion_hunter.all.vcf.gz
     - {{ results_dir }}/{{ sample.name }}.expansion_hunter.all.vcf.gz.tbi

@@ -17,7 +17,9 @@
 
 - name: hmmcopy_make_wig_{{ aligner }}_{{ sample.name }}
   tags: [{{ sample.gltype}}, constitutional, cna_caller, ichor, {{ sample.name }}]
-  input: {{ bam }}
+  input: 
+    - {{ bam }}
+    - {{ bam }}.bai
   output: {{ wig }}
   walltime: "24:00:00"
   cpus: 1

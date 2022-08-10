@@ -9,7 +9,9 @@
 
 - name: split_bam_{{ sample.name }}_{{ sample_lb }}_{{ aligner }}
   tags: [{{ sample.gltype }}, {{ sample.name }}, {{ sample_lb }}, split_bam ]
-  input: {{ bam }}
+  input: 
+    - {{ bam }}
+    - {{ bam }}.bai
   output:
     - {{ temp_lb_bam }}
     - {{ temp_lb_bam }}.csi

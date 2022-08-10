@@ -133,6 +133,7 @@
   input:
     - {{ input_vcf }}
     - {{ star_bam_final }}
+    - {{ star_bam_final }}.bai
     - {{ temp_dir }}/temp_target_intervals.bed
   output:
     - {{ temp_dir }}/{{ rna_sample }}_DnaVarInRNA.vcf

@@ -14,7 +14,9 @@
 
 - name: freebayes_{{ sample.name }}_{{ aligner }}_{{ loop.index }}
   tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, freebayes, {{ sample.name }}]
-  input: {{ bam }}
+  input: 
+    - {{ bam }}
+    - {{ bam }}.bai
   output: {{ temp_dir }}/{{ loop.index }}.vcf
   walltime: "24:00:00"
   cpus: 1

@@ -17,7 +17,9 @@
 
 - name: deepvariant_make_examples_{{ sample.name }}_{{ aligner }}_shard{{ i }}
   tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, deepvariant, {{ sample.name }}]
-  input: {{ bam }}
+  input: 
+    - {{ bam }}
+    - {{ bam }}.bai
   output:
     - {{ temp_dir }}/{{ sample.name }}.ex.tfrecord-{{ iteration }}-of-{{ stop }}.gz
     - {{ temp_dir }}/{{ sample.name }}.gvcf.tfrecord-{{ iteration }}-of-{{ stop }}.gz

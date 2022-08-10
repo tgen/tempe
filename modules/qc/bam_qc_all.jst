@@ -55,7 +55,9 @@
 - name: samtools_stats_{{ task }}
   tags: [{{ sample.gltype }}, quality_control, stats, samtools_stats, {{ sample.name }}]
   methods: Quality control metrics for {{ sample.name }} ({{ aligner }}) were generated with samtools stats.
-  input: {{ bam }}
+  input: 
+    - {{ bam }}
+    - {{ bam }}.bai
   output:
     - {{ results_dir }}/{{ bam|basename }}.bamstats.txt
     {% if sample.gltype == 'exome' %}
@@ -297,7 +299,9 @@
 - name: samtools_flagstat_{{ task }}
   tags: [{{ sample.gltype }}, quality_control, stats, samtools_flagstat, {{ sample.name }}]
   methods: Quality control metrics for {{ sample.name }} ({{ aligner }}) were generated with samtools flagstat.
-  input: {{ bam }}
+  input: 
+    - {{ bam }}
+    - {{ bam }}.bai
   output:
     - {{ results_dir }}/{{ bam|basename }}.flagstats.txt
     {% if libraryCount == 1 %}
@@ -356,7 +360,9 @@
   tags: [{{ sample.gltype }}, quality_control, stats, samtools_idxstats, {{ sample.name }}]
   methods: Index stats for {{ sample.name }} ({{ aligner }}) were
     generated with samtools idxstats.
-  input: {{ bam }}
+  input: 
+    - {{ bam }}
+    - {{ bam }}.bai
   output:
     - {{ output }}
     {% if libraryCount == 1 %}
@@ -432,7 +438,9 @@
   methods: Alignment metrics, base distribution, insert size, quality,
     and other metrics for {{ sample.name }} ({{ aligner }}) were
     gathered with gatk CollectMultipleMetrics.
-  input: {{ bam }}
+  input: 
+    - {{ bam }}
+    - {{ bam }}.bai
   output:
     - {{ results_dir }}/{{ bam|basename }}.alignment_summary_metrics
     - {{ results_dir }}/{{ bam|basename }}.bait_bias_detail_metrics
@@ -544,7 +552,9 @@
 
 - name: gatk_convertsequencingarrtifacttooxog_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype }}, quality_control, stats, gatk_ConvertSequencingArtifactToOxoG, {{ sample.name }}]
-  input: {{ bam }}
+  input: 
+    - {{ bam }}
+    - {{ bam }}.bai
   output:
     - {{ results_dir }}/{{ bam|basename }}.oxog_metrics
     {% if sample.gltype == 'singlecellrna' %}
@@ -641,7 +651,11 @@
 
 - name: snpsniffer_geno_{{ task }}
   tags: [{{ sample.gltype }}, quality_control, genotype_concordance, snpSniffer, {{ sample.name }}]
-  input: {{ bam }}
+  input: 
+    - {{ bam }}
+    - {{ bam }}.bai
+    - {{ bam }}
+    
   output:
     - {{ results_dir }}/{{ bam|basename }}.snpSniffer.vcf
     {% if libraryCount == 1 %}

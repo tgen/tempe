@@ -13,7 +13,9 @@
 
 - name: gatk_collecthsmetrics_{{ task }}
   tags: [{{ sample.gltype }}, quality_control, stats, gatk_CollectHsMetrics, {{ sample.name }}]
-  input: {{ bam }}
+  input: 
+    - {{ bam }}
+    - {{ bam }}.bai
   output: {{ output_file }}
   walltime: "8:00:00"
   cpus: 2

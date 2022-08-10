@@ -7,7 +7,9 @@
 
 - name: manta_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype}}, constitutional, structural_caller, manta, {{ sample.name }}]
-  input: {{ bam }}
+  input: 
+    - {{ bam }}
+    - {{ bam }}.bai
   output:
     - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.manta.candidateSmallIndels.vcf.gz
     - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.manta.candidateSmallIndels.vcf.gz.tbi

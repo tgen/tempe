@@ -11,7 +11,9 @@
 {% for batch in constants.tempe.calling_intervals %}
 - name: haplotypecaller_gvcf_{{ sample.name }}_{{ aligner }}_{{ loop.index }}
   tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, gatk_HaplotypeCaller, {{ sample.name }}]
-  input: {{ bam }}
+  input: 
+    - {{ bam }}
+    - {{ bam }}.bai
   output: {{ temp_dir }}/{{ loop.index }}.g.vcf.gz
   walltime: "24:00:00"
   cpus: 2

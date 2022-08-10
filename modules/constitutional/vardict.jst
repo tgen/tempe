@@ -15,6 +15,7 @@
   tags: [{{ sample.gltype }}, somatic, snp_indel_caller, VarDict, {{ sample.name }}]
   input:
     - {{ bam }}
+    - {{ bam }}.bai
   output:
     - {{ temp_dir }}/{{ loop.index }}.bed
   cpus: 1
@@ -45,6 +46,7 @@
   tags: [{{ sample.gltype }}, constitutional, snp_indel_caller, VarDict, {{ sample.name }}]
   input:
     - {{ bam }}
+    - {{ bam }}.bai
     - {{ temp_dir }}/{{ loop.index }}.bed
   output:
     - {{ temp_dir }}/{{ loop.index }}.vardict.vcf

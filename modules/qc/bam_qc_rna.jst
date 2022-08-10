@@ -21,7 +21,9 @@
 
 - name: gatk_collectrnaseqmetrics_{{ task }}
   tags: [{{ sample.gltype }}, quality_control, stats, gatk_CollectRnaSeqMetrics, {{ sample.name }}]
-  input: {{ bam }}
+  input: 
+    - {{ bam }}
+    - {{ bam }}.bai
   output:
     - {{ rna_metrics }}
     - {{ rna_metrics }}.pdf
@@ -92,7 +94,9 @@
 
 - name: rna_getBTcellLociCounts_{{ task }}
   tags: [{{ sample.gltype }}, quality_control, stats, BTcellLociCounts, {{ sample.name }}]
-  input: {{ bam }}
+  input: 
+    - {{ bam }}
+    - {{ bam }}.bai
   output:
     - {{ output }}
     {% if libraryCount == 1 %}
