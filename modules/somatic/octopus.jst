@@ -18,9 +18,8 @@
     - {{ tumor_bam }}
   output:
     - {{ temp_dir }}/{{ loop.index }}.realigned.bam
-    - {{ temp_dir }}/{{ loop.index }}.octopus.legacy.vcf
     - {{ temp_dir }}/{{ loop.index }}.octopus.vcf
-  cpus: 4
+  cpus: 8
   mem: 16G
   walltime: "48:00:00"
   container: {{ constants.tools.octopus.container }}
@@ -41,7 +40,7 @@
     {# Somatic calling with octopus #}
     octopus \
       --caller cancer \
-      --threads 4 \
+      --threads 8 \
       --ignore-unmapped-contigs \
       --somatics-only \
       --sequence-error-model PCR.NOVASEQ \
