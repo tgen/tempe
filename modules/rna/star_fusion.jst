@@ -8,27 +8,33 @@
 {%- set temp_dir %}temp/{{ sample.gltype }}/fusions/starfusion/{{ sample.name }}{% endset %}
 {%- set results_dir %}{{ sample.gltype }}/fusions/starfusion/{{ sample.name }}{% endset %}
 
-{%- set r1fqlist = [] %}
+{# Here we build up lists of all the fastq files for this sample #}
+{% set r1fqlist = [] %}
 {% set r2fqlist = [] %}
+
 {% for rgid, rg in sample.read_groups.items() %}
   {% if rg.data_files|length < 2 %}
-      {{ raise('This module only supports paired-end data with two fastqs per rg') }}
+      {{ raise('Read group did not have 2 data files: {}'.format(rgid)) }}
   {% endif %}
+
   {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
-  {% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
+  {% do r1fastq.update({"path": "temp/fastqs/" + r1fastq.basename}) %}
   {% do r1fqlist.append(r1fastq) %}
+
+  {% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
+  {% do r2fastq.update({"path": "temp/fastqs/" + r2fastq.basename}) %}
   {% do r2fqlist.append(r2fastq) %}
-{% endfor -%}
+{% endfor %}
 
 - name: star_fusion_alignment_{{ sample.name }}
   tags: [{{ sample.gltype }}, transcriptome, fusion_caller, STAR_Fusion, {{ sample.name }}]
   reset: predecessors
   input:
   {% for fq in r1fqlist %}
-    - temp/fastqs/{{ fq.basename }}
+    - {{ fq.path }}
   {% endfor %}
   {% for fq in r2fqlist %}
-    - temp/fastqs/{{ fq.basename }}
+    - {{ fq.path }}
   {% endfor %}
   output:
     - {{ temp_dir }}/{{ sample.name }}.Aligned.sorted.bam
@@ -59,7 +65,7 @@
       --outSAMstrandField intronMotif  \
       --outSAMunmapped Within  \
       --outSAMtype BAM Unsorted  \
-      --readFilesIn {% for fq in r1fqlist %}"temp/fastqs/{{ fq.basename }}"{% if not loop.last%},{% endif %}{% endfor %} {% for fq in r2fqlist %}"temp/fastqs/{{ fq.basename }}"{% if not loop.last%},{% endif %}{% endfor %}  \
+      --readFilesIn "{{ r1fqlist|map(attribute='path')|join(',') }}" "{{ r2fqlist|map(attribute='path')|join(',') }}"  \
       --outSAMattrRGline ID:GRPundef  \
       --chimMultimapScoreRange 3  \
       --chimScoreJunctionNonGTAG -4  \
@@ -216,8 +222,8 @@
     /STAR-Fusion/util/get_FUSION_EVIDENCE_fastqs.pl \
       --fusions {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.tsv \
       --output_prefix {{ results_dir }}/{{ sample.name }}_star_fusion \
-      --left_fq {% for fq in r1fqlist %}"temp/fastqs/{{ fq.basename }}"{% if not loop.last%},{% endif %}{% endfor %} \
-      --right_fq {% for fq in r2fqlist %}"temp/fastqs/{{ fq.basename }}"{% if not loop.last%},{% endif %}{% endfor %}
+      --left_fq "{{ r1fqlist|map(attribute='path')|join(',') }}" \
+      --right_fq "{{ r1fqlist|map(attribute='path')|join(',') }}"
 
     echo "STAR-Fusion complete.  See output: {{ results_dir }}/star-fusion.fusion_predictions.tsv (or .abridged.tsv version)"
 

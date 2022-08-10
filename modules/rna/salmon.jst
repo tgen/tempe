@@ -8,12 +8,17 @@
 {% set r1fqlist = [] %}
 {% set r2fqlist = [] %}
 {% for rgid, rg in sample.read_groups.items() %}
-    {% for fq in rg.data_files|selectattr('fastqCode', 'eq', 'R1') %}
-        {% do r1fqlist.append(fq) %}
-    {% endfor %}
-    {% for fq in rg.data_files|selectattr('fastqCode', 'eq', 'R2') %}
-        {% do r2fqlist.append(fq) %}
-    {% endfor %}
+  {% if rg.data_files|length < 2 %}
+      {{ raise('Read group did not have 2 data files: {}'.format(rgid)) }}
+  {% endif %}
+
+  {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
+  {% do r1fastq.update({"path": "temp/fastqs/" + r1fastq.basename}) %}
+  {% do r1fqlist.append(r1fastq) %}
+
+  {% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
+  {% do r2fastq.update({"path": "temp/fastqs/" + r2fastq.basename}) %}
+  {% do r2fqlist.append(r2fastq) %}
 {% endfor %}
 
 - name: salmon_quant_cdna_{{ sample.name }}
@@ -49,10 +54,8 @@
       --libType "{{ constants.tempe.strandedness_options[sample.strandedness].salmon }}" \
       --index "{{ constants.tempe.salmon_index }}" \
       --geneMap "{{ constants.tempe.gtf }}" \
-      -1 {% for fq in r1fqlist %}{% if not loop.last%}temp/fastqs/{{ fq.basename }} {% else %}temp/fastqs/{{ fq.basename }}{% endif %}{% endfor %} \
-      {% if r2fqlist %}
-      -2 {% for fq in r2fqlist %}{% if not loop.last%}temp/fastqs/{{ fq.basename }} {% else %}temp/fastqs/{{ fq.basename }}{% endif %}{% endfor %} \
-      {% endif %}
+      -1 "{{ r1fqlist|map(attribute='path')|join(' ') }}" \
+      -2 "{{ r2fqlist|map(attribute='path')|join(' ') }}" \
       --output "{{ temp_dir }}"
 
     {# Remove unwanted ENST #}
