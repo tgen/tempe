@@ -52,22 +52,58 @@
   {% set bam_level_summaryNumbers_output_json %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.bam_samtools_summaryNumbers_summary.json{% endset %}
 {% endif %}
 
-- name: samtools_stats_{{ task }}
+{% if sample.gltype == 'exome' %}
+- name: samtools_stats_exome_region_prep_{{ task }}
   tags: [{{ sample.gltype }}, quality_control, stats, samtools_stats, {{ sample.name }}]
   methods: Quality control metrics for {{ sample.name }} ({{ aligner }}) were generated with samtools stats.
   input: 
     - {{ bam }}
     - {{ bam }}.bai
   output:
-    - {{ results_dir }}/{{ bam|basename }}.bamstats.txt
-    {% if sample.gltype == 'exome' %}
     - {{ regions }}
-    {% endif %}
     {% if libraryCount == 1 %}
-    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.bamstats.txt
-    {% if sample.gltype == 'exome' %}
     - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.samstats_no_N_1based_target_regions.txt
     {% endif %}
+  walltime: "4:00:00"
+  cpus: 1
+  mem: 2G
+  container: {{ constants.tools.bedtools.container }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    mkdir -p "{{ results_dir }}"
+
+    bedtools intersect \
+      -a {{ constants.tempe.reference_non_N_interval_list }} \
+      -b {{ sample.capture_kit.no_header_targets_interval_list }} \
+      | \
+    sort -k1,1 -k2,2n \
+      > {{ regions }}
+
+    {% if libraryCount == 1 %}
+    cp {{ regions }} {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.samstats_no_N_1based_target_regions.txt
+    {% endif %}
+
+{% endif %}
+
+
+- name: samtools_stats_{{ task }}
+  tags: [{{ sample.gltype }}, quality_control, stats, samtools_stats, {{ sample.name }}]
+  methods: Quality control metrics for {{ sample.name }} ({{ aligner }}) were generated with samtools stats.
+  input: 
+    - {{ bam }}
+    - {{ bam }}.bai
+    {% if sample.gltype == 'exome' %}
+    - {{ regions }}
+      {% if libraryCount == 1 %}
+    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.samstats_no_N_1based_target_regions.txt
+      {% endif %}
+    {% endif %}
+  output:
+    - {{ results_dir }}/{{ bam|basename }}.bamstats.txt
+    {% if libraryCount == 1 %}
+    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.bamstats.txt
     {% endif %}
   {% if bam_level is sameas false %}
   reset: predecessors
@@ -76,26 +112,11 @@
   cpus: 4
   mem: 8G
   container: {{ constants.tools.samtools.container }}
-  backend_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   cmd: |
     set -eu
     set -o pipefail
 
     mkdir -p "{{ results_dir }}"
-
-    {# If the sample.gltype == 'exome' then intersect the capture space with the Non-N genomic space #}
-    {% if sample.gltype == 'exome' %}
-    bedtools intersect \
-      -a {{ constants.tempe.reference_non_N_interval_list }} \
-      -b {{ sample.capture_kit.no_header_targets_interval_list }} \
-      | \
-    sort -k1,1 -k2,2n \
-      > {{ regions }}
-
-      {% if libraryCount == 1 %}
-      cp {{ regions }} {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.samstats_no_N_1based_target_regions.txt
-      {% endif %}
-    {% endif %}
 
     {#
       samtools view
