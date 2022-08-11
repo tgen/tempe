@@ -24,7 +24,6 @@
   output:
     - {{ temp_dir }}/preprocessed_filt.interval_list
     - {{ temp_dir }}/anno_preprocessed.interval_list
-    - {{ temp_dir }}/{{ pair.normal.name }}.{{ aligner }}.snps.vcf
   cpus: 1
   mem: 16G
   walltime: "24:00:00"
@@ -301,7 +300,7 @@
 {# Step 2b #}
 - name: gatk_call_cnv_step2b_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, cna_caller, gatk, {{ pair.name }}]
-  reset: gatk_call_cnv_step1_{{ pair.name }}_{{ aligner }}
+  reset: gatk_call_cnv_step1_extract_hets_{{ pair.name }}_{{ aligner }}
   input:
     - {{ normal_bam }}
     - {{ temp_dir }}/{{ pair.normal.name }}.{{ aligner }}.snps.vcf
@@ -360,7 +359,7 @@
 {# Step 2d #}
 - name: gatk_call_cnv_step2d_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, cna_caller, gatk, {{ pair.name }}]
-  reset: gatk_call_cnv_step1_{{ pair.name }}_{{ aligner }}
+  reset: gatk_call_cnv_step1_extract_hets_{{ pair.name }}_{{ aligner }}
   input:
     - {{ tumor_bam }}
     - {{ temp_dir }}/{{ pair.normal.name }}.{{ aligner }}.snps.vcf
