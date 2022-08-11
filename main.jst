@@ -141,11 +141,11 @@
     {{- copy_fastq(fastq) }}
 {% endfor %}
 
-{# project level quality control
+{# project level quality control #}
 {% if samples|length > 1 %}
 {{- snpsniffer_summary(samples) }}
 {% endif %}
-#}
+
 {# Finalize after running all other tasks
 {{- finalize() }} #}
 

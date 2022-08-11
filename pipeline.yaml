@@ -45,6 +45,8 @@ constants:
       container: /scratch/bturner/AJ_singularity_images/samtools_1.10.sif
     snpeff:
       container: /scratch/bturner/AJ_singularity_images/snpeff_4_3t.sif
+    snpsniffer:
+      container: /scratch/bturner/AJ_singularity_images/snpsniffer_7.0.0.sif
     star:
       container: /scratch/bturner/AJ_singularity_images/star_2.7.5b.sif
     star_fusion:
