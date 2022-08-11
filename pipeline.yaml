@@ -443,6 +443,34 @@ constants:
       - {"contig": "chrUn_KI270742v1", "length": 186739}
       - {"contig": "chrUn_GL000216v2", "length": 176608}
       - {"contig": "chrUn_GL000218v1", "length": 161147}
+    primary_calling_contigs:
+      # Contigs in the genome build that should be considered for variant calling
+      # Note that chrM is not included in this list because the mitochrondria
+      # should be analyzed separately.
+      - {"contig": chr1, "length": 248956422}
+      - {"contig": chr2, "length": 242193529}
+      - {"contig": chr3, "length": 198295559}
+      - {"contig": chr4, "length": 190214555}
+      - {"contig": chr5, "length": 181538259}
+      - {"contig": chr6, "length": 170805979}
+      - {"contig": chr7, "length": 159345973}
+      - {"contig": chr8, "length": 145138636}
+      - {"contig": chr9, "length": 138394717}
+      - {"contig": chr10, "length": 133797422}
+      - {"contig": chr11, "length": 135086622}
+      - {"contig": chr12, "length": 133275309}
+      - {"contig": chr13, "length": 114364328}
+      - {"contig": chr14, "length": 107043718}
+      - {"contig": chr15, "length": 101991189}
+      - {"contig": chr16, "length": 90338345}
+      - {"contig": chr17, "length": 83257441}
+      - {"contig": chr18, "length": 80373285}
+      - {"contig": chr19, "length": 58617616}
+      - {"contig": chr20, "length": 64444167}
+      - {"contig": chr21, "length": 46709983}
+      - {"contig": chr22, "length": 50818468}
+      - {"contig": chrX, "length": 156040895}
+      - {"contig": chrY, "length": 57227415}
     calling_intervals:
       # Calling contigs broken down into smaller batches of intervals. These intervals
       # are taken from GATK Resource Bundle and describe regions that can be safely
