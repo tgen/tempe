@@ -765,7 +765,7 @@
     {% set final_seg %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.re_centered.cr.igv.seg{% endset %}
     {# {{- thred(pair, final_seg)}} #}
 
-    {% set task %}gatk_call_cnv_step4_{{ pair.name }}_{{ aligner }}{% endset %}
+    {% set task %}gatk_call_cnv_step4_plot_cnv_{{ pair.name }}_{{ aligner }}{% endset %}
     {% set directory %}{{ temp_dir }}{% endset %}
     {{- remove_files(directory,none,task) }}
 
