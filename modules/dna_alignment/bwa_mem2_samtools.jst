@@ -208,9 +208,7 @@
     {{- nobaserecalibration(sample, aligner) }}
   {% endif %}
 {% endif %}
-{#
 {{- bam_to_cram(sample, aligner) }}
 
-{{- bam_qc(sample, aligner) }}
-#}
+
 {% endmacro %}

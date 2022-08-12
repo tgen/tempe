@@ -90,9 +90,7 @@
 {% else %}
   {{- nobaserecalibration(sample, aligner) }}
 {% endif %}
-{#
 {{- bam_to_cram(sample, aligner) }}
 
-{{- bam_qc(sample, aligner) }}
-#}
+
 {% endmacro %}
