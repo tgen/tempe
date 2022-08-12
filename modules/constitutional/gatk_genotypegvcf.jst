@@ -112,8 +112,7 @@
     - {{ all_vcf }}
     - {{ all_vcf }}.tbi
   output:
-    - {{ pass_vcf }}
-    - {{ pass_vcf }}.tbi
+    - {{ temp_dir }}/{{ sample.name }}.hc.fvt.vcf.gz
   walltime: "24:00:00"
   cpus: 4
   mem: 16G
@@ -133,8 +132,23 @@
       {% endfor %}
       --variant "{{ all_vcf }}" \
       --output "{{ temp_dir }}/{{ sample.name }}.hc.fvt.vcf.gz" \
-       
-    {# Then filter out the passing variants to a separate file #}
+
+
+- name: haplotypecaller_bcftools_filter_variants_{{ sample.name }}_{{ aligner }}
+  tags: [{{ sample.gltype}}, constitutional, genotype_hc_gvcf, gatk_GenotypeGVCFs, {{ sample.name }}]
+  input:
+    - {{ temp_dir }}/{{ sample.name }}.hc.fvt.vcf.gz
+  output:
+    - {{ pass_vcf }}
+    - {{ pass_vcf }}.tbi
+  walltime: "24:00:00"
+  cpus: 4
+  mem: 16G
+  container: {{ constants.tools.bcftools.container }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
     bcftools filter \
       --output-type z \
       --include 'FILTER == "."' \
