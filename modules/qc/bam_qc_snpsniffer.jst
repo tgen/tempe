@@ -6,28 +6,12 @@
 
 {% set snpsniffer_list = [] %}
 {% for sample in samples.values() %}
-  {% if not sample.glprep == 'singlecellenrichment' %}
-    {% for sample_lb, sample_rgs in sample.read_groups.values()|groupby('rglb') %}
-      {% if sample.gltype == 'singlecellrna' %}
-        {# singlecellrna has can have multiple alignments, so we check which aligners are enabled #}
-        {% if tasks["SingleCellRNA_transcriptome_quantify_expression_STARsolo"]|default(true) %}
-          {% set aligner = 'starSOLO' %}
-          {% set snpsniffer_result %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}_{{ sample_lb }}/stats/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.snpSniffer.vcf{% endset %}
-          {% do snpsniffer_list.append(snpsniffer_result) %}
-        {% endif %}
-        {% if tasks["SingleCellRNA_transcriptome_quantify_expression_cellranger_count"]|default(true) %}
-          {% set aligner = 'cellranger_count' %}
-          {% set snpsniffer_result %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}_{{ sample_lb }}/stats/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.snpSniffer.vcf{% endset %}
-          {% do snpsniffer_list.append(snpsniffer_result) %}
-        {% endif %}
-      {% else %}
-        {% for aligner in sample.aligners %}
-          {% set snpsniffer_result %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/stats/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.snpSniffer.vcf{% endset %}
-          {% do snpsniffer_list.append(snpsniffer_result) %}
-        {% endfor %}
-      {% endif %}
+  {% for sample_lb, sample_rgs in sample.read_groups.values()|groupby('rglb') %}
+    {% for aligner in sample.aligners %}
+      {% set snpsniffer_result %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/stats/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.snpSniffer.vcf{% endset %}
+      {% do snpsniffer_list.append(snpsniffer_result) %}
     {% endfor %}
-  {% endif %}
+  {% endfor %}
 {% endfor %}
 
 {% if snpsniffer_list | length > 1 %}
