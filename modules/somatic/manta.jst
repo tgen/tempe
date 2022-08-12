@@ -130,7 +130,7 @@
   cpus: 4
   mem: 4G
   walltime: "12:00:00"
-  container: {{ constants.tools.manta.container }}
+  container: {{ constants.tools.python3.container }}
   backend_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   cmd: |
     set -eu
@@ -197,7 +197,7 @@
   cpus: 4
   mem: 16G
   walltime: "12:00:00"
-  container: {{ constants.tools.manta.container }}
+  container: {{ constants.tools.python3.container }}
   backend_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   cmd: |
     set -eu
