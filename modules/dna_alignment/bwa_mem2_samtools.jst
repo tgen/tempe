@@ -5,7 +5,6 @@
 {% from 'modules/dna_alignment/gatk_baserecalibration.jst' import baserecalibration, nobaserecalibration with context %}
 {% from 'utilities/bam_to_cram.jst' import bam_to_cram with context %}
 {% from 'utilities/read_group_line.jst' import read_group_line %}
-{% from 'modules/qc/main.jst' import bam_qc with context %}
 
 # This macro splits large fastqs into chunks prior to aligning.
 # If fastq is less than reads_per_chunk (48000000) then one chunk is made.
