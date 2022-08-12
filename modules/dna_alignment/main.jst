@@ -3,8 +3,8 @@
 {% from 'modules/dna_alignment/bwa_mem2_samtools.jst' import bwa_mem2_samtools with context %}
 {% from 'modules/dna_alignment/pb_fq2bam.jst' import fq2bam with context %}
 {% from 'modules/dna_alignment/split_fastq.jst' import split_fastqs with context %}
-{# {% from 'utilities/bam_to_cram.jst' import bam_to_cram with context %}
-{% from 'utilities/read_group_line.jst' import read_group_line %} #}
+{% from 'utilities/bam_to_cram.jst' import bam_to_cram with context %}
+{% from 'utilities/read_group_line.jst' import read_group_line %}
 {% from 'modules/qc/main.jst' import bam_qc with context %}
 
 
@@ -15,13 +15,12 @@
 
   {% for sample in samples.values() if sample.gltype in ['genome', 'exome'] %}
 
-    {% set alignment_style = [] %}
     {% if dnaAlignmentStyle == 'all' %}
-      {% do alignment_style.append('pcrfree') %}
-      {% do alignment_style.append('tgen') %}
-      {% do alignment_style.append('parabricks') %}
+      {% do sample.aligners.append('pcrfree') %}
+      {% do sample.aligners.append('tgen') %}
+      {% do sample.aligners.append('parabricks') %}
     {% else %}
-      {% do alignment_style.append(dnaAlignmentStyle|default('tgen')|lower) %}
+      {% do sample.aligners.append(dnaAlignmentStyle|default('tgen')|lower) %}
     {% endif %}
 
     {% set platform = (sample.read_groups.values()|first).rgpm|default('') %}
@@ -35,13 +34,15 @@
     {{- split_fastqs(sample, reads_per_chunk) }}
     {% endif %}
 
-    {% if 'tgen' in alignment_style %}
+    {% if 'tgen' in sample.aligners %}
       {{- bwa_mem2_samtools(sample, reads_per_chunk, opt_dup_distance, aligner='bwa') }}
       {{- bam_qc(sample, aligner='bwa') }}
+      {% do sample.aligners.append('bwa') %}
     {% endif %}
-    {% if 'parabricks' in alignment_style %}
+    {% if 'parabricks' in sample.aligners %}
       {{- fq2bam(sample, opt_dup_distance, aligner='parabricks') }}
       {{- bam_qc(sample, aligner='parabricks') }}
+      {% do sample.aligners.append('parabricks') %}
     {% endif %}
 
   {% endfor %}

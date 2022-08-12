@@ -31,18 +31,10 @@
 {% endfor %}
 {% endif %}
 
-{% set alignment_style = [] %}
-{% if dnaAlignmentStyle == 'all' %}
-    {% do alignment_style.append('pcrfree') %}
-    {% do alignment_style.append('bwa') %}
-    {% do alignment_style.append('parabricks') %}
-{% else %}
-    {% do alignment_style.append(dnaAlignmentStyle|default('bwa')|lower|replace("tgen", "bwa")) %}
-{% endif %}
 
 {%- for sample in samples.values() if sample.gltype in ('exome', 'genome') %}
 
-    {% for aligner in alignment_style %}
+    {% for aligner in sample.aligners %}
 
     {% if sample.gltype in 'exome' %}
         {% set taskPrefix = 'Exome' %}

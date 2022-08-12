@@ -81,15 +81,6 @@
 {% endif %}
 
 
-{% set alignment_style = [] %}
-{% if dnaAlignmentStyle == 'all' %}
-    {% do alignment_style.append('pcrfree') %}
-    {% do alignment_style.append('bwa') %}
-    {% do alignment_style.append('parabricks') %}
-{% else %}
-    {% do alignment_style.append(dnaAlignmentStyle|default('bwa')|lower|replace("tgen", "bwa")) %}
-{% endif %}
-
 {#
 # Variant caller macros that are used should add their name to the pair.caller list
 # and then vcfmerger will merge all variants for callers that were used.
@@ -107,7 +98,7 @@
         {% set taskPrefix = 'Genome' %}
     {% endif %}
 
-    {% for aligner in alignment_style %}
+    {% for aligner in pair.normal.aligners %}
 
     {% if tasks[taskPrefix+"_somatic_snp_indel_caller_gatk_mutect2"]|default(true) %}
         {{- mutect2(pair, aligner) }}

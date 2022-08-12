@@ -102,6 +102,9 @@
     {% do samples[name]['read_groups'][rgid].update({'data_files': data_files}) %}
 {% endfor %}
 
+{# A sample can have multiple aligners (for dev purposes), building a list for this purpose #}
+{% for sample in samples %}{% do sample.update({'aligners': []}) %}{% endfor %}
+
 {# Setup calculated props for samples #}
 {% for sample in samples.values() if sample.gltype == 'exome' %}
     {% do sample.update({'library_code': sample.assayCode[0:2]|upper}) %}

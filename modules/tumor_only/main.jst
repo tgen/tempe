@@ -27,16 +27,6 @@
 {% endfor %}
 {% endif %}
 
-{% set alignment_style = [] %}
-{% if dnaAlignmentStyle == 'all' %}
-    {% do alignment_style.append('pcrfree') %}
-    {% do alignment_style.append('tgen') %}
-    {% do alignment_style.append('broad') %}
-    {% do alignment_style.append('parabricks') %}
-    {% do alignment_style.append('dragmap') %}
-{% else %}
-    {% do alignment_style.append(dnaAlignmentStyle|default('tgen')|lower) %}
-{% endif %}
 
 {# Setup calculated props for samples #}
 {% for sample in samples.values() if sample.gltype == 'exome' %}
@@ -107,7 +97,7 @@
         {% set taskPrefix = 'Genome' %}
     {% endif %}
 
-    {% for aligner in alignment_style %}
+    {% for aligner in tumor.aligners %}
 
         {{- ichorcna(tumor, aligner) }}
         {#
@@ -149,7 +139,7 @@
         {% set taskPrefix = 'Genome' %}
     {% endif %}
 
-    {% for aligner in alignment_style %}
+    {% for aligner in pair.tumor.aligners %}
 
         {% if tasks[taskPrefix+"_tumor_only_snp_indel_caller_strelka2"]|default(true) %}
             {{- strelka2_tumor_only(pair, aligner) }}
