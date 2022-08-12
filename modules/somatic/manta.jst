@@ -119,6 +119,7 @@
 
 - name: manta_flag_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, manta, flag, {{ pair.name }}]
+  reset: manta_filter_pass_{{ pair.name }}_{{ aligner }}
   input:
     - {{ temp_dir }}/results/variants/somaticSV.pass.vcf.gz
     - {{ temp_dir }}/results/variants/somaticSV.pass.vcf.gz.tbi
@@ -164,6 +165,7 @@
 
 - name: manta_compress_flag_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, manta, flag, {{ pair.name }}]
+  reset: predecessors
   input:
     - {{ temp_dir }}/results/variants/somaticSV.pass.flag.vcf
   output:
@@ -215,6 +217,7 @@
 
 - name: manta_compress_annotate_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, manta, flag, {{ pair.name }}]
+  reset: predecessors
   input:
     - {{ temp_dir }}/results/variants/somaticSV.pass.flag.anno.vcf
   output:
