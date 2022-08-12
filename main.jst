@@ -103,7 +103,7 @@
 {% endfor %}
 
 {# A sample can have multiple aligners (for dev purposes), building a list for this purpose #}
-{% for sample in samples %}{% do sample.update({'aligners': []}) %}{% endfor %}
+{% for sample in samples.values() %}{% do sample.update({'aligners': []}) %}{% endfor %}
 
 {# Setup calculated props for samples #}
 {% for sample in samples.values() if sample.gltype == 'exome' %}
