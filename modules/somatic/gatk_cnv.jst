@@ -669,6 +669,7 @@
   tags: [{{ pair.gltype }}, somatic, cna_caller, gatk, {{ pair.name }}]
   reset: gatk_call_cnv_step3_{{ pair.name }}_{{ aligner }}
   input:
+    - {{ normal_sex_check }}
     - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.hets.tsv
     - {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
     - {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.denoisedCR.genderCorrected.tsv
@@ -710,6 +711,28 @@
   cmd: |
     set -eu
     set -o pipefail
+
+    SEX=`grep {{ pair.normal.name }} {{ normal_sex_check }} | cut -f20`
+    CONFIG_SEX={{ config_sex }}
+
+    if [ ${SEX} != "Male" ] && [ ${SEX} != "Female" ]
+    then
+      if [ ${CONFIG_SEX} == "Male" ] || [ ${CONFIG_SEX} == "Female" ]
+      then
+        SEX=${CONFIG_SEX}
+      else
+        SEX=Female
+      fi
+    fi
+
+    if [ ${SEX} == "Male" ]
+    then
+      contig_names_string="{{ constants.tempe.primary_calling_contigs|join('CONTIG_DELIMITER', attribute='contig') }}"
+      contig_lengths_string="{{ constants.tempe.primary_calling_contigs|join('CONTIG_DELIMITER', attribute='length') }}"
+    else
+      contig_names_string="{{ constants.tempe.primary_calling_contigs[:-1]|join('CONTIG_DELIMITER', attribute='contig') }}"
+      contig_lengths_string="{{ constants.tempe.primary_calling_contigs[:-1]|join('CONTIG_DELIMITER', attribute='length') }}"
+    fi
 
     Rscript ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.plotCNVplus_Rscript }} \
       --hetDPfilter 1 \
