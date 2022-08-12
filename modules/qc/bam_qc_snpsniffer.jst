@@ -21,19 +21,10 @@
           {% do snpsniffer_list.append(snpsniffer_result) %}
         {% endif %}
       {% else %}
-        {# Currently, all other gltypes only use one aligner respective to their type, so we can assume the aligner here #}
-        {% if sample.gltype == 'rna' %}
-          {% set aligner = 'star' %}
-        {% elif sample.gltype == 'chip' %}
-          {% set aligner = 'bowtie2' %}
-        {# The remaining gltypes are genome and exome which use the same aligner #}
-        {% else %}
-          {% set aligner = 'bwa' %}
-        {% endif %}
-        {% if not sample.gltype == 'genomephased' %}
+        {% for aligner in sample.aligners %}
           {% set snpsniffer_result %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/stats/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.snpSniffer.vcf{% endset %}
           {% do snpsniffer_list.append(snpsniffer_result) %}
-        {% endif %}
+        {% endfor %}
       {% endif %}
     {% endfor %}
   {% endif %}
