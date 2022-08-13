@@ -97,6 +97,10 @@
         {% set taskPrefix = 'Genome' %}
     {% endif %}
 
+    {% if not tumor.aligners | length >= 1 %}
+      {{- sample_aligners_did_not_traverse_to_module }}
+    {% endif %}
+
     {% for aligner in tumor.aligners %}
 
         {{- ichorcna(tumor, aligner) }}

@@ -98,6 +98,10 @@
         {% set taskPrefix = 'Genome' %}
     {% endif %}
 
+    {% if not pair.normal.aligners | length >= 1 %}
+      {{- sample_aligners_did_not_traverse_to_module }}
+    {% endif %}
+
     {% for aligner in pair.normal.aligners %}
 
     {% if tasks[taskPrefix+"_somatic_snp_indel_caller_gatk_mutect2"]|default(true) %}

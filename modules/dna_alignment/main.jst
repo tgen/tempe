@@ -15,14 +15,6 @@
 
   {% for sample in samples.values() if sample.gltype in ['genome', 'exome'] %}
 
-    {% if dnaAlignmentStyle == 'all' %}
-      {% do sample.aligners.append('pcrfree') %}
-      {% do sample.aligners.append('tgen') %}
-      {% do sample.aligners.append('parabricks') %}
-    {% else %}
-      {% do sample.aligners.append(dnaAlignmentStyle|default('tgen')|lower) %}
-    {% endif %}
-
     {% set platform = (sample.read_groups.values()|first).rgpm|default('') %}
     {% if platform|lower in ['hiseq4000', 'novaseq6000'] %}
       {% set opt_dup_distance = 2500 %}
@@ -30,19 +22,31 @@
       {% set opt_dup_distance = 100 %}
     {% endif %}
 
-    {% if dnaAlignmentStyle != 'parabricks' %}
-    {{- split_fastqs(sample, reads_per_chunk) }}
+    {% if sample.gltype in 'exome' %}
+      {% set taskPrefix = 'Exome' %}
+    {% elif sample.gltype in 'genome' %}
+      {% set taskPrefix = 'Genome' %}
     {% endif %}
 
-    {% if 'tgen' in sample.aligners %}
-      {{- bwa_mem2_samtools(sample, reads_per_chunk, opt_dup_distance, aligner='bwa') }}
-      {{- bam_qc(sample, aligner='bwa') }}
-      {% do sample.aligners.append('bwa') %}
+    {% if tasks[taskPrefix+"_alignment_dna_alignment_bwa"]|default(true) %}
+      {% set aligner = 'bwa' %}
+      {{- bwa_mem2_samtools(sample, reads_per_chunk, opt_dup_distance, aligner=aligner) }}
+      {{- bam_qc(sample, aligner=aligner) }}
+      {% do sample.aligners.append(aligner) %}
     {% endif %}
-    {% if 'parabricks' in sample.aligners %}
-      {{- fq2bam(sample, opt_dup_distance, aligner='parabricks') }}
-      {{- bam_qc(sample, aligner='parabricks') }}
-      {% do sample.aligners.append('parabricks') %}
+    {% if tasks[taskPrefix+"_alignment_dna_alignment_parabricks"]|default(true) %}
+      {% set aligner = 'parabricks' %}
+      {{- fq2bam(sample, opt_dup_distance, aligner=aligner) }}
+      {{- bam_qc(sample, aligner=aligner) }}
+      {% do sample.aligners.append(aligner) %}
+    {% endif %}
+
+    {% if 'bwa' in sample.aligners %}
+      {{- split_fastqs(sample, reads_per_chunk) }}
+    {% endif %}
+
+    {% if not sample.aligners | length >= 1 %}
+      {{- sample_aligners_did_not_traverse_to_module }}
     {% endif %}
 
   {% endfor %}

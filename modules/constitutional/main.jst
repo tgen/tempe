@@ -34,6 +34,10 @@
 
 {%- for sample in samples.values() if sample.gltype in ('exome', 'genome') %}
 
+    {% if not sample.aligners | length >= 1 %}
+      {{- sample_aligners_did_not_traverse_to_module }}
+    {% endif %}
+
     {% for aligner in sample.aligners %}
 
     {% if sample.gltype in 'exome' %}
