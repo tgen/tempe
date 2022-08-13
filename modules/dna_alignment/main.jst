@@ -27,8 +27,8 @@
       {{- bam_qc(sample, aligner='bwa') }}
     {% endif %}
     {% if 'parabricks' in sample.aligners %}
-      {{- fq2bam(sample, opt_dup_distance, aligner=aligner) }}
-      {{- bam_qc(sample, aligner=aligner) }}
+      {{- fq2bam(sample, opt_dup_distance, aligner='parabricks') }}
+      {{- bam_qc(sample, aligner='parabricks') }}
     {% endif %}
 
     {% if 'bwa' in sample.aligners %}

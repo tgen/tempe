@@ -158,15 +158,6 @@
 
 {# project level quality control #}
 {% if samples|length > 1 %}
-
-- name: samples_going_to_snpsniffer
-  cmd: |
-    {{ samples }}
-
-    {% for sample in samples.values() %}
-      {{ sample.values() }}
-    {% endfor %}
-
 {{- snpsniffer_summary(samples) }}
 {% endif %}
 
