@@ -103,7 +103,19 @@
 {% endfor %}
 
 {# A sample can have multiple aligners (for dev purposes), building a list for this purpose #}
-{% for sample in samples.values() %}{% do sample.update({'aligners': []}) %}{% endfor %}
+{# We build the list here to ensure traversal to all called macros #}
+{% for sample in samples.values() %}
+    {% do sample.update({'aligners': []}) %}
+
+    {% if sample.gltype in ['genome', 'exome'] %}
+        {% if tasks[sample.gltype|capitalize+"_alignment_dna_alignment_bwa"]|default(true) %}
+            {% do sample.aligners.append('bwa') %}
+        {% endif %}
+        {% if tasks[sample.gltype|capitalize+"_alignment_dna_alignment_parabricks"]|default(true) %}
+            {% do sample.aligners.append('parabricks') %}
+        {% endif %}
+    {% endif %}
+{% endfor %}
 
 {# Setup calculated props for samples #}
 {% for sample in samples.values() if sample.gltype == 'exome' %}
@@ -146,6 +158,15 @@
 
 {# project level quality control #}
 {% if samples|length > 1 %}
+
+- name: samples_going_to_snpsniffer
+  cmd: |
+    {{ samples }}
+
+    {% for sample in samples.values() %}
+      {{ sample.values() }}
+    {% endfor %}
+
 {{- snpsniffer_summary(samples) }}
 {% endif %}
 
