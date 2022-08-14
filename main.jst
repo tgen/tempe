@@ -108,11 +108,17 @@
     {% do sample.update({'aligners': []}) %}
 
     {% if sample.gltype in ['genome', 'exome'] %}
-        {% if tasks[sample.gltype|capitalize+"_alignment_dna_alignment_bwa"]|default(true) %}
+        {% if tasks[sample.gltype|capitalize+"_alignment_dna_alignment_bwa"]|default(false) %}
             {% do sample.aligners.append('bwa') %}
         {% endif %}
-        {% if tasks[sample.gltype|capitalize+"_alignment_dna_alignment_parabricks"]|default(true) %}
+        {% if tasks[sample.gltype|capitalize+"_alignment_dna_alignment_parabricks"]|default(false) %}
             {% do sample.aligners.append('parabricks') %}
+        {% endif %}
+    {% endif %}
+
+    {% if sample.gltype in 'rna' %}
+        {% if tasks.RNA_alignment_rna_alignment_STAR|default(false) %}
+            {% do sample.aligners.append('star') %}
         {% endif %}
     {% endif %}
 {% endfor %}
