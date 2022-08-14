@@ -22,6 +22,16 @@
       {% set opt_dup_distance = 100 %}
     {% endif %}
 
+    {# In main we check the following (commenting here for visibility):
+    {% if sample.gltype in ['genome', 'exome'] %}
+        {% if tasks[sample.gltype|capitalize+"_alignment_dna_alignment_bwa"]|default(false) %}
+            {% do sample.aligners.append('bwa') %}
+        {% endif %}
+        {% if tasks[sample.gltype|capitalize+"_alignment_dna_alignment_parabricks"]|default(false) %}
+            {% do sample.aligners.append('parabricks') %}
+        {% endif %}
+    {% endif %}
+    #}
     {% if 'bwa' in sample.aligners %}
       {{- bwa_mem2_samtools(sample, reads_per_chunk, opt_dup_distance, aligner='bwa') }}
       {{- bam_qc(sample, aligner='bwa') }}
@@ -31,6 +41,7 @@
       {{- bam_qc(sample, aligner='parabricks') }}
     {% endif %}
 
+    {# bwa uses chunked fastqs, generated as needed #}
     {% if 'bwa' in sample.aligners %}
       {{- split_fastqs(sample, reads_per_chunk) }}
     {% endif %}

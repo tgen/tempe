@@ -30,7 +30,8 @@
       {{- salmon(sample) }}
     {% endif %}
 
-    {% if tasks.RNA_alignment_rna_alignment_STAR|default(true) %}
+    {# in main we check {% if tasks.RNA_alignment_rna_alignment_STAR|default(false) %} #}
+    {% if 'star' in sample.aligners %}
       {{- star_quant(sample, opt_dup_distance) }}
       {{- bam_to_cram(sample, aligner='star') }}
       {{- bam_qc(sample, aligner='star') }}
