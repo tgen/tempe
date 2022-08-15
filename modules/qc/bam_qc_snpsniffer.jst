@@ -60,14 +60,14 @@
     {# Add genotypes to the database #}
     for line in `ls *snpSniffer.vcf`
     do
-      snpSniffer -add ${line} SnpSniffer_DB.ini
+      java -jar /snpSniffer/snpSniffer.jar -add ${line} SnpSniffer_DB.ini
     done
 
     {#
       When -expected or -NotExpect is queried a full comparison is produced to a
       file called snpSniffer_output.txt, that is used for all summaries
     #}
-    snpSniffer -expected _ 2 SnpSniffer_DB.ini > Temp_Expected_Results.txt
+    java -jar /snpSniffer/snpSniffer.jar -expected _ 2 SnpSniffer_DB.ini > Temp_Expected_Results.txt
 
     {# Remove the unwanted file #}
     rm Temp_Expected_Results.txt
@@ -96,7 +96,7 @@
 
     {# Extract het summary from database using snpSniffer.jar #}
     {# java -jar $(which snpSniffer.jar)  #}
-    snpSniffer -het SnpSniffer_DB.ini > Temp1_HetRate_Results.txt
+    java -jar /snpSniffer/snpSniffer.jar -het SnpSniffer_DB.ini > Temp1_HetRate_Results.txt
 
     {# Remove header lines #}
     awk -F'\t' 'NR > 1 {
