@@ -190,6 +190,8 @@
     set -eu
     set -o pipefail
 
+    rm -r {{ results_dir }}/plots || true
+
     {# Load modules #}
     module load {{ constants.tools.R.module }}
     module load {{ constants.tools.python_3_7_2.module }}
@@ -321,12 +323,6 @@
       --denoised_copy_ratios_file={{ temp_dir }}/results/{{ sample.name }}.{{ aligner }}.denoisedCR.genderCorrected.tsv \
       --allelic_counts_file={{ results_dir }}/{{ sample.name }}.{{ aligner }}.hets.tsv \
       --modeled_segments_file={{ temp_dir }}/results/{{ sample.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
-
-    {# If the task has already been run then we need to remove the plots directory. #}
-    if [ -d {{ results_dir }}/plots ]
-    then
-      rm -rf {{ results_dir }}/plots
-    fi
 
     mv {{ temp_dir }}/results/* {{ results_dir }}/
 
