@@ -38,7 +38,7 @@ constants:
     parabricks:
       container: /packages/parabricks-v3.7.0_V100/parabricks-release-3.7.0-1.sif
     R:
-      container: /scratch/bturner/AJ_singularity_images/r-with-modules_3.6.1.sif
+      container: /scratch/bturner/AJ_singularity_images/r-with_modules_3.6.1.sif
     salmon:
       container: /scratch/bturner/AJ_singularity_images/salmon_1.2.1.sif
     samtools:
@@ -60,7 +60,7 @@ constants:
     vcfmerger:
       container: /scratch/bturner/AJ_singularity_images/vcfmerger_0.8.7.sif
     vep:
-      container: /scratch/bturner/AJ_singularity_images/vep.sif
+      container: /scratch/bturner/AJ_singularity_images/vep_98.3.sif
     verifybamid2:
       container: /scratch/bturner/AJ_singularity_images/verify-bam-id2_1.0.6.sif
   tempe:
