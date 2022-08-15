@@ -95,7 +95,8 @@
     rm snpSniffer_output.txt
 
     {# Extract het summary from database using snpSniffer.jar #}
-    java -jar $(which snpSniffer.jar) -het SnpSniffer_DB.ini > Temp1_HetRate_Results.txt
+    {# java -jar $(which snpSniffer.jar)  #}
+    snpSniffer -het SnpSniffer_DB.ini > Temp1_HetRate_Results.txt
 
     {# Remove header lines #}
     awk -F'\t' 'NR > 1 {
