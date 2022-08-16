@@ -31,6 +31,8 @@ constants:
       container: /scratch/bturner/AJ_singularity_images/lancet_1.1.x.sif
     manta:
       container: /scratch/bturner/AJ_singularity_images/manta_1.6.0.sif
+    msisensor:
+      container: /scratch/bturner/AJ_singularity_images/msisensor_1.1.a.sif
     octopus:
       container: /scratch/bturner/AJ_singularity_images/octopus_0.7.4.sif
     python3:

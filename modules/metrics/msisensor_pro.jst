@@ -6,7 +6,7 @@
 {% set tumor_nodup_bam %}{{ temp_dir }}/{{ pair.tumor.name }}.{{ aligner }}.bam{% endset %}
 {% set normal_nodup_bam %}{{ temp_dir }}/{{ pair.normal.name }}.{{ aligner }}.bam{% endset %}
 
-- name: msisensor_pro_{{ pair.name }}_{{ aligner }}
+- name: msisensor_pro_prep_{{ pair.name }}_{{ aligner }}
   tags: [msisensor, {{ pair.gltype }}]
   input:
     - {{ normal_bam }}
@@ -15,16 +15,13 @@
   walltime: "24:00:00"
   cpus: 4
   mem: 8G
+  container: {{ constants.tools.samtools.container }}
   cmd: |
     set -eu
     set -o pipefail
 
-    module load {{ constants.tools.samtools.module }}
-    module load {{ constants.tools.msisensor.module }}
-
     rm -r {{ temp_dir }} || true
     mkdir -p {{ temp_dir }}
-    mkdir -p {{ results_dir }}
 
     samtools view \
       -h \
@@ -41,6 +38,25 @@
       {{ normal_bam }} \
       > {{ normal_nodup_bam }}
     samtools index {{ normal_nodup_bam }}
+
+- name: msisensor_pro_{{ pair.name }}_{{ aligner }}
+  tags: [msisensor, {{ pair.gltype }}]
+  reset: predecessors
+  input:
+    - {{ normal_nodup_bam }}
+    - {{ normal_nodup_bam }}.bai
+    - {{ tumor_nodup_bam }}
+    - {{ tumor_nodup_bam }}.bai
+  output: {{ results_dir }}/{{ pair.name }}_msisensor_pro_results
+  walltime: "24:00:00"
+  cpus: 4
+  mem: 8G
+  container: {{ constants.tools.msisensor.container }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    mkdir -p {{ results_dir }}
 
     msisensor-pro msi \
         -d {{ constants.tempe.reference_msisensor_pro }} \
