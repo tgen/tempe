@@ -11,7 +11,11 @@
   input:
     - {{ normal_bam }}
     - {{ tumor_bam }}
-  output: {{ results_dir }}/{{ pair.name }}_msisensor_pro_results
+  output:
+    - {{ normal_nodup_bam }}
+    - {{ normal_nodup_bam }}.bai
+    - {{ tumor_nodup_bam }}
+    - {{ tumor_nodup_bam }}.bai
   walltime: "24:00:00"
   cpus: 4
   mem: 8G
