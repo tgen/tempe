@@ -712,7 +712,8 @@
     set -eu
     set -o pipefail
 
-    rm -r {{ results_dir }}/plots || true
+    {# getting some weird IO behavior adding a ps if we fail to rm #}
+    rm -r {{ results_dir }}/plots || ps -ef | grep $USER
 
     SEX=`grep {{ pair.normal.name }} {{ normal_sex_check }} | cut -f20`
     CONFIG_SEX={{ config_sex }}
@@ -756,7 +757,8 @@
       --allelic_counts_file={{ results_dir }}/{{ pair.name }}.{{ aligner }}.hets.tsv \
       --modeled_segments_file={{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
 
-    mv {{ temp_dir }}/results/* {{ results_dir }}/
+    {# getting some weird IO behavior adding a ps if we fail to mv #}
+    mv {{ temp_dir }}/results/* {{ results_dir }}/ || ps -ef | grep $USER
 
     {% set final_seg %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.re_centered.cr.igv.seg{% endset %}
     {# {{- thred(pair, final_seg)}} #}
