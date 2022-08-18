@@ -665,9 +665,10 @@
 
     python3 ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.cna_seg_extend }} {{ constants.tempe.centromere }} {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
 
+
 - name: gatk_call_cnv_step4_plot_cnv_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, cna_caller, gatk, {{ pair.name }}]
-  reset: gatk_call_cnv_step3_{{ pair.name }}_{{ aligner }}
+  reset: gatk_call_cnv_step4_{{ pair.name }}_{{ aligner }}
   input:
     - {{ normal_sex_check }}
     - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.hets.tsv
@@ -713,7 +714,7 @@
     set -o pipefail
 
     {# getting some weird IO behavior adding a ps if we fail to rm #}
-    rm -r {{ results_dir }}/plots || ps -ef | grep $USER
+    rm -r {{ results_dir }}/plots || true
 
     SEX=`grep {{ pair.normal.name }} {{ normal_sex_check }} | cut -f20`
     CONFIG_SEX={{ config_sex }}
@@ -757,8 +758,8 @@
       --allelic_counts_file={{ results_dir }}/{{ pair.name }}.{{ aligner }}.hets.tsv \
       --modeled_segments_file={{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
 
-    {# getting some weird IO behavior adding a ps if we fail to mv #}
-    mv {{ temp_dir }}/results/* {{ results_dir }}/ || ps -ef | grep $USER
+    {# using cp instead of move because singularity mounts things weird #}
+    cp {{ temp_dir }}/results/* {{ results_dir }}/
 
     {% set final_seg %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.re_centered.cr.igv.seg{% endset %}
     {# {{- thred(pair, final_seg)}} #}
