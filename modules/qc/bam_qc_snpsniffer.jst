@@ -44,6 +44,9 @@
     set -eu
     set -o pipefail
 
+    {# purging previous results if we are re-running the task #}
+    rm -r temp/snpsniffer || true
+    rm -r qc/snpSniffer || true
     mkdir --parents temp/snpsniffer
     mkdir --parents qc/snpSniffer
 
