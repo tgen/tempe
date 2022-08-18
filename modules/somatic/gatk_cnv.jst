@@ -759,7 +759,7 @@
       --modeled_segments_file={{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
 
     {# using cp instead of move because singularity mounts things weird #}
-    cp {{ temp_dir }}/results/* {{ results_dir }}/
+    cp -r {{ temp_dir }}/results/* {{ results_dir }}/
 
     {% set final_seg %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.re_centered.cr.igv.seg{% endset %}
     {# {{- thred(pair, final_seg)}} #}
