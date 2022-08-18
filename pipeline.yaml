@@ -52,7 +52,7 @@ constants:
     star:
       container: /scratch/bturner/AJ_singularity_images/star_2.7.5b.sif
     star_fusion:
-      container: /packages/easy-build/containers/Phoenix2.0/rna-star_fusion.sif
+      container: /scratch/bturner/AJ_singularity_images/star_fusion_1.8.1.sif
     subread:
       container: /scratch/bturner/AJ_singularity_images/subread_2.0.0.sif
     strelka:
