@@ -17,7 +17,6 @@
 {% endif %}
 
 - name: tgen_mutation_burden_{{ variant_caller }}_{{ pair.name }}_{{ aligner }}_{{ annotate_flag }}
-  tags:
   input:
     - {{ input_vcf }}
     - {{ normal_bam }}
@@ -27,16 +26,19 @@
   walltime: "24:00:00"
   cpus: 4
   mem: 8G
+  container: {{ constants.tools.mutation_burden.container }}
   cmd: |
     set -eu
     set -o pipefail
 
+    {#
     module load {{ constants.tools.tgen_mutation_burden.module }}
     module load {{ constants.tools.samtools.module }}
     module load {{ constants.tools.bcftools.module }}
     module load {{ constants.tools.htslib.module }}
     module load {{ constants.tools.R.module }}
     module load {{ constants.tools.bedtools.module }}
+    #}
 
     rm -r {{ mutation_burden_temp }} || true
     mkdir -p {{ mutation_burden_temp }}

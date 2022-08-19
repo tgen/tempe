@@ -1,4 +1,4 @@
-{# {%- from 'modules/metrics/mutation_burden.jst' import mutation_burden with context %} #}
+{%- from 'modules/metrics/mutation_burden.jst' import mutation_burden with context %}
 {%- from 'modules/metrics/msisensor_pro.jst' import msisensor_pro with context %}
 {# {%- from 'modules/metrics/sigprofiler.jst' import sigprofiler with context %} #}
 {%- from 'modules/metrics/tucon.jst' import tucon with context %}
@@ -55,7 +55,7 @@
 {% if flags.vep %}
   {% if tasks[taskPrefix+"_somatic_sample_metric_tgen_mutation_burden"]|default(true) %}
     {% set final_vcf %}{{ final_vcf_prefix }}.vep.pick.vcf.gz{% endset %}
-    {# {{- mutation_burden(pair, normal_bam, tumor_bam, final_vcf, variant_caller, aligner, 'vep') }} #}
+    {{- mutation_burden(pair, normal_bam, tumor_bam, final_vcf, variant_caller, aligner, 'vep') }}
   {% endif %}
   {% if tasks[taskPrefix+"_somatic_sample_metric_tucon"]|default(true) %}
     {% if tasks[taskPrefix+"_somatic_annotate_vcfs_bcftools_topmed"]|default(true) %}
@@ -67,7 +67,7 @@
 {% if flags.snpeff %}
   {% if tasks[taskPrefix+"_somatic_sample_metric_tgen_mutation_burden"]|default(true) %}
     {% set final_vcf %}{{ final_vcf_prefix }}.snpeff.can.vcf.gz{% endset %}
-    {# {{- mutation_burden(pair, normal_bam, tumor_bam, final_vcf, variant_caller, aligner, 'snpeff') }} #}
+    {{- mutation_burden(pair, normal_bam, tumor_bam, final_vcf, variant_caller, aligner, 'snpeff') }}
   {% endif %}
   {% if tasks[taskPrefix+"_somatic_sample_metric_tucon"]|default(true) %}
     {% if tasks[taskPrefix+"_somatic_annotate_vcfs_bcftools_topmed"]|default(true) %}
