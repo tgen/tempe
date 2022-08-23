@@ -46,7 +46,7 @@
         {% set taskPrefix = 'Genome' %}
 
         {% if tasks.Genome_constitutional_cna_caller_ichor|default(true) %}
-           {# {{- ichorcna(sample, aligner, taskPrefix=taskPrefix) }} Needs container #}
+           {{- ichorcna(sample, aligner, taskPrefix=taskPrefix) }}
         {% endif %}
         {% if tasks[taskPrefix+"_constitutional_structural_caller_expansion_hunter"]|default(true) %}
            {# {{- expansion_hunter(sample, aligner) }} Needs container #}

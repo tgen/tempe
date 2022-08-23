@@ -24,11 +24,10 @@
   walltime: "24:00:00"
   cpus: 1
   mem: 2G
+  container: {{ constants.tools.hmmcopy_utils.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.hmmcopy_utils.module }}
 
     mkdir -p "{{ results_dir }}/"
 
@@ -69,11 +68,10 @@
   walltime: "24:00:00"
   cpus: 1
   mem: 2G
+  container: {{ constants.tools.R.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.ichorcna.module }}
 
     {# Purge any existing results files prior to starting #}
     rm -r "{{ temp_dir }}" || true

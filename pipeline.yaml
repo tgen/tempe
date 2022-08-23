@@ -23,6 +23,8 @@ constants:
       container: /scratch/bturner/AJ_singularity_images/freebayes_1.3.1.sif
     gatk:
       container: /scratch/bturner/AJ_singularity_images/gatk_4.1.8.0.sif
+    hmmcopy_utils:
+      container: /scratch/bturner/AJ_singularity_images/hmmcopy-utils_v1.sif
     htseq:
       container: /scratch/bturner/AJ_singularity_images/htseq.sif
     htslib:
