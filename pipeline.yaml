@@ -29,6 +29,9 @@ constants:
       container: /scratch/bturner/AJ_singularity_images/htseq.sif
     htslib:
       container: /scratch/bturner/AJ_singularity_images/htslib_1.10.sif
+    ichorcna:
+      container: /scratch/bturner/AJ_singularity_images/r-with_modules_3.6.1.sif
+      launcher: runIchorCNA_47ce8db.R
     lancet:
       container: /scratch/bturner/AJ_singularity_images/lancet_1.1.x.sif
     manta:
