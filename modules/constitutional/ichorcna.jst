@@ -118,16 +118,6 @@
       --mapWig ${EXTDATA}/map_hg38_1000kb.wig \
       --centromere ${EXTDATA}/GRCh38.GCA_000001405.2_centromere_acen.txt
 
-    {# Merging pdfs #}
-    pdfunite \
-      {% for contig in constants.tempe.calling_contigs %}
-      {# Stopping at chrX #}
-      {% if loop.index < 24 %}
-      {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA/{{ sample.name }}.{{ aligner }}.ichorCNA_CNA_chr{{ contig.contig }}.pdf \
-      {% endif %}
-      {% endfor %}
-      {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA/{{ sample.name }}.{{ aligner }}.ichorCNA_CNA_all_chrs.pdf
-
     {# Creating json for stats2lims #}
     tumor_frac=$(grep "Tumor Fraction:" {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA.params.txt | awk '{ print $3 }')
     ploidy=$(grep "Ploidy:" {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA.params.txt | awk '{ print $2 }')
