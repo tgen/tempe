@@ -762,7 +762,7 @@
     cp -r {{ temp_dir }}/results/* {{ results_dir }}/
 
     {% set final_seg %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.re_centered.cr.igv.seg{% endset %}
-    {# {{- thred(pair, final_seg)}} #}
+    {{- thred(pair, final_seg)}}
 
     {% set task %}gatk_call_cnv_step4_plot_cnv_{{ pair.name }}_{{ aligner }}{% endset %}
     {% set directory %}{{ temp_dir }}{% endset %}

@@ -30,7 +30,7 @@ constants:
     htslib:
       container: /scratch/bturner/AJ_singularity_images/htslib_1.10.sif
     ichorcna:
-      container: /scratch/bturner/AJ_singularity_images/r-with_modules_3.6.1.sif
+      container: /scratch/bturner/AJ_singularity_images/ichorcna_v1.sif
       launcher: required_scripts/runIchorCNA_47ce8db.R
     lancet:
       container: /scratch/bturner/AJ_singularity_images/lancet_1.1.x.sif
@@ -48,6 +48,8 @@ constants:
       container: /packages/parabricks-v3.7.0_V100/parabricks-release-3.7.0-1.sif
     R:
       container: /scratch/bturner/AJ_singularity_images/r-with_modules_3.6.1.sif
+    thred:
+      container: /scratch/bturner/AJ_singularity_images/thred_1.1.0.sif
     salmon:
       container: /scratch/bturner/AJ_singularity_images/salmon_1.2.1.sif
     samtools:
