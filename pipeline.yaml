@@ -17,8 +17,10 @@ constants:
       container: /scratch/bturner/AJ_singularity_images/bwa_mem2_gatk.sif
     delly:
       container: /scratch/bturner/AJ_singularity_images/delly_0.7.6.sif
-    deepvariant:
-      container: /scratch/bturner/AJ_singularity_images/deepvariant_0.10.0-gpu.sif
+    deepvariant_cpu:
+      container: /scratch/bturner/AJ_singularity_images/deep-variant_0.10.0-CPU.sif
+    deepvariant_gpu:
+      container: /scratch/bturner/AJ_singularity_images/deep-variant_0.10.0-GPU.sif
     freebayes:
       container: /scratch/bturner/AJ_singularity_images/freebayes_1.3.1.sif
     gatk:

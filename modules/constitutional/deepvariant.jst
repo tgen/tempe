@@ -26,7 +26,7 @@
   cpus: 1
   mem: 4G
   walltime: "24:00:00"
-  container: {{ constants.tools.deepvariant.container }}
+  container: {{ constants.tools.deepvariant_cpu.container }}
   cmd: |
     set -eu
     set -o pipefail
@@ -68,7 +68,7 @@
   mem: 40G
   sbatch_args: ['-p', 'gpu', '--gres', 'gpu:1', '-N', '1', '--tasks-per-node', '1' ]
   walltime: "24:00:00"
-  container: {{ constants.tools.deepvariant.container }}
+  container: {{ constants.tools.deepvariant_gpu.container }}
   cmd: |
     set -eu
     set -o pipefail
@@ -98,7 +98,7 @@
   cpus: 1
   mem: 16G
   walltime: "24:00:00"
-  container: {{ constants.tools.deepvariant.container }}
+  container: {{ constants.tools.deepvariant_cpu.container }}
   cmd: |
     set -eu
     set -o pipefail
