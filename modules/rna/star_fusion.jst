@@ -121,27 +121,28 @@
     mkdir -p {{ temp_dir }}/_starF_checkpoints
     mkdir -p {{ temp_dir }}/star-fusion.preliminary
 
+    export PATH="$PATH:/usr/local/src/STAR-Fusion/"
     sf_path=$(dirname `which STAR-Fusion`)
 
     export CTAT_GENOME_LIB={{ constants.tempe.starfusion_index }}
 
-    /STAR-Fusion/util/STAR-Fusion.map_chimeric_reads_to_genes \
+    ${sf_path}/util/STAR-Fusion.map_chimeric_reads_to_genes \
       --genome_lib_dir {{ constants.tempe.starfusion_index }} \
       -J {{ results_dir }}/{{ sample.name }}_Chimeric.out.junction \
       > {{ temp_dir }}/star-fusion.preliminary/star-fusion.junction_breakpts_to_genes.txt
 
-    /STAR-Fusion/util/STAR-Fusion.handle_multimapping_reads \
+    ${sf_path}/util/STAR-Fusion.handle_multimapping_reads \
       -J {{ temp_dir }}/star-fusion.preliminary/star-fusion.junction_breakpts_to_genes.txt \
       --genome_lib_dir {{ constants.tempe.starfusion_index }} \
       --filt_file {{ temp_dir }}/star-fusion.preliminary/star-fusion.junction_breakpts_to_genes.txt.fail \
       -M 50 \
       > {{ temp_dir }}/star-fusion.preliminary/star-fusion.junction_breakpts_to_genes.txt.pass
 
-    /STAR-Fusion/util/STAR-Fusion.predict \
+    ${sf_path}/util/STAR-Fusion.predict \
       -J {{ temp_dir }}/star-fusion.preliminary/star-fusion.junction_breakpts_to_genes.txt.pass \
       -O {{ temp_dir }}/star-fusion.preliminary/star-fusion
 
-    /STAR-Fusion/util/STAR-Fusion.filter \
+    ${sf_path}/util/STAR-Fusion.filter \
       --fusion_preds {{ temp_dir }}/star-fusion.preliminary/star-fusion.fusion_candidates.preliminary \
       -J {{ results_dir }}/{{ sample.name }}_Chimeric.out.junction \
       --tmpdir /tmp \
@@ -184,42 +185,42 @@
     NREADS=$(tail -n1 {{ results_dir }}/{{ sample.name }}_Chimeric.out.junction | awk '{ print $3 }')
     {% endif %}
 
-    /STAR-Fusion/util/incorporate_FFPM_into_final_report.pl \
+    ${sf_path}/util/incorporate_FFPM_into_final_report.pl \
       {{ temp_dir }}/star-fusion.preliminary/star-fusion.fusion_candidates.preliminary.filtered $NREADS \
       > {{ temp_dir }}/star-fusion.preliminary/star-fusion.fusion_candidates.preliminary.filtered.FFPM
 
-    /STAR-Fusion/util/append_breakpoint_junction_info.pl \
+    ${sf_path}/util/append_breakpoint_junction_info.pl \
       {{ temp_dir }}/star-fusion.preliminary/star-fusion.fusion_candidates.preliminary.filtered.FFPM {{ constants.tempe.starfusion_index }} \
       > {{ temp_dir }}/star-fusion.preliminary/star-fusion.fusion_candidates.preliminary.wSpliceInfo
 
-    /STAR-Fusion/FusionAnnotator/FusionAnnotator \
+    ${sf_path}/FusionAnnotator/FusionAnnotator \
       --genome_lib_dir {{ constants.tempe.starfusion_index }} \
       --annotate {{ temp_dir }}/star-fusion.preliminary/star-fusion.fusion_candidates.preliminary.wSpliceInfo \
       > {{ temp_dir }}/star-fusion.preliminary/star-fusion.fusion_candidates.preliminary.wSpliceInfo.wAnnot
 
-    /STAR-Fusion/FusionFilter/util/filter_by_annotation_rules.pl \
+    ${sf_path}/FusionFilter/util/filter_by_annotation_rules.pl \
       --fusions {{ temp_dir }}/star-fusion.preliminary/star-fusion.fusion_candidates.preliminary.wSpliceInfo.wAnnot \
       --genome_lib_dir {{ constants.tempe.starfusion_index }}
 
     {# cp filtered intermediate file for later development usage #}
     cp {{ temp_dir }}/star-fusion.preliminary/star-fusion.fusion_candidates.preliminary.wSpliceInfo.wAnnot.annot_filter.pass {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_candidates.preliminary.wSpliceInfo.wAnnot.annot_filter.pass
 
-    /STAR-Fusion/util/filter_likely_RT_artifacts.pl {{ temp_dir }}/star-fusion.preliminary/star-fusion.fusion_candidates.preliminary.wSpliceInfo.wAnnot.annot_filter.pass
+    ${sf_path}/util/filter_likely_RT_artifacts.pl {{ temp_dir }}/star-fusion.preliminary/star-fusion.fusion_candidates.preliminary.wSpliceInfo.wAnnot.annot_filter.pass
 
-    /STAR-Fusion/util/remove_lesser_candidates_at_breakpoint.pl {{ temp_dir }}/star-fusion.preliminary/star-fusion.fusion_candidates.preliminary.wSpliceInfo.wAnnot.annot_filter.pass.RTartifact.pass
+    ${sf_path}/util/remove_lesser_candidates_at_breakpoint.pl {{ temp_dir }}/star-fusion.preliminary/star-fusion.fusion_candidates.preliminary.wSpliceInfo.wAnnot.annot_filter.pass.RTartifact.pass
 
-    /STAR-Fusion/util/filter_by_min_FFPM.pl {{ temp_dir }}/star-fusion.preliminary/star-fusion.fusion_candidates.preliminary.wSpliceInfo.wAnnot.annot_filter.pass.RTartifact.pass.brkptselect.pass 0.1
+    ${sf_path}/util/filter_by_min_FFPM.pl {{ temp_dir }}/star-fusion.preliminary/star-fusion.fusion_candidates.preliminary.wSpliceInfo.wAnnot.annot_filter.pass.RTartifact.pass.brkptselect.pass 0.1
 
     cp {{ temp_dir }}/star-fusion.preliminary/star-fusion.fusion_candidates.preliminary.wSpliceInfo.wAnnot.annot_filter.pass.RTartifact.pass.brkptselect.pass.minFFPM.0.1.pass {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.tsv
 
-    /STAR-Fusion/util/column_exclusions.pl {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.tsv JunctionReads,SpanningFrags > {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.abridged.tsv
+    ${sf_path}/util/column_exclusions.pl {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.tsv JunctionReads,SpanningFrags > {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.abridged.tsv
 
-    /STAR-Fusion/FusionAnnotator/util/fusion_to_coding_region_effect.pl \
+    ${sf_path}/FusionAnnotator/util/fusion_to_coding_region_effect.pl \
       --fusions {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.abridged.tsv \
       --genome_lib_dir {{ constants.tempe.starfusion_index }} \
       > {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.abridged.coding_effect.tsv
 
-    /STAR-Fusion/util/get_FUSION_EVIDENCE_fastqs.pl \
+    ${sf_path}/util/get_FUSION_EVIDENCE_fastqs.pl \
       --fusions {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.tsv \
       --output_prefix {{ results_dir }}/{{ sample.name }}_star_fusion \
       --left_fq "{{ r1fqlist|map(attribute='path')|join(',') }}" \
@@ -270,7 +271,7 @@
     if (( NUM_FUSIONS == 0 )); then
         echo "Zero fusions found, skipping FusionInspector"
     else
-        /STAR-Fusion/FusionInspector/FusionInspector \
+        ${sf_path}/FusionInspector/FusionInspector \
           --fusions ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.abridged.coding_effect.tsv \
           --out_prefix finspector \
           --min_junction_reads 1 \
