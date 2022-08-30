@@ -172,7 +172,7 @@ constants:
     sex_check_vcf: /home/tgenref/homo_sapiens/grch38_hg38/hg38tgen/tool_resources/tgen_gender_check/chrx_common_dbSNPv152_snv_exons.vcf.gz
     star_fasta: /home/tgenref/homo_sapiens/grch38_hg38/hg38tgen/genome_reference/GRCh38tgen_decoy.fa
     star_indices_path: /home/tgenref/homo_sapiens/grch38_hg38/hg38tgen/gene_model/ensembl_v98/tool_resources/star_2.7.5a
-    starfusion_index: /home/tgenref/homo_sapiens/grch38_hg38/hg38tgen/gene_model/ensembl_v98/tool_resources/starFusion_gencode_v32/starFusion_Resources/ctat_genome_lib_build_dir
+    starfusion_index: /home/tgenref/homo_sapiens/grch38_hg38/tool_specific_resources/STAR-fusion/GRCh38_gencode_v31_CTAT_lib_Oct012019.plug-n-play/ctat_genome_lib_build_dir
     strandedness_options:
       inward-unstranded-notapplicable:
         rsem: "none"
