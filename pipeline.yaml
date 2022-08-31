@@ -21,6 +21,8 @@ constants:
       container: /scratch/bturner/AJ_singularity_images/deep-variant_0.10.0-CPU.sif
     deepvariant_gpu:
       container: /scratch/bturner/AJ_singularity_images/deep-variant_0.10.0-GPU.sif
+    expansion_hunter:
+      container: /scratch/bturner/AJ_singularity_images/expansion_hunter_4.0.2.sif
     freebayes:
       container: /scratch/bturner/AJ_singularity_images/freebayes_1.3.1.sif
     gatk:
