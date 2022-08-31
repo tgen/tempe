@@ -63,7 +63,7 @@ constants:
     star:
       container: /scratch/bturner/AJ_singularity_images/star_2.7.5b.sif
     star_fusion:
-      container: /scratch/bturner/AJ_singularity_images/starfusion_1.8.1.sif
+      container: /scratch/bturner/AJ_singularity_images/starfusion_1.8.1b.sif
     subread:
       container: /scratch/bturner/AJ_singularity_images/subread_2.0.0.sif
     strelka:

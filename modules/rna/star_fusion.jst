@@ -109,7 +109,6 @@
     - {{ results_dir }}/{{ sample.name }}_starfusion.bam
     - {{ results_dir }}/{{ sample.name }}_starfusion.bam.bai
     {% endif %}
-  reset: predecessors
   cpus: 2
   mem: 8G
   walltime: "24:00:00"
