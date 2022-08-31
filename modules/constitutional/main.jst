@@ -49,7 +49,7 @@
            {{- ichorcna(sample, aligner, taskPrefix=taskPrefix) }}
         {% endif %}
         {% if tasks[taskPrefix+"_constitutional_structural_caller_expansion_hunter"]|default(true) %}
-           {# {{- expansion_hunter(sample, aligner) }} Needs container #}
+           {{- expansion_hunter(sample, aligner) }}
         {% endif %}
     {% endif %}
 

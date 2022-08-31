@@ -10,17 +10,14 @@
     - {{ bam }}
     - {{ bam }}.bai
   output:
-    - {{ results_dir }}/{{ sample.name }}.expansion_hunter.all.vcf.gz
-    - {{ results_dir }}/{{ sample.name }}.expansion_hunter.all.vcf.gz.tbi
+    - {{ temp_dir }}/{{ sample.name }}.expansion_hunter.vcf
   walltime: "24:00:00"
   cpus: 1
   mem: 2G
+  container: {{ constants.tools.expansion_hunter.container }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.expansion_hunter.module }}
-    module load {{ constants.tools.bcftools.module }}
 
     rm -r {{ temp_dir }} || true
     mkdir -p {{ temp_dir }}
@@ -33,8 +30,28 @@
     ExpansionHunter \
       --reads {{ bam }} \
       --reference {{ constants.tempe.reference_fasta }} \
-      --variant-catalog ${eh_path}/variant_catalog/grch38/variant_catalog.json \
+      --variant-catalog /ExpansionHunter-v4.0.2-linux_x86_64/variant_catalog/grch38/variant_catalog.json \
       --output-prefix {{ temp_dir }}/{{ sample.name }}.expansion_hunter
+
+
+- name: expansion_hunter_filter_variants_{{ sample.name }}_{{ aligner }}
+  tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, deepvariant, {{ sample.name }}]
+  input:
+    - {{ temp_dir }}/{{ sample.name }}.expansion_hunter.vcf
+  output:
+    - {{ results_dir }}/{{ sample.name }}.expansion_hunter.all.vcf.gz
+    - {{ results_dir }}/{{ sample.name }}.expansion_hunter.all.vcf.gz.tbi
+    - {{ results_dir }}/{{ sample.name }}.expansion_hunter.pass.vcf.gz
+    - {{ results_dir }}/{{ sample.name }}.expansion_hunter.pass.vcf.gz.tbi
+  cpus: 1
+  mem: 2G
+  walltime: "12:00:00"
+  container: {{ constants.tools.bcftools.container }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    module load {{ constants.tools.bcftools.module }}
 
     bcftools view \
       --output-type z \
@@ -42,24 +59,6 @@
       {{ temp_dir }}/{{ sample.name }}.expansion_hunter.vcf
 
     bcftools index --tbi --force {{ results_dir }}/{{ sample.name }}.expansion_hunter.all.vcf.gz
-
-
-- name: expansion_hunter_filter_variants_{{ sample.name }}_{{ aligner }}
-  tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, deepvariant, {{ sample.name }}]
-  input:
-    - {{ results_dir }}/{{ sample.name }}.expansion_hunter.all.vcf.gz
-    - {{ results_dir }}/{{ sample.name }}.expansion_hunter.all.vcf.gz.tbi
-  output:
-    - {{ results_dir }}/{{ sample.name }}.expansion_hunter.pass.vcf.gz
-    - {{ results_dir }}/{{ sample.name }}.expansion_hunter.pass.vcf.gz.tbi
-  cpus: 1
-  mem: 2G
-  walltime: "12:00:00"
-  cmd: |
-    set -eu
-    set -o pipefail
-
-    module load {{ constants.tools.bcftools.module }}
 
     {# Then filter out the PASS variants to a separate file #}
     bcftools filter \
