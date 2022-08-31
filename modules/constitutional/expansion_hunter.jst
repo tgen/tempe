@@ -51,8 +51,6 @@
     set -eu
     set -o pipefail
 
-    module load {{ constants.tools.bcftools.module }}
-
     bcftools view \
       --output-type z \
       --output-file {{ results_dir }}/{{ sample.name }}.expansion_hunter.all.vcf.gz \
