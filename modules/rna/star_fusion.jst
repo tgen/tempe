@@ -259,6 +259,7 @@
     set -eu
     set -o pipefail
 
+    export PATH="$PATH:/usr/local/src/STAR-Fusion/"
     sf_path=$(dirname `which STAR-Fusion`)
 
     PROJECT_ROOT=$PWD
