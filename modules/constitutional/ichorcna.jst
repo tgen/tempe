@@ -68,7 +68,7 @@
   walltime: "24:00:00"
   cpus: 1
   mem: 2G
-  backend_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
+  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   container: {{ constants.tools.ichorcna.container }}
   cmd: |
     set -eu

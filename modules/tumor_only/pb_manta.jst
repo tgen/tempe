@@ -19,7 +19,7 @@
   cpus: 40
   mem: 80G
   container: {{ constants.tools.parabricks.container }}
-  backend_args: ['-B', '/packages/parabricks-v3.7.0_V100/:/INSTALL/']
+  runner_args: ['-B', '/packages/parabricks-v3.7.0_V100/:/INSTALL/']
   cmd: |
     set -eu
     set -o pipefail

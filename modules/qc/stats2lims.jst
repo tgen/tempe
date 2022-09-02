@@ -12,7 +12,7 @@
   cpus: 1
   mem: 2G
   container: {{ constants.tools.python3.container }}
-  backend_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
+  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   cmd: |
     set -eu
     set -o pipefail

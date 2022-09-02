@@ -210,7 +210,7 @@
   cpus: 4
   mem: 8G
   container: {{ constants.tools.R.container }}
-  backend_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
+  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   cmd: |
     set -eu
     set -o pipefail
@@ -280,7 +280,7 @@
   cpus: 1
   mem: 4G
   container: {{ constants.tools.R.container }}
-  backend_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
+  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   cmd: |
     set -eu
     set -o pipefail

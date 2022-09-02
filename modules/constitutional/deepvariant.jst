@@ -66,7 +66,7 @@
   output: {{ temp_dir }}/{{ sample.name }}.cvo.tfrecord.gz
   cpus: 8
   mem: 40G
-  sbatch_args: ['-p', 'gpu', '--gres', 'gpu:1', '-N', '1', '--tasks-per-node', '1' ]
+  queue_args: ['-p', 'gpu', '--gres', 'gpu:1', '-N', '1', '--tasks-per-node', '1' ]
   walltime: "24:00:00"
   container: {{ constants.tools.deepvariant_gpu.container }}
   cmd: |

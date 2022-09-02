@@ -30,9 +30,9 @@
     - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.recal_data.table
     {% endif %}
   walltime: "24:00:00"
-  sbatch_args: ['-p', 'gpu', '--exclusive', '--profile=ltask', '--acctg-freq=task=1']
+  preset: "PARABRICKS"
   container: {{ constants.tools.parabricks.container }}
-  backend_args: ['-B', '/packages/parabricks-v3.7.0_V100/:/INSTALL/']
+  runner_preset: "PARABRICKS"
   cmd: |
     set -eu
     set -o pipefail
@@ -72,7 +72,7 @@
     - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.bam
     - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.bam.bai
   walltime: "24:00:00"
-  sbatch_args: ['-p', 'gpu', '--exclusive', '--profile=ltask', '--acctg-freq=task=1']
+  queue_args: ['-p', 'gpu', '--exclusive', '--profile=ltask', '--acctg-freq=task=1']
   container: {{ constants.tools.parabricks.container }}
   cmd: |
     set -eu
