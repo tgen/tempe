@@ -521,10 +521,6 @@
     - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.modelFinal.seg
     - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.hets.tsv
   output:
-    - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.denoisedCR.genderCorrected.tsv
-    - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
-    - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.re_centered.cr.igv.seg
-    - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.dLRs.tsv
     - {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
     - {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.denoisedCR.genderCorrected.tsv
   cpus: 1
@@ -675,6 +671,10 @@
     - {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
     - {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.denoisedCR.genderCorrected.tsv
   output:
+    - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.denoisedCR.genderCorrected.tsv
+    - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
+    - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.re_centered.cr.igv.seg
+    - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.dLRs.tsv
     - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}.hets.density.png
     - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_cna_withhets.png
     - {{ results_dir }}/plots/{{ pair.name }}.{{ aligner }}_cna.png
