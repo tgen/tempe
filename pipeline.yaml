@@ -15,8 +15,6 @@ constants:
       container: /home/tgenref/containers/bwa_mem2_samtools_2.2.1.sif
     bwa_mem2_gatk:
       container: /home/tgenref/containers/bwa_mem2_gatk.sif
-    delly:
-      container: /home/tgenref/containers/delly_0.7.6.sif
     deepvariant_cpu:
       container: /home/tgenref/containers/deepvariant_1.4.0.sif
     deepvariant_gpu:
@@ -110,10 +108,6 @@ constants:
     black_list: /home/tgenref/homo_sapiens/grch38_hg38/public_databases/encode/Blacklist-2.0/lists/hg38-blacklist.v2.bed.gz
     chip_black_list: /home/tgenref/homo_sapiens/grch38_hg38/hs38dh/tool_specific_resources/ChIP_blacklist/hg38_blacklist.bed
     reference_msisensor_pro: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/msisensor_pro_v1.1.a/GRCh38tempe_decoy_alts_hla_masked.microsatellites.list
-    delly_annotation: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/tool_resources/delly/delly_anno_Homo_sapiens.GRCh38.103.ucsc.bed
-    delly_exclusions: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/tool_resources/delly/hg38.excl
-    delly_addRC_to_Delly_VCF_script: addRC_to_Delly_VCF_f4d178e.py
-    delly_svtop_delly_sv_annotation_parellel_script: svtop.delly.sv_annotation.parallel_8820499.py
     manta_prepare_sv_vcf: manta_prepare_sv_vcf_f94bcc1.py
     manta_gene_annotation_parallel: manta_sv_annotation_parallel_8820499.py
     pairoscope_mm_igtx_calling_script: mm_igtx_pairoscope_calling_b38_356362b.py
