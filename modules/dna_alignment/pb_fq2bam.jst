@@ -30,11 +30,10 @@
     - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.recal_data.table
     {% endif %}
   walltime: "24:00:00"
-  cpus: 32
-  mem: 360G
+  cpus: 16
+  mem: 96G
   queue_preset: "PARABRICKS"
   container: {{ constants.tools.parabricks.container }}
-  runner_preset: "PARABRICKS"
   cmd: |
     set -eu
     set -o pipefail
@@ -74,7 +73,7 @@
     - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.bam
     - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.bam.bai
   walltime: "24:00:00"
-  queue_args: ['-p', 'gpu', '--exclusive', '--profile=ltask', '--acctg-freq=task=1']
+  queue_preset: "PARABRICKS"
   container: {{ constants.tools.parabricks.container }}
   cmd: |
     set -eu

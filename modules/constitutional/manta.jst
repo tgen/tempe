@@ -19,7 +19,8 @@
     - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.manta.diploidSV.vcf.gz.tbi
   cpus: 20
   mem: 20G
-  walltime: "48:00:00"
+  walltime: "24:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.manta.container }}
   cmd: |
     set -eu

@@ -20,6 +20,7 @@
   cpus: 4
   mem: 8G
   walltime: "24:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.lancet.container }}
   cmd: |
     set -eu
@@ -61,6 +62,7 @@
   cpus: 1
   mem: 4G
   walltime: "24:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
   cmd: |
     set -eu
@@ -120,6 +122,7 @@
     - {{ pass_vcf }}.tbi
   cpus: 1
   mem: 2G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
   cmd: |
     set -eu

@@ -14,6 +14,7 @@
   walltime: "24:00:00"
   cpus: 1
   mem: 2G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.expansion_hunter.container }}
   cmd: |
     set -eu
@@ -42,6 +43,7 @@
   cpus: 1
   mem: 2G
   walltime: "12:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
   cmd: |
     set -eu

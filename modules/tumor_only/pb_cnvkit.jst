@@ -10,6 +10,7 @@
     - {{ tumor_bam }}
   cpus: 4
   mem: 16G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.parabricks.container }}
   runner_args: ['-B', '/packages/parabricks-v3.7.0_V100/:/INSTALL/']
   cmd: |

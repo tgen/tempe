@@ -21,7 +21,8 @@
     - {{ temp_dir }}/{{ loop.index }}.bed
   cpus: 1
   mem: 2G
-  walltime: "48:00:00"
+  walltime: "24:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.bedtools.container }}
   cmd: |
     set -eu
@@ -54,7 +55,8 @@
     - {{ temp_dir }}/{{ loop.index }}.vardict.vcf
   cpus: 4
   mem: 32G
-  walltime: "48:00:00"
+  walltime: "24:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.vardict.container }}
   cmd: |
     set -eu
@@ -213,6 +215,7 @@
   cpus: 1
   mem: 4G
   walltime: "12:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
   cmd: |
     set -eu
@@ -259,6 +262,7 @@
   cpus: 1
   mem: 4G
   walltime: "12:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
   cmd: |
     set -eu

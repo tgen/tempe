@@ -19,6 +19,7 @@
   walltime: "24:00:00"
   cpus: 4
   mem: 8G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.samtools.container }}
   cmd: |
     set -eu
@@ -55,6 +56,7 @@
   walltime: "24:00:00"
   cpus: 4
   mem: 8G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.msisensor.container }}
   cmd: |
     set -eu

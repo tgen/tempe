@@ -18,6 +18,7 @@
   cpus: 1
   mem: 2G
   walltime: "1:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.base.container }}
   cmd: |
     set -eu
@@ -51,6 +52,7 @@
   cpus: 1
   mem: 2G
   walltime: "1:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.htslib.container }}
   cmd: |
     set -eu
@@ -77,6 +79,7 @@
   cpus: 20
   mem: 20G
   walltime: "24:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.strelka.container }}
   cmd: |
     set -eu
@@ -128,6 +131,7 @@
     {% endif %}
   cpus: 8
   mem: 16G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.samtools.container }}
   cmd: |
     set -eu
@@ -157,6 +161,7 @@
     - {{ pass_vcf }}.tbi
   cpus: 1
   mem: 2G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
   cmd: |
     set -eu

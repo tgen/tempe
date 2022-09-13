@@ -57,7 +57,8 @@
     {% endif %}
   cpus: 20
   mem: 80G
-  walltime: "48:00:00"
+  walltime: "24:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.star.container }}
   cmd: |
     set -eu
@@ -190,6 +191,7 @@
   output: {{ star_bam_sorted }}
   cpus: 8
   mem: 16G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.samtools.container }}
   cmd: |
     set -eu
@@ -229,6 +231,7 @@
     - {{ rna_md_metrics }}
   cpus: 10
   mem: 40G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
@@ -267,6 +270,7 @@
     - {{ star_bam_final }}.bai
   cpus: 10
   mem: 40G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.samtools.container }}
   cmd: |
     set -eu
@@ -316,7 +320,8 @@
   output: {{ sample.gltype }}/quant/htseq/{{ sample.name }}/{{ sample.name }}.htseq_counts.txt
   cpus: 2
   mem: 4G
-  walltime: "48:00:00"
+  walltime: "24:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.htseq.container }}
   cmd: |
     set -eu
@@ -369,6 +374,7 @@
   cpus: 8
   mem: 8G
   walltime: "8:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.subread.container }}
   cmd: |
     set -eu
@@ -416,6 +422,7 @@
   cpus: 8
   mem: 8G
   walltime: "8:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.rsem.container }}
   cmd: |
     set -eu

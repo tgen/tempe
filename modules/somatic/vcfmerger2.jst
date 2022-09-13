@@ -43,6 +43,7 @@
   cpus: 4
   mem: 8G
   walltime: "4:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.vcfmerger.container }}
   cmd: |
     set -eu
@@ -74,6 +75,7 @@
   cpus: 1
   mem: 4G
   walltime: "4:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
   cmd: |
     set -eu
@@ -100,6 +102,7 @@
   cpus: 4
   mem: 8G
   walltime: "4:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.vcfmerger.container }}
   cmd: |
     set -eu

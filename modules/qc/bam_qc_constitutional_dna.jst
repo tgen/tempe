@@ -43,6 +43,7 @@
   cpus: 1
   mem: 4G
   walltime: "8:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.verifybamid2.container }}
   cmd: |
     set -eu
@@ -129,6 +130,7 @@
   {% endif %}
   cpus: 1
   mem: 2G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.freebayes.container }}
   cmd: |
     set -eu
@@ -157,6 +159,7 @@
   {% endif %}
   cpus: 1
   mem: 2G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.samtools.container }}
   cmd: |
     set -eu
@@ -217,6 +220,7 @@
   reset: predecessors
   cpus: 1
   mem: 2G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
   cmd: |
     set -eu

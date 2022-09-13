@@ -11,6 +11,7 @@
   walltime: "4:00:00"
   cpus: 4
   mem: 16G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
@@ -42,6 +43,7 @@
   walltime: "4:00:00"
   cpus: 4
   mem: 16G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
@@ -65,6 +67,7 @@
   walltime: "4:00:00"
   cpus: 8
   mem: 32G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
@@ -101,6 +104,7 @@
   walltime: "4:00:00"
   cpus: 4
   mem: 16G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
@@ -136,6 +140,7 @@
   walltime: "1:00:00"
   cpus: 10
   mem: 8G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.samtools.container }}
   cmd: |
     set -eu

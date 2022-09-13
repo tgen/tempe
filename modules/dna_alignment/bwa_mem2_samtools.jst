@@ -34,6 +34,7 @@
   walltime: "24:00:00"
   cpus: 20
   mem: 80G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.bwa_mem2_samtools.container }}
   cmd: |
     set -eu
@@ -109,6 +110,7 @@
   walltime: "24:00:00"
   cpus: 16
   mem: 8G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.bwa_mem2_samtools.container }}
   cmd: |
     set -eu
@@ -151,6 +153,7 @@
   walltime: "96:00:00"
   cpus: 20
   mem: 20G
+  queue_preset: "DEFAULT-LONG"
   container: {{ constants.tools.bwa_mem2_samtools.container }}
   cmd: |
     set -eu

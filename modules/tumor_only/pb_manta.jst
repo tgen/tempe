@@ -18,6 +18,7 @@
     - {{ results_dir }}/{{ tumor.name }}.{{ aligner }}.manta.somaticSV.vcf.gz.tbi
   cpus: 40
   mem: 80G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.parabricks.container }}
   runner_args: ['-B', '/packages/parabricks-v3.7.0_V100/:/INSTALL/']
   cmd: |

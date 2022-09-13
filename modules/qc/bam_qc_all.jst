@@ -67,6 +67,7 @@
   walltime: "4:00:00"
   cpus: 1
   mem: 2G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.bedtools.container }}
   cmd: |
     set -eu
@@ -108,6 +109,7 @@
   walltime: "4:00:00"
   cpus: 4
   mem: 8G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.samtools.container }}
   cmd: |
     set -eu
@@ -209,6 +211,7 @@
   walltime: "4:00:00"
   cpus: 4
   mem: 8G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.R.container }}
   runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   cmd: |
@@ -279,6 +282,7 @@
   walltime: "4:00:00"
   cpus: 1
   mem: 4G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.R.container }}
   runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   cmd: |
@@ -330,6 +334,7 @@
   walltime: "4:00:00"
   cpus: 4
   mem: 8G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.samtools.container }}
   cmd: |
     set -eu
@@ -391,6 +396,7 @@
   walltime: "4:00:00"
   cpus: 1
   mem: 2G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.samtools.container }}
   cmd: |
     set -eu
@@ -495,6 +501,7 @@
   walltime: "24:00:00"
   cpus: 2
   mem: 8G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
@@ -584,6 +591,7 @@
   walltime: "24:00:00"
   cpus: 4
   mem: 8G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
@@ -683,6 +691,7 @@
   {% endif %}
   cpus: 2
   mem: 4G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
   cmd: |
     set -eu

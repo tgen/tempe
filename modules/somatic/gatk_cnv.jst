@@ -27,6 +27,7 @@
   cpus: 1
   mem: 16G
   walltime: "24:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
@@ -215,6 +216,7 @@
   cpus: 1
   mem: 16G
   walltime: "24:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
   cmd: |
     set -eu
@@ -279,6 +281,7 @@
   cpus: 1
   mem: 16G
   walltime: "24:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
@@ -309,6 +312,7 @@
   cpus: 1
   mem: 16G
   walltime: "24:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
@@ -338,6 +342,7 @@
   cpus: 1
   mem: 16G
   walltime: "24:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
@@ -368,6 +373,7 @@
   cpus: 1
   mem: 16G
   walltime: "24:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
@@ -421,6 +427,7 @@
   cpus: 1
   mem: 16G
   walltime: "24:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
@@ -526,6 +533,7 @@
   cpus: 1
   mem: 16G
   walltime: "24:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.python3.container }}
   runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   cmd: |
@@ -707,6 +715,7 @@
   cpus: 1
   mem: 16G
   walltime: "24:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.R.container }}
   runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   cmd: |

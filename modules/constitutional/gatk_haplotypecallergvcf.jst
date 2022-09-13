@@ -18,6 +18,7 @@
   walltime: "24:00:00"
   cpus: 2
   mem: 16G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu
@@ -51,6 +52,7 @@
   walltime: "24:00:00"
   cpus: 1
   mem: 8G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
   cmd: |
     set -eu

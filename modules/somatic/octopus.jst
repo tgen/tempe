@@ -21,7 +21,8 @@
     - {{ temp_dir }}/{{ loop.index }}.octopus.vcf
   cpus: 8
   mem: 16G
-  walltime: "48:00:00"
+  walltime: "24:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.octopus.container }}
   cmd: |
     set -eu
@@ -72,6 +73,7 @@
   cpus: 1
   mem: 4G
   walltime: "24:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
   cmd: |
     set -eu
@@ -110,6 +112,7 @@
   walltime: "24:00:00"
   cpus: 1
   mem: 4G
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
   cmd: |
     set -eu

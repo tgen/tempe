@@ -4,10 +4,10 @@
   input: {{ fastq.fastqPath }}
   output: temp/fastqs/{{ fastq.basename }}
   tags: [rsync,]
-  queue_args: ['-p', 'defq']
   retry: 2
   cpus: 6
   walltime: "4:00:00"
+  queue_preset: "DATA-MOVER"
   container: {{ constants.tools.base.container }}
   cmd: |
     set -uev

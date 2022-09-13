@@ -21,6 +21,7 @@
     - {{ temp_dir }}/{{ sample.rgsm }}.{{ aligner }}_UMI_uBAM.bam
   cpus: 10
   walltime: "4:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.fgbio.container }}
   cmd: |
     set -eu
@@ -72,6 +73,7 @@
     - {{ temp_dir }}/{{ sample.rgsm }}.{{ aligner }}_UMI_bwa.bam
   cpus: 10
   walltime: "4:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.fgbio.container }}
   cmd: |
     set -eu
@@ -127,6 +129,7 @@
     - {{ temp_dir }}/{{ sample.rgsm }}.{{ aligner }}_UMIcorr_bwa.bam
   cpus: 10
   walltime: "4:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.fgbio.container }}
   cmd: |
     set -eu
@@ -161,6 +164,7 @@
     - {{ temp_dir }}/{{ sample.rgsm }}.{{ aligner }}_con_uBAM.bam
   cpus: 10
   walltime: "4:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.fgbio.container }}
   cmd: |
     set -eu
@@ -199,6 +203,7 @@
     - {{ temp_dir }}/{{ sample.name }}_{{ aligner }}.bwa.md.bam
   cpus: 10
   walltime: "4:00:00"
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.fgbio.container }}
   cmd: |
     set -eu
