@@ -53,7 +53,7 @@ constants:
     thred:
       container: /home/tgenref/containers/thred_1.1.0.sif
     salmon:
-      container: /home/tgenref/containers/salmon_1.2.1.sif
+      container: /home/tgenref/containers/salmon_1.9.0.sif
     samtools:
       container: /home/tgenref/containers/samtools_1.16.1.sif
     snpeff:
@@ -75,7 +75,7 @@ constants:
     vep:
       container: /home/tgenref/containers/vep_107.sif
     verifybamid2:
-      container: /home/tgenref/containers/verify-bam-id2_1.0.6.sif
+      container: /home/tgenref/containers/verifybamid2_v2.0.1.sif
   tempe:
     species: Homo sapiens
     genome_build: grch38_hg38
