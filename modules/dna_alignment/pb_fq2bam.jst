@@ -43,7 +43,7 @@
     mkdir -p "{{ temp_dir }}/markdup_temp/"
     mkdir -p "{{ results_dir }}/stats/"
 
-    /parabricks/run_pipeline.py fq2bam \
+    pbrun fq2bam \
     --tmp-dir "{{ temp_dir }}/markdup_temp/" \
     --ref "{{ constants.tempe.bwa_index }}" \
     --bwa-options "-Y -K 100000000" \

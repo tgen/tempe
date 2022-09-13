@@ -6,7 +6,7 @@ __pipeline__:
 constants:
   tools:
     base:
-      container: /packages/easy-build/containers/Phoenix2.0/baseimage.sif
+      container: /home/tgenref/containers/rocky8_with_epel_2022.04.19.sif
     bcftools:
       container: /home/tgenref/containers/bcftools_1.16.sif
     bedtools:
@@ -47,7 +47,7 @@ constants:
     python3:
       container: /home/tgenref/containers/python_3.7.2.sif
     parabricks:
-      container: /packages/parabricks-v3.7.0_V100/parabricks-release-3.7.0-1.sif
+      container: /home/tgenref/containers/clara-parabricks_4.0.0-1.sif
     R:
       container: /home/tgenref/containers/r-with_modules_3.6.1.sif
     thred:
