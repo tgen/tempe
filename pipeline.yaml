@@ -223,8 +223,8 @@ constants:
       - 'inframe_deletion'
       - 'disruptive_inframe_deletion'
     deepvariant_models:
-      exome: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/deepvariant_v0.10.0/DeepVariant-inception_v3-0.10.0+data-wes_standard/model.ckpt
-      genome: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/deepvariant_v0.10.0/DeepVariant-inception_v3-0.10.0+data-wgs_standard/model.ckpt
+      exome: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/deepvariant_v1.4.0/DeepVariant-inception_v3-1.4.0+data-wes_standard/model.ckpt
+      genome: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/deepvariant_v1.4.0/DeepVariant-inception_v3-1.4.0+data-wgs_standard/model.ckpt
     sequence_groupings:
       # Sequence groupings for BQSR (same groups as found in the GATK WDL example).
       - ['chr1']
