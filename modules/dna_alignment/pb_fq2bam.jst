@@ -30,7 +30,9 @@
     - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.recal_data.table
     {% endif %}
   walltime: "24:00:00"
-  preset: "PARABRICKS"
+  cpus: 32
+  mem: 360G
+  queue_preset: "PARABRICKS"
   container: {{ constants.tools.parabricks.container }}
   runner_preset: "PARABRICKS"
   cmd: |
