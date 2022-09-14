@@ -46,7 +46,7 @@
     make_examples \
       --logging_level WARN \
       --mode calling \
-      --channels insert_size
+      --channels insert_size \
       --task {{ i }} \
       --ref "{{ constants.tempe.reference_fasta }}" \
       --reads "${PROJECT_ROOT}/{{ bam }}" \
