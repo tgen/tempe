@@ -29,13 +29,9 @@
   output:
     - {{ metrics }}.out
     - {{ metrics }}.selfSM
-    - {{ metrics }}.plot.txt
-    - {{ metrics }}.plot.pdf
     {% if libraryCount == 1 %}
     - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.verifybamid2.out
     - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.verifybamid2.selfSM
-    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.verifybamid2.plot.txt
-    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.verifybamid2.plot.pdf
     {% endif %}
   {% if bam_level is sameas false %}
   reset: predecessors
@@ -66,25 +62,9 @@
       --BamFile "{{ bam }}" \
       --Output "{{ metrics }}" > "{{ metrics }}.out"
 
-    {# Process Output to produce needed graph #}
-    SAMPLE_PC1=`head -n3 "{{ metrics }}.out" | tail -n1 | cut -f1 | sed 's/Intended Sample PC1://g'`
-    SAMPLE_PC2=`head -n3 "{{ metrics }}.out" | tail -n1 | cut -f2 | sed 's/PC2://g'`
-    SAMPLE_ALPHA=`head -n4 "{{ metrics }}.out" | tail -n1 | cut -d: -f2`
-    echo -e "{{ bam|basename }}""\t"${SAMPLE_PC1}"\t"${SAMPLE_PC2} > "{{ metrics }}.plot.txt"
-
-    sh $VERIFY_BAM_ID_HOME/bin/run.plot.sh \
-      -r 1000g \
-      -g FALSE \
-      -i "$(pwd)/{{ metrics }}.plot.txt" \
-      -o "{{ metrics }}.plot"
-
-    echo -e "{{ bam|basename }}""\t"${SAMPLE_PC1}"\t"${SAMPLE_PC2}"\t"${SAMPLE_ALPHA} > "{{ metrics }}.plot.txt"
-
     {% if libraryCount == 1 %}
       cp {{ metrics }}.out {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.verifybamid2.out
       cp {{ metrics }}.selfSM {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.verifybamid2.selfSM
-      cp {{ metrics }}.plot.txt {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.verifybamid2.plot.txt
-      cp {{ metrics }}.plot.pdf {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.verifybamid2.plot.pdf
     {% endif %}
 
   {% if libraryCount == 1 %}
@@ -93,6 +73,47 @@
     {{ stats2json(sample.gltype, sample.name, task, output, json, "verifybamid", sample_name=sample.name, library_name=sample_lb) }}
   {% endif %}
 
+- name: verifybamid2_plot_{{ task }}
+  tags: [{{ sample.gltype }}, quality_control, constitutional_contamination_check, VerifyBamID, {{ sample.name }}]
+  input: 
+    - {{ metrics }}.out
+  output:
+    - {{ metrics }}.plot.txt
+    - {{ metrics }}.plot.pdf
+    {% if libraryCount == 1 %}
+    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.verifybamid2.plot.txt
+    - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.verifybamid2.plot.pdf
+    {% endif %}
+  {% if bam_level is sameas false %}
+  reset: predecessors
+  {% endif %}
+  cpus: 1
+  mem: 4G
+  walltime: "8:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.R.container }}
+  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    mkdir -p "{{ results_dir }}"
+
+    {# Process Output to produce needed graph #}
+    SAMPLE_PC1=`head -n3 "{{ metrics }}.out" | tail -n1 | cut -f1 | sed 's/Intended Sample PC1://g'`
+    SAMPLE_PC2=`head -n3 "{{ metrics }}.out" | tail -n1 | cut -f2 | sed 's/PC2://g'`
+    SAMPLE_ALPHA=`head -n4 "{{ metrics }}.out" | tail -n1 | cut -d: -f2`
+    echo -e "{{ bam|basename }}""\t"${SAMPLE_PC1}"\t"${SAMPLE_PC2} > "{{ metrics }}.plot.txt"
+
+    Rscript ${JS_PIPELINE_PATH}/required_scripts/verifybamid_plot.R $(pwd)/{{ metrics }}.plot.txt {{ metrics }}.plot 1000g FALSE
+
+    echo -e "{{ bam|basename }}""\t"${SAMPLE_PC1}"\t"${SAMPLE_PC2}"\t"${SAMPLE_ALPHA} > "{{ metrics }}.plot.txt"
+
+    {% if libraryCount == 1 %}
+      cp {{ metrics }}.plot.txt {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.verifybamid2.plot.txt
+      cp {{ metrics }}.plot.pdf {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.verifybamid2.plot.pdf
+    {% endif %}
+    
 {% endif %}
 {% endmacro %}
 
