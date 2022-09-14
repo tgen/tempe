@@ -52,7 +52,7 @@
     mkdir -p "{{ results_dir }}"
 
     {# Some resources are included in the VerifyBamID home dir #}
-    VERIFY_BAM_ID_HOME="$(dirname $(dirname $(which VerifyBamID)))"
+    VERIFY_BAM_ID_HOME="/VerifyBamID"
 
     {# For some undocumented reason, there was a change between VerifyBamID 1.0.5 and 1.0.6 #}
     {# which results in the sanity check failing the process, there are a few work arounds #}
