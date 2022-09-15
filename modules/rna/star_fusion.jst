@@ -52,7 +52,7 @@
     mkdir -p {{ temp_dir }}
     mkdir -p {{ results_dir }}
 
-    {# New recommended options
+    {# Newly recommended options
     --alignInsertionFlush Right \
     --alignSplicedMateMapLminOverLmate 0 \
     --alignSplicedMateMapLmin 30
@@ -70,7 +70,7 @@
       --alignSJstitchMismatchNmax 5 -1 5 5 \
       --alignInsertionFlush Right \
       --alignSplicedMateMapLminOverLmate 0 \
-      --alignSplicedMateMapLmin 30
+      --alignSplicedMateMapLmin 30 \
       --runThreadN 20 \
       --outSAMstrandField intronMotif \
       --outSAMunmapped Within \
@@ -98,6 +98,9 @@
       -o "{{ temp_dir }}/{{ sample.name }}.Aligned.sorted.bam" \
       "{{ temp_dir }}/Aligned.out.bam"
 
+    {# Removing unneeded large file #}
+    rm {{ temp_dir }}/Aligned.out.bam
+
     samtools index -@ 20 {{ temp_dir }}/{{ sample.name }}.Aligned.sorted.bam
 
     mv {{ temp_dir }}/Chimeric.out.junction {{ results_dir }}/{{ sample.name }}_Chimeric.out.junction
@@ -108,6 +111,12 @@
   input:
     - {{ results_dir }}/{{ sample.name }}_Chimeric.out.junction
     - {{ temp_dir }}/{{ sample.name }}.Aligned.sorted.bam
+    {% for fq in r1fqlist %}
+    - {{ fq.path }}
+    {% endfor %}
+    {% for fq in r2fqlist %}
+    - {{ fq.path }}
+    {% endfor %}
   output:
     - {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.tsv
     - {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.abridged.tsv
@@ -134,30 +143,36 @@
       --CPU 4 \
       --genome_lib_dir "{{ constants.tempe.starfusion_index }}" \
       --chimeric_junction {{ results_dir }}/{{ sample.name }}_Chimeric.out.junction \
+      --left_fq "{{ r1fqlist|map(attribute='path')|join(',') }}" \
+      --right_fq "{{ r2fqlist|map(attribute='path')|join(',') }}" \
       --examine_coding_effect \
       --extract_fusion_reads \
       --FusionInspector inspect \
       --denovo_reconstruct \
       --output_dir "{{ temp_dir }}"
 
-    {#
-    NUM_FUSIONS=$(grep -w "#FusionName" -c -v ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.abridged.coding_effect.tsv || :)
+    mv {{ temp_dir }}/star-fusion.fusion_evidence_reads_1.fq {{ results_dir }}/{{ sample.name }}_starfusion_evidence_reads_1.fq
+    mv {{ temp_dir }}/star-fusion.fusion_evidence_reads_2.fq {{ results_dir }}/{{ sample.name }}_starfusion_evidence_reads_2.fq
+    mv {{ temp_dir }}/star-fusion.fusion_predictions.abridged.coding_effect.tsv {{ results_dir }}/{{ sample.name }}_starfusion_predictions.abridged.coding_effect.tsv
+    mv {{ temp_dir }}/star-fusion.fusion_predictions.abridged.tsv {{ results_dir }}/{{ sample.name }}_starfusion_predictions.abridged.tsv
+    mv {{ temp_dir }}/star-fusion.fusion_predictions.tsv {{ results_dir }}/{{ sample.name }}_starfusion_predictions.tsv
+
+    NUM_FUSIONS=$(grep -w "#FusionName" -c -v {{ temp_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.abridged.coding_effect.tsv || :)
     if (( NUM_FUSIONS == 0 )); then
-        echo "Zero fusions found, skipping FusionInspector"
+        echo "Zero fusions found, no FusionInspector results will exist, skipping moves"
     else
-        mv FusionInspector-inspect/finspector.bed ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_finspector.bed
-        mv FusionInspector-inspect/finspector.fa ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_finspector.fa
-        mv FusionInspector-inspect/finspector.fusion_inspector_web.html ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_finspector.fusion_inspector_web.html
-        mv FusionInspector-inspect/finspector.fusion_inspector_web.json ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_finspector.fusion_inspector_web.json
-        mv FusionInspector-inspect/finspector.junction_reads.bam ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_finspector.junction_reads.bam
-        mv FusionInspector-inspect/finspector.junction_reads.bam.bai ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_finspector.junction_reads.bam.bai
-        mv FusionInspector-inspect/finspector.spanning_reads.bam ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_finspector.spanning_reads.bam
-        mv FusionInspector-inspect/finspector.spanning_reads.bam.bai ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_finspector.spanning_reads.bam.bai
-        mv FusionInspector-inspect/finspector.gmap_trinity_GG.fusions.gff3.bed.sorted.bed.gz ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_finspector.gmap_trinity_GG.fusions.gff3.bed.sorted.bed.gz
-        mv FusionInspector-inspect/finspector.gmap_trinity_GG.fusions.gff3.bed.sorted.bed.gz.tbi ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_finspector.gmap_trinity_GG.fusions.gff3.bed.sorted.bed.gz.tbi
-        mv FusionInspector-inspect/fi_workdir/trinity_GG/Trinity-GG.fasta ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_Trinity-GG.fasta
+        mv {{ temp_dir }}/FusionInspector-inspect/finspector.bed {{ results_dir }}/{{ sample.name }}_finspector.bed
+        mv {{ temp_dir }}/FusionInspector-inspect/finspector.fa {{ results_dir }}/{{ sample.name }}_finspector.fa
+        mv {{ temp_dir }}/FusionInspector-inspect/finspector.fusion_inspector_web.html {{ results_dir }}/{{ sample.name }}_finspector.fusion_inspector_web.html
+        mv {{ temp_dir }}/FusionInspector-inspect/finspector.fusion_inspector_web.json {{ results_dir }}/{{ sample.name }}_finspector.fusion_inspector_web.json
+        mv {{ temp_dir }}/FusionInspector-inspect/finspector.junction_reads.bam {{ results_dir }}/{{ sample.name }}_finspector.junction_reads.bam
+        mv {{ temp_dir }}/FusionInspector-inspect/finspector.junction_reads.bam.bai {{ results_dir }}/{{ sample.name }}_finspector.junction_reads.bam.bai
+        mv {{ temp_dir }}/FusionInspector-inspect/finspector.spanning_reads.bam {{ results_dir }}/{{ sample.name }}_finspector.spanning_reads.bam
+        mv {{ temp_dir }}/FusionInspector-inspect/finspector.spanning_reads.bam.bai {{ results_dir }}/{{ sample.name }}_finspector.spanning_reads.bam.bai
+        mv {{ temp_dir }}/FusionInspector-inspect/finspector.gmap_trinity_GG.fusions.gff3.bed.sorted.bed.gz {{ results_dir }}/{{ sample.name }}_finspector.gmap_trinity_GG.fusions.gff3.bed.sorted.bed.gz
+        mv {{ temp_dir }}/FusionInspector-inspect/finspector.gmap_trinity_GG.fusions.gff3.bed.sorted.bed.gz.tbi {{ results_dir }}/{{ sample.name }}_finspector.gmap_trinity_GG.fusions.gff3.bed.sorted.bed.gz.tbi
+        mv {{ temp_dir }}/FusionInspector-inspect/fi_workdir/trinity_GG/Trinity-GG.fasta {{ results_dir }}/{{ sample.name }}_Trinity-GG.fasta
     fi
-    #}
 
     {% if tasks.RNA_transcriptome_fusion_caller_Keep_STAR_Fusion_BAM|default(true) %}
     mv {{ temp_dir }}/{{ sample.name }}.Aligned.sorted.bam {{ results_dir }}/{{ sample.name }}_starfusion.bam
