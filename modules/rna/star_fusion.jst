@@ -149,7 +149,9 @@
       --extract_fusion_reads \
       --FusionInspector inspect \
       --denovo_reconstruct \
-      --output_dir "{{ temp_dir }}"
+      --output_dir "{{ temp_dir }}" \
+      --outTmpDir "{{ temp_dir }}" \
+      --tmpdir "{{ temp_dir }}"
 
     mv {{ temp_dir }}/star-fusion.fusion_evidence_reads_1.fq {{ results_dir }}/{{ sample.name }}_starfusion_evidence_reads_1.fq
     mv {{ temp_dir }}/star-fusion.fusion_evidence_reads_2.fq {{ results_dir }}/{{ sample.name }}_starfusion_evidence_reads_2.fq
