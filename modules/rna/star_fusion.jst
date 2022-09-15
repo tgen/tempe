@@ -130,7 +130,8 @@
     ${sf_path}/util/STAR-Fusion.map_chimeric_reads_to_genes \
       --genome_lib_dir {{ constants.tempe.starfusion_index }} \
       -J {{ results_dir }}/{{ sample.name }}_Chimeric.out.junction \
-      > {{ temp_dir }}/star-fusion.preliminary/star-fusion.junction_breakpts_to_genes.txt
+      -O {{ temp_dir }}/star-fusion.preliminary/star-fusion.junction_breakpts_to_genes.txt \
+      --CPU 2
 
     ${sf_path}/util/STAR-Fusion.handle_multimapping_reads \
       -J {{ temp_dir }}/star-fusion.preliminary/star-fusion.junction_breakpts_to_genes.txt \
