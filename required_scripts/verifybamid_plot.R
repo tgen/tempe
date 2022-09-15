@@ -1,31 +1,63 @@
-#decide relative path
-initial.options <- commandArgs(trailingOnly = FALSE)
-file.arg.name <- "--file="
-script.name <- sub(file.arg.name, "", initial.options[grep(file.arg.name, initial.options)])
-script.basename <- dirname(script.name)
-print(paste("running from:",script.basename))
+#!/usr/bin/env Rscript
+library("optparse")
+ 
+option_list = list(
+  make_option(c("-i", "--input"), 
+              type="character", 
+              default=NULL, 
+              help="dataset file name [required]"),
+  make_option(c("-o", "--output"), 
+              type="character", 
+              default=NULL, 
+              help="output prefix file name [required]"),
+  make_option(c("-r", "--resources"), 
+              type="character", 
+              default=NULL, 
+              help="path to VerifyBamID resource prefix [required]"),
+  make_option(c("-t", "--type"), 
+              type="character", 
+              default="1000g", 
+              help="refType to use (1000g, hgdp) [default= %default]"),
+  make_option(c("-g", "--grey"), 
+              type="logical", 
+              default=FALSE, 
+              help="plot reference panel sample as grey points [default= %default]")
+);
+ 
+opt_parser = OptionParser(option_list=option_list);
+opt = parse_args(opt_parser);
 
-oldwd=getwd()
-setwd(script.basename)
-
-# test if there is at least one argument: if not, return an error
-args <- commandArgs(trailingOnly = TRUE)
-if (length(args)==0) {
-  stop("At least one argument must be supplied (input file)\n", call.=FALSE)
-} else if (length(args)!=4) {
-  # default output file
-  args[2] = "out.txt"
-  args[3] = "1000g"
-  args[4] = "grey"
-  cat("Insufficient arguments provided, use default setting:",args,"\n")
+if (!is.null(opt$input)) {
+  input <- opt$input
 }
+else {
+  stop("-i/--input is required! See script usage (--help)")
+}
+
+if (!is.null(opt$output)) {
+  output <- opt$output
+}
+else {
+  stop("-o/--output is required! See script usage (--help)")
+}
+
+if (!is.null(opt$resources)) {
+  resources <- opt$resources
+}
+else {
+  stop("-r/--resources is required! See script usage (--help)")
+}
+
+type <- opt$type
+isGrey <- opt$grey
+
 #set background
 library(ggplot2)
 library(scales)
 alphaScale=scale_alpha_discrete(range = c(0.9,0.3),guide=FALSE)
 sizeScale=scale_size(range=c(1.5,1),guide=FALSE)
-cat("Background data points:",args[3],"\n")
-if(tolower(args[3])=="hgdp")
+cat("Background data points:",type,"\n")
+if(tolower(type)=="hgdp")
 {
 #set hgdp color scale
 colScale = scale_color_manual(values=c('Adygei'='#00C6CD','Balochi'='#00FBFF','BantuKenya'='#FFB933','BantuSouthAfrica'='#FFB953','Basque'='#6495ED',
@@ -44,13 +76,13 @@ colScale = scale_color_manual(values=c('Adygei'='#00C6CD','Balochi'='#00FBFF','B
                                        'Palestinian','Papuan','Pathan','Pima','Russian','San','Sardinian','She','Sindhi','Surui','Tu','Tujia','Tuscan','Uygur',
                                        'Xibo','Yakut','Yi','Yoruba','UserSample'))
 #set hgdp coordinates
-POP=read.table("../resource/hgdp.pop",header = F)
-RefCoord.hgdp=read.table("../resource/hgdp.100k.b37.vcf.gz.dat.V",header = F)
+POP=read.table(paste0(resources,"/hgdp.pop"), header = F)
+RefCoord.hgdp=read.table(paste0(resources,".vcf.gz.dat.V"), header = F)
 RefCoord.hgdp=RefCoord.hgdp[,1:3]
 RefCoord.hgdp['POP'] <- POP$V2[match(RefCoord.hgdp$V1, POP$V1)]
 colnames(RefCoord.hgdp)=c("ID","PC1","PC2","POP")
 RefCoord=RefCoord.hgdp[!is.na(RefCoord.hgdp$POP),]
-}else if(tolower(args[3])=="1000g"){
+}else if(tolower(type)=="1000g"){
 #set 1000g color scale
 colScale = scale_color_manual(values=c('ESN'='#FFCD00','GWD'='#FFB900','LWK'='#CC9933','MSL'='#E1B919','YRI'='#FFB933','ACB'='#FF9900','ASW'='#FF6600',
                                        'CLM'='#CC3333','MXL'='#E10033','PEL'='#FF0000','PUR'='#CC3300','CDX'='#339900','CHB'='#ADCD00','CHS'='#00FF00',
@@ -60,8 +92,8 @@ colScale = scale_color_manual(values=c('ESN'='#FFCD00','GWD'='#FFB900','LWK'='#C
                               breaks=c('ESN','GWD','LWK','MSL','YRI','ACB','ASW','CLM','MXL','PEL','PUR','CDX','CHB','CHS','JPT','KHV','CEU','FIN','GBR',
                                        'IBS','TSI','BEB','GIH','ITU','PJL','STU','AFR','AFR/AMR','AMR','EAS','EUR','SAS','UserSample'))
 #set 1000g coordinates
-POP=read.table("../resource/1000g.pop",header = F)
-RefCoord.1kg=read.table("../resource/1000g.phase3.100k.b37.vcf.gz.dat.V",header = F)
+POP=read.table(paste0(resources,"/1000g.pop"), header = F)
+RefCoord.1kg=read.table(paste0(resources,".vcf.gz.dat.V"), header = F)
 RefCoord.1kg=RefCoord.1kg[,1:3]
 RefCoord.1kg['POP'] <- POP$V2[match(RefCoord.1kg$V1, POP$V1)]
 colnames(RefCoord.1kg)=c("ID","PC1","PC2","POP")
@@ -72,14 +104,14 @@ RefCoord=RefCoord.1kg
 }
 
 #assuming the input target sample has format ID PC1 PC2
-cat("Open file:",args[1],"\n")
-TargetSample=read.table(file=args[1])
+cat("Open file:",input,"\n")
+TargetSample=read.table(file=input)
 TargetSample=cbind(TargetSample,rep("UserSample",length(TargetSample$V1)))
 colnames(TargetSample)=c("ID","PC1","PC2","POP")
 
-if(args[4]=="grey")
+if(isGrey)
 {
-cat("Background points color:",args[4],"\n")
+cat("Background points color: grey\n")
 #prepare dataset for plot
 CombinedData=TargetSample
 #plot RefCoord as grey
@@ -94,9 +126,9 @@ CombinedData=rbind(RefCoord,TargetSample)
 p=ggplot()+geom_point(data=CombinedData,aes(PC1,PC2,color=POP))+#geom_text(data=CombinedData,aes(PC1,PC2,label=POP),size=1)+
   colScale+alphaScale+sizeScale
 }
-setwd(oldwd)
-#ggsave(paste0(args[2],".pdf"))
-pdf( paste0(args[2],".pdf"))
+
+#ggsave(paste0(output,".pdf"))
+pdf( paste0(output,".pdf"))
 # Output all plots to currently active device
 print( p )
 # Close device
