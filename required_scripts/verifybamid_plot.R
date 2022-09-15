@@ -13,7 +13,7 @@ option_list = list(
   make_option(c("-r", "--resources"), 
               type="character", 
               default=NULL, 
-              help="path to VerifyBamID resource prefix [required]"),
+              help="path to VerifyBamID resources [required]"),
   make_option(c("-t", "--type"), 
               type="character", 
               default="1000g", 
@@ -29,22 +29,19 @@ opt = parse_args(opt_parser);
 
 if (!is.null(opt$input)) {
   input <- opt$input
-}
-else {
+} else {
   stop("-i/--input is required! See script usage (--help)")
 }
 
 if (!is.null(opt$output)) {
   output <- opt$output
-}
-else {
+} else {
   stop("-o/--output is required! See script usage (--help)")
 }
 
 if (!is.null(opt$resources)) {
   resources <- opt$resources
-}
-else {
+} else {
   stop("-r/--resources is required! See script usage (--help)")
 }
 
@@ -57,8 +54,7 @@ library(scales)
 alphaScale=scale_alpha_discrete(range = c(0.9,0.3),guide=FALSE)
 sizeScale=scale_size(range=c(1.5,1),guide=FALSE)
 cat("Background data points:",type,"\n")
-if(tolower(type)=="hgdp")
-{
+if(tolower(type)=="hgdp") {
 #set hgdp color scale
 colScale = scale_color_manual(values=c('Adygei'='#00C6CD','Balochi'='#00FBFF','BantuKenya'='#FFB933','BantuSouthAfrica'='#FFB953','Basque'='#6495ED',
                                        'Bedouin'='#ADCE00','BiakaPygmy'='#CC9933','Brahui'='#CCE333','Burusho'='orchid4','Cambodian'='red',
@@ -77,12 +73,12 @@ colScale = scale_color_manual(values=c('Adygei'='#00C6CD','Balochi'='#00FBFF','B
                                        'Xibo','Yakut','Yi','Yoruba','UserSample'))
 #set hgdp coordinates
 POP=read.table(paste0(resources,"/hgdp.pop"), header = F)
-RefCoord.hgdp=read.table(paste0(resources,".vcf.gz.dat.V"), header = F)
+RefCoord.hgdp=read.table(paste0(resources,"/hgdp.100k.b38.vcf.gz.dat.V"), header = F)
 RefCoord.hgdp=RefCoord.hgdp[,1:3]
 RefCoord.hgdp['POP'] <- POP$V2[match(RefCoord.hgdp$V1, POP$V1)]
 colnames(RefCoord.hgdp)=c("ID","PC1","PC2","POP")
 RefCoord=RefCoord.hgdp[!is.na(RefCoord.hgdp$POP),]
-}else if(tolower(type)=="1000g"){
+} else if (tolower(type)=="1000g") {
 #set 1000g color scale
 colScale = scale_color_manual(values=c('ESN'='#FFCD00','GWD'='#FFB900','LWK'='#CC9933','MSL'='#E1B919','YRI'='#FFB933','ACB'='#FF9900','ASW'='#FF6600',
                                        'CLM'='#CC3333','MXL'='#E10033','PEL'='#FF0000','PUR'='#CC3300','CDX'='#339900','CHB'='#ADCD00','CHS'='#00FF00',
@@ -93,14 +89,13 @@ colScale = scale_color_manual(values=c('ESN'='#FFCD00','GWD'='#FFB900','LWK'='#C
                                        'IBS','TSI','BEB','GIH','ITU','PJL','STU','AFR','AFR/AMR','AMR','EAS','EUR','SAS','UserSample'))
 #set 1000g coordinates
 POP=read.table(paste0(resources,"/1000g.pop"), header = F)
-RefCoord.1kg=read.table(paste0(resources,".vcf.gz.dat.V"), header = F)
+RefCoord.1kg=read.table(paste0(resources,"/1000g.phase3.100k.b38.vcf.gz.dat.V"), header = F)
 RefCoord.1kg=RefCoord.1kg[,1:3]
 RefCoord.1kg['POP'] <- POP$V2[match(RefCoord.1kg$V1, POP$V1)]
 colnames(RefCoord.1kg)=c("ID","PC1","PC2","POP")
 RefCoord=RefCoord.1kg
-}else
-{
-  stop("Argument 3 is required to be either 1000g or hgdp!\n")
+} else {
+  stop("-t/--type is required to be either 1000g or hgdp!\n")
 }
 
 #assuming the input target sample has format ID PC1 PC2
@@ -109,8 +104,7 @@ TargetSample=read.table(file=input)
 TargetSample=cbind(TargetSample,rep("UserSample",length(TargetSample$V1)))
 colnames(TargetSample)=c("ID","PC1","PC2","POP")
 
-if(isGrey)
-{
+if(isGrey) {
 cat("Background points color: grey\n")
 #prepare dataset for plot
 CombinedData=TargetSample
@@ -118,7 +112,7 @@ CombinedData=TargetSample
 p=ggplot(data=RefCoord,aes(PC1,PC2))+geom_point(color="grey")+
   geom_point(data=CombinedData,aes(PC1,PC2,color=POP))+
   colScale+alphaScale+sizeScale
-}else{
+} else {
 cat("Background points color: predefined color scale\n")
 #prepare dataset for plot
 CombinedData=rbind(RefCoord,TargetSample)

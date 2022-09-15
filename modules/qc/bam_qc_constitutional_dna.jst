@@ -110,7 +110,7 @@
       -o {{ metrics }}.plot \
       -t 1000g \
       -g FALSE \
-      -r "{{ constants.tempe.verifybamid_resources }}/1000g.phase3.100k.b38"
+      -r "{{ constants.tempe.verifybamid_resources }}"
 
     echo -e "{{ bam|basename }}""\t"${SAMPLE_PC1}"\t"${SAMPLE_PC2}"\t"${SAMPLE_ALPHA} > "{{ metrics }}.plot.txt"
 
