@@ -16,11 +16,18 @@
   {% endif %}
 {% endif %}
 
+{% if annotate_flag == 'snpeff' %}
+  {% set canonical_cds_intervals %}{{ constants.tempe.snpeff_canonical_cds_intervals }}{% endset %}
+{% else %}
+  {% set canonical_cds_intervals %}{{ constants.tempe.vep_canonical_cds_intervals }}{% endset %}
+{% endif %}
+
 - name: tgen_mutation_burden_{{ variant_caller }}_{{ pair.name }}_{{ aligner }}_{{ annotate_flag }}
   input:
     - {{ input_vcf }}
     - {{ normal_bam }}
     - {{ tumor_bam }}
+    - {{ canonical_cds_intervals }}
   output:
     - {{ mutation_burden_output }}
   walltime: "24:00:00"
@@ -31,15 +38,6 @@
   cmd: |
     set -eu
     set -o pipefail
-
-    {#
-    module load {{ constants.tools.tgen_mutation_burden.module }}
-    module load {{ constants.tools.samtools.module }}
-    module load {{ constants.tools.bcftools.module }}
-    module load {{ constants.tools.htslib.module }}
-    module load {{ constants.tools.R.module }}
-    module load {{ constants.tools.bedtools.module }}
-    #}
 
     rm -r {{ mutation_burden_temp }} || true
     mkdir -p {{ mutation_burden_temp }}
@@ -56,12 +54,6 @@
       {% endif %}
       {% do ns_list.append(ns_effect) %}
     {% endfor %}
-
-    {% if annotate_flag == 'snpeff' %}
-      {% set canonical_cds_intervals %}{{ constants.tempe.snpeff_canonical_cds_intervals }}{% endset %}
-    {% else %}
-      {% set canonical_cds_intervals %}{{ constants.tempe.vep_canonical_cds_intervals }}{% endset %}
-    {% endif %}
 
     bcftools filter \
       --include '{{ CC_filter }} && ({{ ns_list|join(' || ') }})' \
