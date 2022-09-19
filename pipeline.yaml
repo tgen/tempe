@@ -203,7 +203,7 @@ constants:
     snpeff_config: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/tool_resources/snpEff_v4_3t/snpEff.config
     snpeff_data: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/tool_resources/snpEff_v4_3t/data
     snpeff_db: grch38.103
-    snpeff_canonical_cds_intervals: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/Homo_sapiens.GRCh38.103.ucsc.cds_padded.snpeff_canonical.final.bed
+    snpeff_canonical_cds_intervals: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/Homo_sapiens.GRCh38.103.ucsc.flt_canonical_snpeff.cds_padded.bed
     snpSniffer_sites: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/snpSniffer/positions_387_hg38_ucsc.txt
     snpSniffer_database: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/snpSniffer/databaseV5_hg38_ucsc.ini
     vep_data: /home/tgenref/homo_sapiens/grch38_hg38/tool_specific_resources/vep/v103/
