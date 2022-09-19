@@ -81,6 +81,7 @@ constants:
     genome_build: grch38_hg38
     genome_subversion_name: hg38_tempe
     gene_model_name: ensembl_v103
+    gene_model_version: 103
     canonical_cds_intervals: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/Homo_sapiens.GRCh38.103.ucsc.cds_padded.final.bed
     capture_kit_path: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/tool_resources/capture_kits
     reference_fasta: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/genome_reference/GRCh38tempe_decoy_alts_hla_masked.fa

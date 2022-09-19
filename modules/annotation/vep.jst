@@ -25,7 +25,7 @@
         --no_stats \
         --cache \
         --dir_cache "{{ constants.tempe.vep_data }}" \
-        --cache_version 98 \
+        --cache_version {{ constants.tempe.gene_model_version }} \
         --offline \
         --fasta "{{ constants.tempe.reference_fasta }}" \
         --buffer_size 10000 \
@@ -95,7 +95,7 @@
         --no_stats \
         --cache \
         --dir_cache "{{ constants.tempe.vep_data }}" \
-        --cache_version 98 \
+        --cache_version {{ constants.tempe.gene_model_version }} \
         --offline \
         --fasta "{{ constants.tempe.reference_fasta }}" \
         --buffer_size 10000 \
