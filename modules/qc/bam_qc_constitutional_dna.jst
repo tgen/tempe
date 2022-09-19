@@ -160,6 +160,8 @@
     set -eu
     set -o pipefail
 
+    mkdir -p "{{ temp_dir }}"
+
     freebayes \
       --fasta-reference "{{ constants.tempe.reference_fasta }}" \
       --targets "{{ constants.tempe.sex_check_targets }}" \
