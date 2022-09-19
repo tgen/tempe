@@ -5,7 +5,6 @@
 {% from 'modules/somatic/vardict.jst' import vardict_somatic with context %}
 {% from 'modules/somatic/octopus.jst' import octopus_somatic with context %}
 {% from 'modules/somatic/vcfmerger2.jst' import vcfmerger2 with context %}
-{# {% from 'modules/somatic/gridss.jst' import gridss_somatic with context %} #}
 {% from 'modules/somatic/gatk_cnv.jst' import gatk_cnv with context %}
 
 
@@ -129,10 +128,6 @@
 
     {% if tasks[taskPrefix+"_somatic_merge_vcfs_vcfMerger2"]|default(true) %}
         {{- vcfmerger2(pair, aligner, taskPrefix=taskPrefix) }}
-    {% endif %}
-
-    {% if tasks[taskPrefix+"_somatic_structural_caller_gridss"]|default(false) %}
-        {{- gridss_somatic(pair, aligner) }}
     {% endif %}
 
     {% if tasks[taskPrefix+"_somatic_cna_caller_gatk"]|default(true) %}
