@@ -3,7 +3,11 @@
 
 - name: snpeff_{{ variant_caller }}_{{ sample_or_pair.name }}_{{ aligner }}
   tags: [{{ sample_or_pair.gltype }}, {{ analysis_type }}, {{ task_type }}, annotate_vcfs, {{ variant_caller }}, {{ sample_or_pair.name }}]
-  input: {{ input_vcf }}
+  input: 
+    - {{ input_vcf }}
+    - {{ constants.tempe.snpeff_config }}
+    - {{ constants.tempe.snpeff_data }}
+    - {{ constants.tempe.snpeff_db }}
   output:
     - {{ final_vcf_prefix }}.snpeff.full.vcf
     - {{ final_vcf_prefix }}.snpeff.can.vcf

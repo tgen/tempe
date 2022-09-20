@@ -7,6 +7,7 @@
   tags: [{{ tumor.gltype }}, tumor_only, structural_caller, manta, {{ tumor.name }}]
   input:
     - {{ tumor_bam }}
+    - {{ constants.tempe.reference_fasta }}
   output:
     - {{ results_dir }}/{{ tumor.name }}.{{ aligner }}.manta.candidateSmallIndels.vcf.gz
     - {{ results_dir }}/{{ tumor.name }}.{{ aligner }}.manta.candidateSmallIndels.vcf.gz.tbi

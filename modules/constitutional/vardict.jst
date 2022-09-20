@@ -49,6 +49,7 @@
     - {{ bam }}
     - {{ bam }}.bai
     - {{ temp_dir }}/{{ loop.index }}.bed
+    - {{ constants.tempe.reference_fasta }}
   output:
     - {{ temp_dir }}/{{ loop.index }}.vardict.vcf
   cpus: 4

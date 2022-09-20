@@ -7,7 +7,9 @@
 - name: baserecalibration_table_{{ sample.name }}_{{ aligner }}_{{ loop.index }}
   tags: [{{ sample.gltype }}, alignment, base_recalibration, gatk, {{ sample.name }}]
   reset: predecessors
-  input: temp/{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.md.bam
+  input: 
+    - temp/{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.md.bam
+    - {{ constants.tempe.reference_fasta }}
   walltime: "4:00:00"
   cpus: 4
   mem: 16G

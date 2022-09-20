@@ -59,6 +59,7 @@
   input: 
     - {{ bam }}
     - {{ bam }}.bai
+    - {{ constants.tempe.reference_non_N_interval_list }}
   output:
     - {{ regions }}
     {% if libraryCount == 1 %}
@@ -97,6 +98,20 @@
     - {{ bam }}.bai
     {% if sample.gltype == 'exome' %}
     - {{ regions }}
+    {% endif %}
+    {% if sample.gltype == 'rna' or sample.gltype == 'singlecellrna' %}
+    - {{ constants.tempe.star_fasta }}
+    - {{ constants.tempe.reference_non_N_interval_list }}
+    {% elif sample.gltype == 'chip' %}
+    - {{ constants.tempe.chip_fasta }}
+    - {{ constants.tempe.reference_non_N_interval_list }}
+    {% else %}
+      {% if sample.gltype == 'exome' %}
+    - {{ regions }}
+      {% else %}
+    - {{ constants.tempe.reference_non_N_interval_list }}
+      {% endif %}
+    - {{ constants.tempe.reference_fasta }}
     {% endif %}
   output:
     - {{ results_dir }}/{{ bam|basename }}.bamstats.txt
@@ -464,6 +479,13 @@
   input: 
     - {{ bam }}
     - {{ bam }}.bai
+    {% if sample.gltype == 'rna' or sample.gltype == 'singlecellrna' %}
+    - {{ constants.tempe.star_fasta }}
+    {% elif sample.gltype == 'chip' %}
+    - {{ constants.tempe.chip_fasta }}
+    {% else %}
+    - {{ constants.tempe.reference_fasta }}
+    {% endif %}
   output:
     - {{ results_dir }}/{{ bam|basename }}.alignment_summary_metrics
     - {{ results_dir }}/{{ bam|basename }}.bait_bias_detail_metrics
@@ -579,6 +601,13 @@
   input: 
     - {{ bam }}
     - {{ bam }}.bai
+    {% if sample.gltype == 'rna' or sample.gltype == 'singlecellrna' %}
+    - {{ constants.tempe.star_fasta }}
+    {% elif sample.gltype == 'chip' %}
+    - {{ constants.tempe.chip_fasta }}
+    {% else %}
+    - {{ constants.tempe.reference_fasta }}
+    {% endif %}
   output:
     - {{ results_dir }}/{{ bam|basename }}.oxog_metrics
     {% if sample.gltype == 'singlecellrna' %}
@@ -679,8 +708,15 @@
   input: 
     - {{ bam }}
     - {{ bam }}.bai
-    - {{ bam }}
-    
+    {% if sample.gltype == 'rna' or sample.gltype == 'singlecellrna' %}
+    - {{ constants.tempe.star_fasta }}
+    {% elif sample.gltype == 'chip' %}
+    - {{ constants.tempe.chip_fasta }}
+    {% else %}
+    - {{ constants.tempe.reference_fasta }}
+    {% endif %}
+    - {{ constants.tempe.snpSniffer_sites }}
+    - {{ constants.tempe.bcftools_annotate_contig_update_ucsc2ensembl }}
   output:
     - {{ results_dir }}/{{ bam|basename }}.snpSniffer.vcf
     {% if libraryCount == 1 %}

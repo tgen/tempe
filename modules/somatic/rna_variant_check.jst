@@ -55,7 +55,9 @@
 - name: add_matched_rna_bcftools_prep_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, merge_vcfs, vcfMerger2, {{ pair.name }}]
   reset: predecessors
-  input: {{ input_vcf }}
+  input: 
+    - {{ input_vcf }}
+    - {{ constants.tempe.reference_dict }}
   output:
     - {{ temp_dir }}/contig_lengths.txt
     - {{ temp_dir }}/temp_variant_pos.bed
@@ -138,6 +140,7 @@
     - {{ star_bam_final }}
     - {{ star_bam_final }}.bai
     - {{ temp_dir }}/temp_target_intervals.bed
+    - {{ constants.tempe.reference_fasta }}
   output:
     - {{ temp_dir }}/{{ rna_sample }}_DnaVarInRNA.vcf
   walltime: "8:00:00"
@@ -168,6 +171,7 @@
   input:
     - {{ input_vcf }}
     - {{ temp_dir }}/{{ rna_sample }}_DnaVarInRNA.vcf
+    - {{ constants.tempe.reference_fasta }}
   output:
     - {{ output_vcf }}
     - {{ output_vcf }}.csi

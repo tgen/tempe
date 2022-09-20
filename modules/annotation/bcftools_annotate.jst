@@ -11,6 +11,27 @@
     - {{ output_vcf }}
     - {{ output_vcf }}.tbi
     {% endif %}
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_dbsnp"]|default(true) %}
+    - {{ constants.tempe.dbsnp }}
+    {% endif %}
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_gnomad_exome"]|default(true) %}
+    - {{ constants.tempe.gnomad_exome }}
+    {% endif %}
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_gnomad_genome"]|default(true) %}
+    - {{ constants.tempe.gnomad_genome }}
+    {% endif %}
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_cosmic_coding"]|default(true) %}
+    - {{ constants.tempe.cosmic_coding }}
+    {% endif %}
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_cosmic_noncoding"]|default(true) %}
+    - {{ constants.tempe.cosmic_noncoding }}
+    {% endif %}
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_clinvar"]|default(true) %}
+    - {{ constants.tempe.clinvar }}
+    {% endif %}
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_topmed"]|default(true) %}
+    - {{ constants.tempe.topmed }}
+    {% endif %}
   walltime: "8:00:00"
   cpus: 4
   mem: 4G

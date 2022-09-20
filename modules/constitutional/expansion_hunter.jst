@@ -9,6 +9,7 @@
   input: 
     - {{ bam }}
     - {{ bam }}.bai
+    - {{ constants.tempe.reference_fasta }}
   output:
     - {{ temp_dir }}/{{ sample.name }}.expansion_hunter.vcf
   walltime: "24:00:00"

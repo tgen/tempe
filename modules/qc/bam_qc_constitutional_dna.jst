@@ -26,6 +26,7 @@
   input: 
     - {{ bam }}
     - {{ bam }}.bai
+    - {{ constants.tempe.reference_fasta }}
   output:
     - {{ metrics }}.out
     - {{ metrics }}.selfSM
@@ -77,6 +78,7 @@
   tags: [{{ sample.gltype }}, quality_control, constitutional_contamination_check, VerifyBamID, {{ sample.name }}]
   input: 
     - {{ metrics }}.out
+    - {{ constants.tempe.reference_fasta }}
   output:
     - {{ metrics }}.plot.txt
     - {{ metrics }}.plot.pdf
@@ -148,6 +150,9 @@
   input: 
     - {{ bam }}
     - {{ bam }}.bai
+    - {{ constants.tempe.reference_fasta }}
+    - {{ constants.tempe.sex_check_targets }}
+    - {{ constants.tempe.sex_check_vcf }}
   output: {{ vcf }}
   {% if bam_level is sameas false %}
   reset: predecessors

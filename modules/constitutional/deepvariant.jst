@@ -20,6 +20,7 @@
   input: 
     - {{ bam }}
     - {{ bam }}.bai
+    - {{ constants.tempe.reference_fasta }}
   output:
     - {{ temp_dir }}/{{ sample.name }}.ex.tfrecord-{{ iteration }}-of-{{ stop }}.gz
     - {{ temp_dir }}/{{ sample.name }}.gvcf.tfrecord-{{ iteration }}-of-{{ stop }}.gz
@@ -93,7 +94,9 @@
 - name: deepvariant_postprocess_variants_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, deepvariant, {{ sample.name }}]
   reset: predecessors
-  input: {{ temp_dir }}/{{ sample.name }}.cvo.tfrecord.gz
+  input: 
+    - {{ temp_dir }}/{{ sample.name }}.cvo.tfrecord.gz
+    - {{ constants.tempe.reference_fasta }}
   output:
     - {{ all_vcf }}
     - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.deepvariant.all.g.vcf.gz
@@ -113,7 +116,7 @@
     cd "{{ temp_dir }}"
     
     {# Run postprocess_variants with gVCFs #}
-    /opt/deepvariant/bin/postprocess_variants \
+    postprocess_variants \
         --ref "{{ constants.tempe.reference_fasta }}" \
         --infile "{{ sample.name }}.cvo.tfrecord.gz" \
         --outfile "${PROJECT_ROOT}/{{ all_vcf }}" \

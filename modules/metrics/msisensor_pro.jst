@@ -52,6 +52,7 @@
     - {{ normal_nodup_bam }}.bai
     - {{ tumor_nodup_bam }}
     - {{ tumor_nodup_bam }}.bai
+    - {{ constants.tempe.reference_msisensor_pro }}
   output: {{ results_dir }}/{{ pair.name }}_msisensor_pro_results
   walltime: "24:00:00"
   cpus: 4

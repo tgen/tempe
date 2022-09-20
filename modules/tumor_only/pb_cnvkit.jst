@@ -8,6 +8,7 @@
   tags: [{{ tumor.gltype }}, tumor_only, cna_caller, cnvkit, {{ tumor.name }}]
   input:
     - {{ tumor_bam }}
+    - {{ constants.tempe.reference_fasta }}
   cpus: 4
   mem: 16G
   queue_preset: "DEFAULT"

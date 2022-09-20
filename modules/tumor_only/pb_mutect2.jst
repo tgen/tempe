@@ -9,6 +9,7 @@
   tags: [{{ tumor.gltype }}, tumor_only, snp_indel_caller, gatk_mutect2, {{ tumor.name }}]
   input:
     - {{ tumor_bam }}
+    - {{ constants.tempe.reference_fasta }}
   output:
     - {{ all_vcf }}
   walltime: "24:00:00"

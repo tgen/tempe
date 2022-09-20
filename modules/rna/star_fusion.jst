@@ -36,6 +36,7 @@
   {% for fq in r2fqlist %}
     - {{ fq.path }}
   {% endfor %}
+  - {{ constants.tempe.starfusion_index }}
   output:
     - {{ temp_dir }}/{{ sample.name }}.Aligned.sorted.bam
     - {{ results_dir }}/{{ sample.name }}_Chimeric.out.junction
@@ -117,6 +118,7 @@
     {% for fq in r2fqlist %}
     - {{ fq.path }}
     {% endfor %}
+    - {{ constants.tempe.starfusion_index }}
   output:
     - {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.tsv
     - {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.abridged.tsv
@@ -194,7 +196,9 @@
 
 - name: bam_to_cram_{{ sample.name }}_{{ aligner }}_fusion
   tags: [{{ sample.gltype }}, {{ sample.name }}, bam_to_cram ]
-  input: {{ results_dir }}/{{ sample.name }}_starfusion.bam
+  input: 
+    - {{ results_dir }}/{{ sample.name }}_starfusion.bam
+    - {{ constants.tempe.star_fasta }}
   output:
     - {{ results_dir }}/{{ sample.name }}_starfusion.cram
     - {{ results_dir }}/{{ sample.name }}_starfusion.cram.crai

@@ -16,6 +16,8 @@
   input:
     - {{ normal_bam }}
     - {{ tumor_bam }}
+    - {{ constants.tempe.reference_fasta }}
+    - {{ constants.tempe.black_list }}
   output:
     - {{ temp_dir }}/{{ loop.index }}.realigned.bam
     - {{ temp_dir }}/{{ loop.index }}.octopus.vcf

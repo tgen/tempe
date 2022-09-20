@@ -24,6 +24,8 @@
   input: 
     - {{ bam }}
     - {{ bam }}.bai
+    - {{ constants.tempe.ref_flat }}
+    - {{ constants.tempe.ribo_locations }}
   output:
     - {{ rna_metrics }}
     - {{ rna_metrics }}.pdf

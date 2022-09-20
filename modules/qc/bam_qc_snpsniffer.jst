@@ -20,6 +20,7 @@
     {% for result in snpsniffer_list %}
     - {{ result }}
     {% endfor %}
+    - {{ constants.tempe.snpSniffer_database }}
   output:
     - qc/snpSniffer/{{ project }}_SnpSniffer_AllPairs_Summary.tsv
     - qc/snpSniffer/{{ project }}_SnpSniffer_PossibleMatchErrors_Summary.tsv

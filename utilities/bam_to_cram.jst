@@ -7,7 +7,15 @@
 
 - name: bam_to_cram_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype }}, {{ sample.name }}, bam_to_cram ]
-  input: {{ bam_path }}
+  input: 
+    - {{ bam_path }}
+    {% if sample.gltype == 'rna' or sample.gltype == 'singlecellrna' %}
+    - {{ constants.tempe.star_fasta }}
+    {% elif sample.gltype == 'chip' %}
+    - {{ constants.tempe.chip_fasta }}
+    {% else %}
+    - {{ constants.tempe.reference_fasta }}
+    {% endif %}
   output:
     - {{ cram_path }}
     - {{ cram_path }}.crai

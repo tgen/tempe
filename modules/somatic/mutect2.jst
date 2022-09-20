@@ -16,6 +16,8 @@
   input:
     - {{ normal_bam }}
     - {{ tumor_bam }}
+    - {{ constants.tempe.reference_fasta }}
+    - {{ constants.tempe.gnomad_genome_mutect_germlinereference }}
   output:
     - {{ temp_dir }}/{{ loop.index }}.mutect2.vcf.gz
     - {{ temp_dir }}/{{ loop.index }}.mutect2.vcf.gz.stats
@@ -69,6 +71,8 @@
   input:
     - {{ normal_bam }}
     - {{ tumor_bam }}
+    - {{ constants.tempe.reference_fasta }}
+    - {{ constants.tempe.gnomad_genome_mutect_contamination }}
   output: {{ temp_dir }}/{{ loop.index }}.tumor-pileups.table
   cpus: 2
   mem: 8G
@@ -201,6 +205,7 @@
     - {{ temp_dir }}/{{ loop.index }}.tumor-pileups.table
     - {{ temp_dir }}/{{ loop.index }}.normal-pileups.table
     {% endfor %}
+    - {{ constants.tempe.reference_dict }}
   output:
     - {{ temp_dir }}/merged.tumor-pileups.table.tsv
     - {{ temp_dir }}/merged.normal-pileups.table.tsv
@@ -270,6 +275,7 @@
     - {{ temp_dir }}/artifact-priors.tar.gz
     - {{ temp_dir }}/contamination.table
     - {{ temp_dir }}/segments.table
+    - {{ constants.tempe.reference_fasta }}
   output:
     - {{ all_vcf }}
     - {{ all_vcf }}.tbi

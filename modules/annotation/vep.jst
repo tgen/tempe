@@ -2,7 +2,10 @@
 
 - name: vep_all_{{ variant_caller }}_{{ sample_or_pair.name }}_{{ aligner }}
   tags: [{{ sample_or_pair.gltype }}, {{ analysis_type }}, {{ task_type }}, annotate_vcfs, {{ variant_caller }}, {{ sample_or_pair.name }}]
-  input: {{ input_vcf }}
+  input: 
+    - {{ input_vcf }}
+    - {{ constants.tempe.vep_data }}
+    - {{ constants.tempe.reference_fasta }}
   output: {{ final_vcf_prefix }}.vep.full.vcf
   walltime: "8:00:00"
   cpus: 4
@@ -72,7 +75,10 @@
 
 - name: vep_con_{{ variant_caller }}_{{ sample_or_pair.name }}_{{ aligner }}
   tags: [{{ sample_or_pair.gltype }}, {{ analysis_type }}, {{ task_type }}, annotate_vcfs, {{ variant_caller }}, {{ sample_or_pair.name }}]
-  input: {{ input_vcf }}
+  input:
+    - {{ input_vcf }}
+    - {{ constants.tempe.vep_data }}
+    - {{ constants.tempe.reference_fasta }}
   output: {{ final_vcf_prefix }}.vep.pick.vcf
   walltime: "8:00:00"
   cpus: 4

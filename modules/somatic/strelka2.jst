@@ -72,6 +72,7 @@
     - {{ indel_candidates }}.tbi
     - {{ temp_dir }}/callRegions.bed.gz
     - {{ temp_dir }}/callRegions.bed.tbi
+    - {{ constants.tempe.reference_fasta }}
   output:
     - {{ temp_dir }}/results/variants/somatic.indels.vcf.gz
     - {{ temp_dir }}/results/variants/somatic.snvs.vcf.gz
@@ -120,6 +121,7 @@
   input:
     - {{ temp_dir }}/results/realigned/realigned.normal.bam
     - {{ temp_dir }}/results/realigned/realigned.tumor.bam
+    - {{ constants.tempe.reference_fasta }}
   output:
     {% if cram|default(true) %}
     - {{ results_dir }}/evidence/{{ pair.normal.name }}.{{ aligner }}.strelka2.realigned.cram

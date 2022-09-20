@@ -16,6 +16,9 @@
   input: 
     - {{ bam }}
     - {{ bam }}.bai
+    - {{ constants.tempe.reference_fasta }}
+    - {{ sample.capture_kit.targets_interval_list }}
+    - {{ sample.capture_kit.baits_interval_list }}
   output: {{ output_file }}
   walltime: "8:00:00"
   cpus: 2

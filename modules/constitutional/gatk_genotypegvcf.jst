@@ -18,6 +18,7 @@
   input:
     - {{ gvcf }}
     - {{ gvcf }}.tbi
+    - {{ constants.tempe.reference_fasta }}
   output: {{ temp_dir }}/{{ loop.index }}.vcf.gz
   walltime: "24:00:00"
   cpus: 4
@@ -48,6 +49,7 @@
     - {{ bam }}
     - {{ bam }}.bai
     - {{ temp_dir }}/{{ loop.index }}.vcf.gz
+    - {{ constants.tempe.reference_fasta }}
   output: {{ temp_dir }}/{{ loop.index }}.scored.vcf.gz
   after: genotypegvcf_{{ sample.name }}_{{ aligner }}_{{ loop.index }}
   walltime: "24:00:00"

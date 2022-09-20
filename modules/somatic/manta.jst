@@ -13,6 +13,7 @@
   input:
     - {{ normal_bam }}
     - {{ tumor_bam }}
+    - {{ constants.tempe.reference_fasta }}
   output: 
     - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.candidateSmallIndels.vcf.gz
     - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.candidateSmallIndels.vcf.gz.tbi

@@ -17,6 +17,7 @@
   input: 
     - {{ bam }}
     - {{ bam }}.bai
+    - {{ constants.tempe.reference_fasta }}
   output: {{ temp_dir }}/{{ loop.index }}.vcf
   walltime: "24:00:00"
   cpus: 1

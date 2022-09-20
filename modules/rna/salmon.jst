@@ -31,6 +31,10 @@
   {% for fq in r2fqlist %}
     - temp/fastqs/{{ fq.basename }}
   {% endfor %}
+    - {{ constants.tempe.salmon_index }}
+    - {{ constants.tempe.gtf }}
+    - {{ constants.tempe.ig_ENST_filter }}
+    - {{ constants.tempe.ref_flat }}
   output:
     - {{ results_dir }}/{{ sample.name }}.transcripts.sf
     - {{ results_dir }}/{{ sample.name }}.genes.sf

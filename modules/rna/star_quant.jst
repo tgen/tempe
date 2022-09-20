@@ -45,6 +45,9 @@
     {% for fq in r2fqlist %}
     - {{ fq.path }}
     {% endfor %}
+    - {{ constants.tempe.star_indices_path }}
+    - {{ constants.tempe.star_fasta }}
+    - {{ constants.tempe.gtf }}
   output:
     - {{ star_bam_unsort }}
     - {{ star_finalcountsdir }}/{{ sample.name }}.ReadsPerGene.out.tab
@@ -316,7 +319,9 @@
 - name: htseq_{{ sample.name }}
   tags: [{{ sample.gltype }}, transcriptome, quantify_expression, HTseq, {{ sample.name }}]
   reset: predecessors
-  input: {{ star_bam_unsort }}
+  input: 
+    - {{ star_bam_unsort }}
+    - {{ constants.tempe.gtf }}
   output: {{ sample.gltype }}/quant/htseq/{{ sample.name }}/{{ sample.name }}.htseq_counts.txt
   cpus: 2
   mem: 4G
@@ -367,7 +372,9 @@
 - name: featurecounts_{{ sample.name }}
   tags: [{{ sample.gltype }}, transcriptome, quantify_expression, subread_featureCounts, {{ sample.name }}]
   reset: predecessors
-  input: {{ star_bam_unsort }}
+  input: 
+    - {{ star_bam_unsort }}
+    - {{ constants.tempe.gtf }}
   output:
     - {{ sample.gltype }}/quant/featurecounts/{{ sample.name }}/{{ sample.name }}.exon.counts.tsv
     - {{ sample.gltype }}/quant/featurecounts/{{ sample.name }}/{{ sample.name }}.gene.counts.tsv
@@ -412,7 +419,9 @@
 - name: rsem_calculate_expression_{{ sample.name }}
   tags: [{{ sample.gltype }}, transcriptome, quantify_expression, rsem_star_bam, {{ sample.name }}]
   reset: predecessors
-  input: {{ star_bam_transcript }}
+  input: 
+    - {{ star_bam_transcript }}
+    - {{ constants.tempe.rsem_index }}
   output:
     - {{ sample.gltype }}/quant/rsem/{{ sample.name }}/{{ sample.name }}.isoforms.results
     - {{ sample.gltype }}/quant/rsem/{{ sample.name }}/{{ sample.name }}.genes.results

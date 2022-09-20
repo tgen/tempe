@@ -38,7 +38,9 @@
 
 - name: vcfmerger2_prep_{{ caller }}_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, merge_vcfs, vcfMerger2, {{ pair.name }}]
-  input: {{ gzipped_path }}
+  input: 
+    - {{ gzipped_path }}
+    - {{ constants.tempe.reference_fasta }}
   output: {{ prepped_path }}
   cpus: 4
   mem: 8G
@@ -98,6 +100,8 @@
     {% set filtered_path %}{{ temp_dir }}/{{ caller }}.filt.vcf{% endset %}
     - {{ filtered_path }}
     {% endfor %}
+    - {{ constants.tempe.reference_fasta }}
+    - {{ constants.tempe.reference_dict }}
   output: {{ merged_vcf_gz }}
   cpus: 4
   mem: 8G

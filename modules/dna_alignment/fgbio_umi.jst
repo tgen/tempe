@@ -69,6 +69,8 @@
   reset: predecessors
   input:
     - {{ temp_dir }}/{{ sample.rgsm }}.{{ aligner }}_UMI_uBAM.bam
+    - {{ constants.tempe.bwa_index }}
+    - {{ constants.tempe.reference_fasta }}
   output:
     - {{ temp_dir }}/{{ sample.rgsm }}.{{ aligner }}_UMI_bwa.bam
   cpus: 10
@@ -199,6 +201,8 @@
   reset: predecessors
   input:
     - {{ temp_dir }}/{{ sample.rgsm }}.{{ aligner }}_con_uBAM.bam
+    - {{ constants.tempe.bwa_index }}
+    - {{ constants.tempe.reference_fasta }}
   output:
     - {{ temp_dir }}/{{ sample.name }}_{{ aligner }}.bwa.md.bam
   cpus: 10

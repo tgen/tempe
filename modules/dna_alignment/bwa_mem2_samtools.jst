@@ -30,6 +30,7 @@
   input:
     - temp/fastqs/{{ sample.name }}/{{ rgid }}/{{ r1fastq.basename }}/{{ chunk_suffix }}
     - temp/fastqs/{{ sample.name }}/{{ rgid }}/{{ r2fastq.basename }}/{{ chunk_suffix }}
+    - {{ constants.tempe.bwa_mem2_index }}
   output: {{ temp_dir }}/{{ rgid }}/{{ chunk_suffix }}.{{ aligner }}.bam
   walltime: "24:00:00"
   cpus: 20

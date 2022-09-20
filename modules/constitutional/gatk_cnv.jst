@@ -37,6 +37,7 @@
     {% else %}
     - {{ cnvSnps }}
     {% endif %}
+    - {{ constants.tempe.reference_fasta }}
   output:
     - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.allelicCounts.tsv
     - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.standardizedCR.tsv
@@ -149,6 +150,7 @@
     - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.denoisedCR.tsv
     - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.modelFinal.seg
     - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.hets.tsv
+    - {{ constants.tempe.centromere }}
   output:
     - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.denoisedCR.genderCorrected.tsv
     - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.modelFinal.genderCorrected.seg

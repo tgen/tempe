@@ -21,6 +21,11 @@
     - {{ normal_bam_stats }}
     - {{ tumor_bam_stats }}
     - {{ normal_sex_check }}
+    - {{ constants.tempe.gatk_cnv_primary_contigs_female }}
+    - {{ constants.tempe.gatk_cnv_primary_contigs_male }}
+    - {{ constants.tempe.reference_fasta }}
+    - {{ constants.tempe.mappability_track }}
+    - {{ constants.tempe.encode_denylist }}
   output:
     - {{ temp_dir }}/preprocessed_filt.interval_list
     - {{ temp_dir }}/anno_preprocessed.interval_list
@@ -211,6 +216,7 @@
     - {{ deepvariant_vcf }}
     - {{ normal_bam_stats }}
     - {{ tumor_bam_stats }}
+    - {{ constants.tempe.encode_denylist }}
   output:
     - {{ temp_dir }}/{{ pair.normal.name }}.{{ aligner }}.snps.vcf
   cpus: 1
@@ -307,6 +313,7 @@
   input:
     - {{ normal_bam }}
     - {{ temp_dir }}/{{ pair.normal.name }}.{{ aligner }}.snps.vcf
+    - {{ constants.tempe.reference_fasta }}
   output:
     - {{ results_dir }}/{{ pair.normal.name }}.{{ aligner }}.allelicCounts.tsv
   cpus: 1
@@ -368,6 +375,7 @@
   input:
     - {{ tumor_bam }}
     - {{ temp_dir }}/{{ pair.normal.name }}.{{ aligner }}.snps.vcf
+    - {{ constants.tempe.reference_fasta }}
   output:
     - {{ results_dir }}/{{ pair.tumor.name }}.{{ aligner }}.allelicCounts.tsv
   cpus: 1
@@ -527,6 +535,7 @@
     - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.denoisedCR.tsv
     - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.modelFinal.seg
     - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.hets.tsv
+    - {{ constants.tempe.centromere }}
   output:
     - {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
     - {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.denoisedCR.genderCorrected.tsv

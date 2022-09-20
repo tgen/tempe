@@ -16,6 +16,7 @@
     - {{ tumor_bam }}
     - {{ indel_candidates }}
     - {{ indel_candidates }}.tbi
+    - {{ constants.tempe.reference_fasta }}
   output:
     - {{ temp_dir }}/results/variants/somatic.indels.vcf.gz
     - {{ temp_dir }}/results/variants/somatic.snvs.vcf.gz

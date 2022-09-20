@@ -23,6 +23,7 @@
   input: 
     - {{ bam }}
     - {{ bam }}.bai
+    - {{ constants.tempe.reference_fasta }}
   output:
     - {{ dna_metrics }}
     {% if libraryCount == 1 %}
@@ -80,6 +81,7 @@
   input: 
     - {{ bam }}
     - {{ bam }}.bai
+    - {{ constants.tempe.reference_fasta }}
   output:
     - {{ output }}
     - {{ output }}.pdf
@@ -144,6 +146,7 @@
   input: 
     - {{ bam }}
     - {{ bam }}.bai
+    - {{ constants.tempe.reference_fasta }}
   output:
     - {{ dna_metrics }}
     {% if libraryCount == 1 %}

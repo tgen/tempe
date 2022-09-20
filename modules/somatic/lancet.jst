@@ -16,6 +16,7 @@
   input:
     - {{ normal_bam }}
     - {{ tumor_bam }}
+    - {{ constants.tempe.reference_fasta }}
   output: {{ temp_dir }}/{{ loop.index }}.lancet-uns.vcf
   cpus: 4
   mem: 8G
@@ -56,6 +57,7 @@
     {% for b in constants.tempe.calling_intervals %}
     - {{ temp_dir }}/{{ loop.index }}.lancet-uns.vcf
     {% endfor %}
+    - {{ constants.tempe.reference_fai }}
   output:
     - {{ all_vcf }}
     - {{ all_vcf }}.tbi

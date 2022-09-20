@@ -24,6 +24,7 @@
     - temp/fastqs/{{ r1fastq.basename }}
     - temp/fastqs/{{ r2fastq.basename }}
   {% endfor %}
+  - {{ constants.tempe.bwa_index }}
   output:
     - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam
     {% if tasks.Genome_alignment_base_recalibration_gatk | default(false) or tasks.Exome_alignment_base_recalibration_gatk | default(false) %}
@@ -69,6 +70,7 @@
   input:
     - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam
     - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.recal_data.table
+    - {{ constants.tempe.bwa_index }}
   output:
     - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.bam
     - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.bam.bai
