@@ -54,11 +54,14 @@
     #}
 
     {# Enables some wider container compatibility #}
-    if ! [ -x "$(command -v pbrun)" ]; then
-      alias pbrun='/parabricks/run_pipeline.py'
+    if ! command -v pbrun &> /dev/null
+    then
+      pbcmd=/parabricks/run_pipeline.py
+    else
+      pbcmd=pbrun
     fi
 
-    pbrun fq2bam \
+    $pbcmd fq2bam \
     --tmp-dir "{{ temp_dir }}/markdup_temp/" \
     --ref "{{ constants.tempe.bwa_index }}" \
     --bwa-options "-Y -K 100000000" \
@@ -98,11 +101,14 @@
     set -o pipefail
 
     {# Enables some wider container compatibility #}
-    if ! [ -x "$(command -v pbrun)" ]; then
-      alias pbrun='/parabricks/run_pipeline.py'
+    if ! command -v pbrun &> /dev/null
+    then
+      pbcmd=/parabricks/run_pipeline.py
+    else
+      pbcmd=pbrun
     fi
 
-    pbrun applybqsr \
+    $pbcmd applybqsr \
       --ref "{{ constants.tempe.bwa_index }}" \
       --in-bam {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam \
       --in-recal-file {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.recal_data.table  \
