@@ -34,6 +34,7 @@
   cpus: 16
   mem: 96G
   queue_preset: "PARABRICKS"
+  runner_preset: "PARABRICKS"
   container: {{ constants.tools.parabricks.container }}
   cmd: |
     set -eu
@@ -51,6 +52,11 @@
       GPU_DEVICE_ORDINAL=0
     fi
     #}
+
+    {# Enables some wider container compatibility #}
+    if ! [ -x "$(command -v pbrun)" ]; then
+      alias pbrun='/parabricks/run_pipeline.py'
+    fi
 
     pbrun fq2bam \
     --tmp-dir "{{ temp_dir }}/markdup_temp/" \
@@ -85,10 +91,16 @@
     - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.bam.bai
   walltime: "24:00:00"
   queue_preset: "PARABRICKS"
+  runner_preset: "PARABRICKS"
   container: {{ constants.tools.parabricks.container }}
   cmd: |
     set -eu
     set -o pipefail
+
+    {# Enables some wider container compatibility #}
+    if ! [ -x "$(command -v pbrun)" ]; then
+      alias pbrun='/parabricks/run_pipeline.py'
+    fi
 
     pbrun applybqsr \
       --ref "{{ constants.tempe.bwa_index }}" \
