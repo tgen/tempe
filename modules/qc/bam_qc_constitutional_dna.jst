@@ -78,7 +78,7 @@
   tags: [{{ sample.gltype }}, quality_control, constitutional_contamination_check, VerifyBamID, {{ sample.name }}]
   input: 
     - {{ metrics }}.out
-    - {{ constants.tempe.reference_fasta }}
+    - {{ constants.tempe.verifybamid_resources }}
   output:
     - {{ metrics }}.plot.txt
     - {{ metrics }}.plot.pdf
