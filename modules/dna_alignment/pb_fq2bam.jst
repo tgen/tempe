@@ -24,7 +24,7 @@
     - temp/fastqs/{{ r1fastq.basename }}
     - temp/fastqs/{{ r2fastq.basename }}
   {% endfor %}
-  - {{ constants.tempe.bwa_index }}
+    - {{ constants.tempe.bwa_index }}
   output:
     - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam
     {% if tasks.Genome_alignment_base_recalibration_gatk | default(false) or tasks.Exome_alignment_base_recalibration_gatk | default(false) %}
@@ -43,7 +43,13 @@
     mkdir -p "{{ temp_dir }}/markdup_temp/"
     mkdir -p "{{ results_dir }}/stats/"
 
+    if [ -z ${GPU_DEVICE_ORDINAL} ]; then
+      # Assume we have the first GPU
+      GPU_DEVICE_ORDINAL=0
+    fi
+
     pbrun fq2bam \
+    --gpu-devices ${GPU_DEVICE_ORDINAL} \
     --tmp-dir "{{ temp_dir }}/markdup_temp/" \
     --ref "{{ constants.tempe.bwa_index }}" \
     --bwa-options "-Y -K 100000000" \
