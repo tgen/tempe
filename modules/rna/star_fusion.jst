@@ -36,7 +36,7 @@
   {% for fq in r2fqlist %}
     - {{ fq.path }}
   {% endfor %}
-  - {{ constants.tempe.starfusion_index }}
+    - {{ constants.tempe.starfusion_index }}
   output:
     - {{ temp_dir }}/{{ sample.name }}.Aligned.sorted.bam
     - {{ results_dir }}/{{ sample.name }}_Chimeric.out.junction

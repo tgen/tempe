@@ -37,11 +37,11 @@
 - name: concat_wigs_{{ aligner }}_{{ sample.name }}
   reset: predecessors
   input: 
-  {% for contig in constants.tempe.calling_contigs %}
-  {% if loop.index < 24 %}
-  - {{ temp_dir }}/{{ contig.contig }}.wig
-  {% endif %}
-  {% endfor %}
+    {% for contig in constants.tempe.calling_contigs %}
+    {% if loop.index < 24 %}
+    - {{ temp_dir }}/{{ contig.contig }}.wig
+    {% endif %}
+    {% endfor %}
   output: {{ wig }}
   walltime: "24:00:00"
   cpus: 1
