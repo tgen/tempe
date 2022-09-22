@@ -34,6 +34,7 @@
   cpus: 16
   mem: 96G
   queue_preset: "PARABRICKS"
+  runner_args: ['--env', 'CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES}']
   runner_preset: "PARABRICKS"
   container: {{ constants.tools.parabricks.container }}
   cmd: |
