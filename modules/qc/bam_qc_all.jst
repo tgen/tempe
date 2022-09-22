@@ -60,6 +60,7 @@
     - {{ bam }}
     - {{ bam }}.bai
     - {{ constants.tempe.reference_non_N_interval_list }}
+    - {{ sample.capture_kit.no_header_targets_interval_list }}
   output:
     - {{ regions }}
     {% if libraryCount == 1 %}

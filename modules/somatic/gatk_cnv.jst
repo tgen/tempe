@@ -26,6 +26,10 @@
     - {{ constants.tempe.reference_fasta }}
     - {{ constants.tempe.mappability_track }}
     - {{ constants.tempe.encode_denylist }}
+    {% if pair.gltype in 'exome' %}
+    - {{ pair.normal.capture_kit.targets_interval_list }}
+    - {{ pair.tumor.capture_kit.targets_interval_list }}
+    {% endif %}
   output:
     - {{ temp_dir }}/preprocessed_filt.interval_list
     - {{ temp_dir }}/anno_preprocessed.interval_list
