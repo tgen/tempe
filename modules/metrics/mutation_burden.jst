@@ -28,6 +28,9 @@
     - {{ normal_bam }}
     - {{ tumor_bam }}
     - {{ canonical_cds_intervals }}
+    {% if pair.gltype == 'exome' %}
+    - {{ pair.tumor.capture_kit.extended_bed }}
+    {% endif %}
   output:
     - {{ mutation_burden_output }}
   walltime: "24:00:00"

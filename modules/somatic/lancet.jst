@@ -119,6 +119,9 @@
   input:
     - {{ all_vcf }}
     - {{ all_vcf }}.tbi
+    {% if pair.gltype == 'exome' %}
+    - {{ pair.tumor.capture_kit.extended_bed }}
+    {% endif %}
   output:
     - {{ pass_vcf }}
     - {{ pass_vcf }}.tbi

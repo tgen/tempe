@@ -120,6 +120,9 @@
   input:
     - {{ temp_dir }}/results/variants/somatic.indels.vcf.gz
     - {{ temp_dir }}/results/variants/somatic.snvs.vcf.gz
+    {% if pair.gltype == 'exome' %}
+    - {{ pair.tumor.capture_kit.extended_bed }}
+    {% endif %}
   output:
     - {{ all_vcf }}
     - {{ all_vcf }}.tbi

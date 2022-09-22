@@ -144,6 +144,9 @@
   tags: [{{ sample.gltype}}, constitutional, genotype_hc_gvcf, gatk_GenotypeGVCFs, {{ sample.name }}]
   input:
     - {{ temp_dir }}/{{ sample.name }}.hc.fvt.vcf.gz
+    {% if sample.gltype == 'exome' %}
+    - {{ sample.capture_kit.extended_bed }}
+    {% endif %}
   output:
     - {{ pass_vcf }}
     - {{ pass_vcf }}.tbi

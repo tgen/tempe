@@ -36,6 +36,9 @@
   tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, deepvariant, {{ sample.name }}]
   input:
     - {{ temp_dir }}/{{ sample.name }}.expansion_hunter.vcf
+    {% if sample.gltype == 'exome' %}
+    - {{ sample.capture_kit.extended_bed }}
+    {% endif %}
   output:
     - {{ results_dir }}/{{ sample.name }}.expansion_hunter.all.vcf.gz
     - {{ results_dir }}/{{ sample.name }}.expansion_hunter.all.vcf.gz.tbi

@@ -128,6 +128,9 @@
   tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, deepvariant, {{ sample.name }}]
   input:
     - {{ all_vcf }}
+    {% if sample.gltype == 'exome' %}
+    - {{ sample.capture_kit.extended_bed }}
+    {% endif %}
   output:
     - {{ all_vcf }}.tbi
     - {{ pass_vcf }}

@@ -271,6 +271,9 @@
   input:
     - {{ all_vcf }}
     - {{ all_vcf }}.tbi
+    {% if sample.gltype == 'exome' %}
+    - {{ sample.capture_kit.extended_bed }}
+    {% endif %}
   output:
     - {{ pass_vcf }}
     - {{ pass_vcf }}.tbi
