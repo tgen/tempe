@@ -34,12 +34,13 @@
   cpus: 16
   mem: 96G
   queue_preset: "PARABRICKS"
-  runner_args: ['--env', 'CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES}']
+  runner_args: ['--env', 'CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES/,/_}']
   runner_preset: "PARABRICKS"
   container: {{ constants.tools.parabricks.container }}
   cmd: |
     set -eu
     set -o pipefail
+    CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES/_/,}
 
     rm -r "{{ temp_dir }}/markdup_temp/" || true
     mkdir -p "{{ temp_dir }}/markdup_temp/"

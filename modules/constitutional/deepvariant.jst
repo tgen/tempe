@@ -72,10 +72,11 @@
   walltime: "24:00:00"
   queue_preset: "DEEPVARIANT"
   container: {{ constants.tools.deepvariant_gpu.container }}
-  runner_args: ['--env', 'CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES}']
+  runner_args: ['--env', 'CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES/,/_}']
   cmd: |
     set -eu
     set -o pipefail
+    CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES/_/,}
 
     PROJECT_ROOT=$PWD
 
