@@ -41,6 +41,7 @@
     set -eu
     set -o pipefail
     CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES/_/,}
+    gpus=${CUDA_VISIBLE_DEVICES/,/}
 
     rm -r "{{ temp_dir }}/markdup_temp/" || true
     mkdir -p "{{ temp_dir }}/markdup_temp/"
@@ -64,6 +65,7 @@
     fi
 
     $pbcmd fq2bam \
+    --num-gpus {{ '${#gpus}' }} \
     --tmp-dir "{{ temp_dir }}/markdup_temp/" \
     --ref "{{ constants.tempe.bwa_index }}" \
     --bwa-options "-Y -K 100000000" \
