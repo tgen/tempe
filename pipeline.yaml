@@ -94,8 +94,8 @@ constants:
       container: ghcr.io/tgen/jetstream_containers/vardict:1.7.9
       digest: 0f7e273e1c7f7f74c285b9d1e04fd484f5fc1fa767bb9a0b7a077ae5da21eabc
     vcfmerger:
-      container: ghcr.io/tgen/jetstream_containers/vcfmerger:0.8.7
-      digest: a9898ed53c83897d84a3cc9abc2e5abeac64237d0a7e574bc476d63d3dab8961
+      container: ghcr.io/tgen/jetstream_containers/vcfmerger2:0.9.0
+      digest: 0bc446d0f44f399068889a9d3c96ee662037861def06906c8e655ce18947abeb
     vep:
       container: ghcr.io/tgen/jetstream_containers/ensembl-vep:release_107.0
       digest: 2762c6efff95ecac45bcb1dfccdb7c139e2cc4700b855b68632dcdf45d9c7712
