@@ -100,8 +100,8 @@ constants:
       container: ghcr.io/tgen/jetstream_containers/ensembl-vep:release_107.0
       digest: 2762c6efff95ecac45bcb1dfccdb7c139e2cc4700b855b68632dcdf45d9c7712
     verifybamid2:
-      container: /home/tgenref/containers/verifybamid2_v2.0.1.sif
-      digest: notarealdigest
+      container: ghcr.io/tgen/jetstream_containers/verify-bam-id2:2.0.1
+      digest: a72d9acafaa6faa5549337e96d4386504eb83bed42111547df4e9f664f42a040
   tempe:
     species: Homo sapiens
     genome_build: grch38_hg38
