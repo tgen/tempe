@@ -112,7 +112,7 @@
       --threads 4 \
       --annotations "{{ constants.tempe.cosmic_coding }}" \
       --mark-sites COSMIC \
-      --columns COSMIC_CNT:=CNT,COSMIC_SNP:=SNP \
+      --columns COSMIC_CNT:=CNT \
       --output-type b \
       --output "{{ temp_dir }}/tempout.bcf" \
       "{{ output_bcf }}"
@@ -129,7 +129,7 @@
       --threads 4 \
       --annotations "{{ constants.tempe.cosmic_noncoding }}" \
       --mark-sites COSMIC_NC \
-      --columns COSMIC_NC_CNT:=CNT,COSMIC_NC_SNP:=SNP \
+      --columns COSMIC_NC_CNT:=CNT \
       --output-type b \
       --output "{{ temp_dir }}/tempout.bcf" \
       "{{ output_bcf }}"
