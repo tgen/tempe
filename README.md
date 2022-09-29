@@ -138,15 +138,10 @@ MMRF_1499
 
 ## Required Software
 
-_Click to show details_
-
-<details>
-<summary><b>Public Tools Used by the Workflow</b></summary>  
-
-All tools are available as OCI images [here](https://github.com/orgs/tgen/packages) .<br/>
+All tools are available as OCI images [here](https://github.com/orgs/tgen/packages)
 _Last Updated Sept 29th, 2022_  
 
-| Tool | Version Implemented <sup>as link</sup> |
+| Tool | Version Implemented |
 | :---: | :---: |
 | [bcftools](https://github.com/samtools/bcftools/releases) | [1.16](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fbcftools) |
 | [bedtools](https://github.com/arq5x/bedtools2/releases) | [2.29.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fbedtools) |
@@ -179,10 +174,6 @@ _Last Updated Sept 29th, 2022_
 | [vcfmerger2](https://github.com/tgen/vcfMerger2/releases) | [0.9.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fvcfmerger2) |
 | [vep](https://github.com/Ensembl/ensembl-vep/releases) | [107.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fensembl-vep) |
 | [verifybamid2](https://github.com/Griffan/VerifyBamID/releases) | [2.0.1](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fverify-bam-id2) |
-
-</details>
-
-[somatic](images/Somatic_Analysis_Options.png)
 
 ## Install Guide
 
