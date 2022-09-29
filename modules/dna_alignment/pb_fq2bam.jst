@@ -47,9 +47,9 @@
     CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES/_/,}
     gpus=${CUDA_VISIBLE_DEVICES/,/}
 
-    rm -r "{{ temp_dir }}/markdup_temp/" || true
-    mkdir -p "{{ temp_dir }}/markdup_temp/"
-    mkdir -p "{{ results_dir }}/stats/"
+    rm -r "{{ temp_dir }}/{markdup_temp,stats}" || true
+    mkdir -p "{{ temp_dir }}/{markdup_temp,stats}"
+    mkdir -p "{{ results_dir }}/stats"
 
     {# documentation specifies that we should be able to specify the 
     devices to use via --gpu-devices 0,1,n but it doesn't appear to 
