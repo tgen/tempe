@@ -1,8 +1,36 @@
 {% macro finalize() %}
 
+{% if tasks["DANGEROUS_delete_source_fastq_after_rsync"]|default(false) %}
+{#
+This will only run in special circumstances and will not be enablable from kbase.
+Expecation is that after rsync, which should be error free, we no longer need the
+fastq from the source location.
+#}
+- name: clean_up_source
+  input: 
+    {% for fastq in dataFiles %}
+    - {{ fastq.fastqPath }}
+    {% endfor %}
+  before: finalize
+  after-re: ^(?!finalize).*$
+  cpus: 1
+  mem: 2G
+  walltime: "1:00:00"
+  container: {{ constants.tools.base.container }}
+  digest: {{ constants.tools.base.digest }}
+  cmd: |
+    set -euv
+
+    {% for fastq in dataFiles %}
+    rm {{ fastq.fastqPath }}
+    {% endfor %}
+
+{% endif %}
+
 - name: finalize
   after-re: .*
   cpus: 1
+  mem: 2G
   walltime: "4:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.finalize.container }}

@@ -15,22 +15,10 @@
 
     mkdir -p temp/fastqs/
 
-    if [ ! -f temp/fastqs/{{ fastq.basename }} ]; then
-      {% if fastq.fileType == "fasterq" %}
-      rsync "{{ fastq.fastqPath|replace(".fastq.gz",".fasterq") }}" "temp/fastqs/"
-      {% else %}
-      rsync "{{ fastq.fastqPath }}" "temp/fastqs/"
-      {% endif %}
-    else
-      echo "Fastq file already exists locally skipping rsync"
-    fi
-    {#
-    This will only run in special circumstances and will not be enablable from kbase.
-    Expecation is that after rsync, which should be error free, we no longer need the
-    fastq from the source location.
-    #}
-    {% if tasks["DANGEROUS_delete_source_fastq_after_rsync"]|default(false) %}
-    rm {{ fastq.fastqPath }}
+    {% if fastq.fileType == "fasterq" %}
+    rsync "{{ fastq.fastqPath|replace(".fastq.gz",".fasterq") }}" "temp/fastqs/"
+    {% else %}
+    rsync "{{ fastq.fastqPath }}" "temp/fastqs/"
     {% endif %}
 
 {% endmacro %}
