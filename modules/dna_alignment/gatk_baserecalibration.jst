@@ -15,6 +15,7 @@
   mem: 16G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
+  digest: {{ constants.tools.gatk.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -47,6 +48,7 @@
   mem: 16G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
+  digest: {{ constants.tools.gatk.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -71,6 +73,7 @@
   mem: 32G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
+  digest: {{ constants.tools.gatk.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -108,6 +111,7 @@
   mem: 16G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
+  digest: {{ constants.tools.gatk.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -144,6 +148,7 @@
   mem: 8G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.samtools.container }}
+  digest: {{ constants.tools.samtools.digest }}
   cmd: |
     set -eu
     set -o pipefail

@@ -38,6 +38,7 @@
   walltime: "24:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
+  digest: {{ constants.tools.gatk.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -228,6 +229,7 @@
   walltime: "24:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
+  digest: {{ constants.tools.bcftools.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -293,6 +295,7 @@
   walltime: "24:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
+  digest: {{ constants.tools.gatk.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -325,6 +328,7 @@
   walltime: "24:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
+  digest: {{ constants.tools.gatk.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -355,6 +359,7 @@
   walltime: "24:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
+  digest: {{ constants.tools.gatk.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -387,6 +392,7 @@
   walltime: "24:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
+  digest: {{ constants.tools.gatk.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -441,6 +447,7 @@
   walltime: "24:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
+  digest: {{ constants.tools.gatk.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -547,8 +554,9 @@
   mem: 16G
   walltime: "24:00:00"
   queue_preset: "DEFAULT"
-  container: {{ constants.tools.python3.container }}
   runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
+  container: {{ constants.tools.python3.container }}
+  digest: {{ constants.tools.python3.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -729,8 +737,9 @@
   mem: 16G
   walltime: "24:00:00"
   queue_preset: "DEFAULT"
-  container: {{ constants.tools.R.container }}
   runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
+  container: {{ constants.tools.R.container }}
+  digest: {{ constants.tools.R.digest }}
   cmd: |
     set -eu
     set -o pipefail

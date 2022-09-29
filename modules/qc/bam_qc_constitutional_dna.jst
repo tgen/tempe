@@ -42,6 +42,7 @@
   walltime: "8:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.verifybamid2.container }}
+  digest: {{ constants.tools.verifybamid2.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -95,6 +96,7 @@
   queue_preset: "DEFAULT"
   container: {{ constants.tools.R.container }}
   runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
+  digest: {{ constants.tools.R.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -161,6 +163,7 @@
   mem: 2G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.freebayes.container }}
+  digest: {{ constants.tools.freebayes.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -192,6 +195,7 @@
   mem: 2G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.samtools.container }}
+  digest: {{ constants.tools.samtools.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -253,6 +257,7 @@
   mem: 2G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
+  digest: {{ constants.tools.bcftools.digest }}
   cmd: |
     set -eu
     set -o pipefail

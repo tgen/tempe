@@ -16,6 +16,7 @@
   mem: 8G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.snpeff.container }}
+  digest: {{ constants.tools.snpeff.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -72,6 +73,7 @@
   mem: 8G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
+  digest: {{ constants.tools.bcftools.digest }}
   cmd: |
     set -eu
     set -o pipefail

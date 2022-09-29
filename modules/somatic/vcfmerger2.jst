@@ -47,6 +47,7 @@
   walltime: "4:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.vcfmerger.container }}
+  digest: {{ constants.tools.vcfmerger.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -79,6 +80,7 @@
   walltime: "4:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
+  digest: {{ constants.tools.bcftools.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -108,6 +110,7 @@
   walltime: "4:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.vcfmerger.container }}
+  digest: {{ constants.tools.vcfmerger.digest }}
   cmd: |
     set -eu
     set -o pipefail

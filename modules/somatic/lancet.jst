@@ -23,6 +23,7 @@
   walltime: "24:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.lancet.container }}
+  digest: {{ constants.tools.lancet.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -66,6 +67,7 @@
   walltime: "24:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
+  digest: {{ constants.tools.bcftools.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -129,6 +131,7 @@
   mem: 2G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
+  digest: {{ constants.tools.bcftools.digest }}
   cmd: |
     set -eu
     set -o pipefail

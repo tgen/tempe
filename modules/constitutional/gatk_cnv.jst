@@ -61,6 +61,8 @@
   cpus: 1
   mem: 16G
   walltime: "24:00:00"
+  container: {{ constants.tools.gatk.container }}
+  digest: {{ constants.tools.gatk.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -188,6 +190,8 @@
   cpus: 1
   mem: 16G
   walltime: "24:00:00"
+  container: {{ constants.tools.gatk.container }}
+  digest: {{ constants.tools.gatk.digest }}
   cmd: |
     set -eu
     set -o pipefail

@@ -37,6 +37,7 @@
   runner_args: ['--env', 'CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES/,/_}']
   runner_preset: "PARABRICKS"
   container: {{ constants.tools.parabricks.container }}
+  digest: {{ constants.tools.parabricks.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -80,7 +81,7 @@
     --knownSites "{{ vcf }}" \
     {% endfor %}
     {% endif %}
-    --out-duplicate-metrics "{{ results_dir }}/stats/{{ sample.name }}.mdmetrics.txt" \
+    --out-duplicate-metrics "{{ results_dir }}/stats/{{ sample.name }}.mdmetrics.txt" \ {# Check stats2json #}
     --optical-duplicate-pixel-distance {{ opt_dup_distance }} \
     --out-bam "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam"
 
@@ -100,6 +101,7 @@
   queue_preset: "PARABRICKS"
   runner_preset: "PARABRICKS"
   container: {{ constants.tools.parabricks.container }}
+  digest: {{ constants.tools.parabricks.digest }}
   cmd: |
     set -eu
     set -o pipefail

@@ -37,6 +37,7 @@
   mem: 80G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bwa_mem2_samtools.container }}
+  digest: {{ constants.tools.bwa_mem2_samtools.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -113,6 +114,7 @@
   mem: 8G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bwa_mem2_samtools.container }}
+  digest: {{ constants.tools.bwa_mem2_samtools.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -156,6 +158,7 @@
   mem: 20G
   queue_preset: "DEFAULT-LONG"
   container: {{ constants.tools.bwa_mem2_samtools.container }}
+  digest: {{ constants.tools.bwa_mem2_samtools.digest }}
   cmd: |
     set -eu
     set -o pipefail

@@ -17,6 +17,7 @@
   mem: 2G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.expansion_hunter.container }}
+  digest: {{ constants.tools.expansion_hunter.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -49,6 +50,7 @@
   walltime: "12:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
+  digest: {{ constants.tools.bcftools.digest }}
   cmd: |
     set -eu
     set -o pipefail

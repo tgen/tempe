@@ -25,6 +25,7 @@
   mem: 16G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
+  digest: {{ constants.tools.gatk.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -57,6 +58,7 @@
   mem: 32G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
+  digest: {{ constants.tools.gatk.digest }}
   cmd: |
 
     . /anaconda3/etc/profile.d/conda.sh
@@ -91,6 +93,7 @@
   mem: 4G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
+  digest: {{ constants.tools.bcftools.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -123,6 +126,7 @@
   mem: 16G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
+  digest: {{ constants.tools.gatk.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -155,6 +159,7 @@
   mem: 16G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
+  digest: {{ constants.tools.bcftools.digest }}
   cmd: |
     set -eu
     set -o pipefail

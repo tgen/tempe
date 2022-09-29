@@ -12,6 +12,7 @@
   mem: 8G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.vep.container }}
+  digest: {{ constants.tools.vep.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -57,6 +58,7 @@
   mem: 8G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
+  digest: {{ constants.tools.bcftools.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -85,6 +87,7 @@
   mem: 8G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.vep.container }}
+  digest: {{ constants.tools.vep.digest }}
   cmd: |
     set -euv
     set -o pipefail
@@ -130,6 +133,7 @@
   mem: 8G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
+  digest: {{ constants.tools.bcftools.digest }}
   cmd: |
     set -euv
     set -o pipefail

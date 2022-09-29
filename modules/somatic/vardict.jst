@@ -24,6 +24,7 @@
   walltime: "24:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bedtools.container }}
+  digest: {{ constants.tools.bedtools.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -59,6 +60,7 @@
   walltime: "24:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.vardict.container }}
+  digest: {{ constants.tools.vardict.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -218,6 +220,7 @@
   walltime: "12:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
+  digest: {{ constants.tools.bcftools.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -268,6 +271,7 @@
   walltime: "12:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
+  digest: {{ constants.tools.bcftools.digest }}
   cmd: |
     set -eu
     set -o pipefail

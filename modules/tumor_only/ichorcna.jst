@@ -17,7 +17,8 @@
   cpus: 1
   mem: 2G
   queue_preset: "DEFAULT"
-  container: {{ constants.tools.ichorcna.container }}
+  container: {{ constants.tools.hmmcopy_utils.container }}
+  digest: {{ constants.tools.hmmcopy_utils.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -48,6 +49,7 @@
   mem: 2G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.ichorcna.container }}
+  digest: {{ constants.tools.ichorcna.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -81,6 +83,7 @@
   queue_preset: "DEFAULT"
   container: {{ constants.tools.ichorcna.container }}
   runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
+  digest: {{ constants.tools._.digest }}
   cmd: |
     set -eu
     set -o pipefail

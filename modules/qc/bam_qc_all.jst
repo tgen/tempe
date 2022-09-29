@@ -71,6 +71,7 @@
   mem: 2G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bedtools.container }}
+  digest: {{ constants.tools.bedtools.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -127,6 +128,7 @@
   mem: 8G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.samtools.container }}
+  digest: {{ constants.tools.samtools.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -228,8 +230,9 @@
   cpus: 4
   mem: 8G
   queue_preset: "DEFAULT"
-  container: {{ constants.tools.R.container }}
   runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
+  container: {{ constants.tools.R.container }}
+  digest: {{ constants.tools.R.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -299,8 +302,9 @@
   cpus: 1
   mem: 4G
   queue_preset: "DEFAULT"
-  container: {{ constants.tools.R.container }}
   runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
+  container: {{ constants.tools.R.container }}
+  digest: {{ constants.tools.R.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -352,6 +356,7 @@
   mem: 8G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.samtools.container }}
+  digest: {{ constants.tools.samtools.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -414,6 +419,7 @@
   mem: 2G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.samtools.container }}
+  digest: {{ constants.tools.samtools.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -526,6 +532,7 @@
   mem: 8G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
+  digest: {{ constants.tools.gatk.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -623,6 +630,7 @@
   mem: 8G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
+  digest: {{ constants.tools.gatk.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -730,6 +738,7 @@
   mem: 4G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
+  digest: {{ constants.tools.bcftools.digest }}
   cmd: |
     set -eu
     set -o pipefail

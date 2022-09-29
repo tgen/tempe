@@ -17,6 +17,7 @@
   queue_preset: "DEFAULT"
   container: {{ constants.tools.parabricks.container }}
   runner_args: ['-B', '/packages/parabricks-v3.7.0_V100/:/INSTALL/']
+  digest: {{ constants.tools.parabricks.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -43,6 +44,7 @@
   mem: 4G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
+  digest: {{ constants.tools.bcftools.digest }}
   cmd: |
     set -eu
     set -o pipefail

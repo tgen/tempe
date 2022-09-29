@@ -24,6 +24,7 @@
   mem: 4G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.freebayes.container }}
+  digest: {{ constants.tools.freebayes.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -63,6 +64,7 @@
   mem: 4G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
+  digest: {{ constants.tools.bcftools.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -99,6 +101,7 @@
   mem: 4G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
+  digest: {{ constants.tools.bcftools.digest }}
   cmd: |
     set -eu
     set -o pipefail

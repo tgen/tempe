@@ -28,6 +28,7 @@
   walltime: "4:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.samtools.container }}
+  digest: {{ constants.tools.samtools.digest }}
   cmd: |
     set -eu
     set -o pipefail

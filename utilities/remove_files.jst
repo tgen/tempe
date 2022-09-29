@@ -27,6 +27,7 @@
   mem: 2G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.base.container }}
+  digest: {{ constants.tools.base.digest }}
   cmd: |
     set -eu
     set -o pipefail
