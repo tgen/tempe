@@ -12,6 +12,7 @@
 
 {% set temp_dir %}temp/{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}{% endset %}
 {% set results_dir %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}{% endset %}
+{% set md_metrics_temp %}{{ temp_dir }}/stats/{{ sample.name }}.{{ aligner }}.bam.md_metrics{% endset %}
 {% set md_metrics %}{{ results_dir }}/stats/{{ sample.name }}.{{ aligner }}.bam.md_metrics{% endset %}
 {% set md_metrics_json %}{{ md_metrics }}.json{% endset %}
 
@@ -83,9 +84,22 @@
     --knownSites "{{ vcf }}" \
     {% endfor %}
     {% endif %}
-    --out-duplicate-metrics "{{ md_metrics }}" \
+    --out-duplicate-metrics "{{ md_metrics_temp }}" \
     --optical-duplicate-pixel-distance {{ opt_dup_distance }} \
     --out-bam "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam"
+
+    {# The md_metrics does not follow typical gatk structure, mainly missing the header and needs an extra new line at the EOF #}
+    cat <<EOF > {{ temp_dir }}/markdup_temp/{{ sample.name }}.md_metrics_header.txt
+    ## htsjdk.samtools.metrics.StringHeader
+    # MarkDuplicates --INPUT {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.bam --OUTPUT {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam --METRICS_FILE {{ md_metrics }} --OPTICAL_DUPLICATE_PIXEL_DISTANCE {{ opt_dup_distance }}
+    ## htsjdk.samtools.metrics.StringHeader
+    # Started on: $(date)
+
+    EOF
+
+    cat {{ temp_dir }}/markdup_temp/{{ sample.name }}.md_metrics_header.txt {{ md_metrics_temp }} > {{ md_metrics }}
+    echo >> {{ md_metrics }}
+
 
 {% set task %}fq2bam_{{ sample.name }}_{{ aligner }}{% endset %}
 {{- stats2json(sample.gltype, sample.name, task, md_metrics, md_metrics_json, "picard_mark_duplicates_metrics", sample_name=sample.name) }}
