@@ -81,7 +81,7 @@
     --knownSites "{{ vcf }}" \
     {% endfor %}
     {% endif %}
-    --out-duplicate-metrics "{{ results_dir }}/stats/{{ sample.name }}.mdmetrics.txt" \ {# Check stats2json #}
+    --out-duplicate-metrics "{{ results_dir }}/stats/{{ sample.name }}.mdmetrics.txt" \
     --optical-duplicate-pixel-distance {{ opt_dup_distance }} \
     --out-bam "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam"
 
