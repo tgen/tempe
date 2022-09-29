@@ -26,6 +26,9 @@ constants:
     expansion_hunter:
       container: ghcr.io/tgen/jetstream_containers/expansion_hunter:4.0.2
       digest: 8dca35f2f5d05f92b2b0973486ea0bf2852d99aff690d5aa56ca8d13e9a36d6e
+    finalize:
+      container: ghcr.io/tgen/jetstream_containers/multiqc:1.13
+      digest: edf7d9b44251530ccb6449702b3c9802a6665d85c0f88eb7a75a54bae5796388
     freebayes:
       container: ghcr.io/tgen/jetstream_containers/freebayes:1.3.1
       digest: 8e83bc3b3c258e09c1470667412983d5d19468a3413c4ee48f8e3accd3d0a1a8
