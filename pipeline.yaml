@@ -2,7 +2,7 @@ __pipeline__:
   name: tempe
   main: main.jst
   description: Rapid Human GRCh38 genomics suite
-  version: development
+  version: v1.0.0
 constants:
   tools:
     base:
@@ -87,12 +87,12 @@ constants:
     star_fusion:
       container: ghcr.io/tgen/jetstream_containers/star_fusion:1.11.0
       digest: be24edf900fdf10aac58423ad1e93b0b87c1cd8c68a0817b041e7e306fae6c01
-    subread:
-      container: ghcr.io/tgen/jetstream_containers/subread:2.0.0
-      digest: 423d39597800bfdb2ca73f3c4df7158bd6202ef2d72459e1cafd81ea1d557500
     strelka:
       container: ghcr.io/tgen/jetstream_containers/strelka:2.9.10
       digest: a43f85769d48e71887bc7da7cb96426730d853c6808379bd74201df3861ef05a
+    subread:
+      container: ghcr.io/tgen/jetstream_containers/subread:2.0.0
+      digest: 423d39597800bfdb2ca73f3c4df7158bd6202ef2d72459e1cafd81ea1d557500
     vardict:
       container: ghcr.io/tgen/jetstream_containers/vardict:1.7.9
       digest: 0f7e273e1c7f7f74c285b9d1e04fd484f5fc1fa767bb9a0b7a077ae5da21eabc
