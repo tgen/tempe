@@ -28,6 +28,7 @@
     - {{ constants.tempe.bwa_index }}
   output:
     - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam
+    - {{ md_metrics }}
     {% if tasks.Genome_alignment_base_recalibration_gatk | default(false) or tasks.Exome_alignment_base_recalibration_gatk | default(false) %}
     - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.recal_data.table
     {% endif %}
