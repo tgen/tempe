@@ -2,17 +2,18 @@
 # in on large run. No need to split or merge. It will also run
 # mark duplicatese and BQSR if needed
 
-# This alignment command prefix is shared by all modules using bwa
 {% from 'utilities/read_group_line.jst' import read_group_line with context %}
 {% from 'utilities/remove_files.jst' import remove_files with context %}
 {% from 'modules/dna_alignment/gatk_baserecalibration.jst' import nobaserecalibration with context %}
 {% from 'utilities/bam_to_cram.jst' import bam_to_cram with context %}
-{% from 'utilities/read_group_line.jst' import read_group_line %}
+{% from 'modules/qc/stats2json.jst' import stats2json with context %}
 
 {% macro fq2bam(sample, opt_dup_distance, aligner) %}
 
 {% set temp_dir %}temp/{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}{% endset %}
 {% set results_dir %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}{% endset %}
+{% set md_metrics %}{{ results_dir }}/stats/{{ sample.name }}.{{ aligner }}.bam.md_metrics{% endset %}
+{% set md_metrics_json %}{{ md_metrics }}.json{% endset %}
 
 - name: fq2bam_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype }}, alignment, dna_alignment, bwa, {{ sample.name }}]
@@ -81,9 +82,11 @@
     --knownSites "{{ vcf }}" \
     {% endfor %}
     {% endif %}
-    --out-duplicate-metrics "{{ results_dir }}/stats/{{ sample.name }}.mdmetrics.txt" \
+    --out-duplicate-metrics "{{ md_metrics }}" \
     --optical-duplicate-pixel-distance {{ opt_dup_distance }} \
     --out-bam "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam"
+
+{{- stats2json(sample.gltype, sample.name, task, md_metrics, md_metrics_json, "picard_mark_duplicates_metrics", sample_name=sample.name) }}
 
 {% if tasks.Genome_alignment_base_recalibration_gatk | default(false) or tasks.Exome_alignment_base_recalibration_gatk | default(false) %}
 
