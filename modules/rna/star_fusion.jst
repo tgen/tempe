@@ -1,4 +1,3 @@
-{% from 'utilities/remove_files.jst' import remove_files with context %}
 {% from 'utilities/md5sum_bam_cram.jst' import md5sum_bam_cram with context %}
 
 # Run STAR-Fusion for detecting gene fusions
@@ -185,10 +184,6 @@
     mv {{ temp_dir }}/{{ sample.name }}.Aligned.sorted.bam.bai {{ results_dir }}/{{ sample.name }}_starfusion.bam.bai
     {% endif %}
 
-    {# Remove the remaining files
-    {% set task %}fusion_inspector_{{ sample.name }}{% endset %}
-    {% set directory %}{{ temp_dir }}{% endset %}
-    {{- remove_files(directory,none,task) }} #}
 
 {% if tasks.RNA_transcriptome_fusion_caller_Keep_STAR_Fusion_BAM|default(true) %}
 {% if cram|default(true) %}

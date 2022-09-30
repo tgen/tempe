@@ -264,10 +264,6 @@
     
     bcftools index --tbi --force "{{ all_vcf }}"
     
-    {% set task %}vardict_merge_chunks_{{ sample.name }}_{{ aligner }}{% endset %}
-    {% set directory %}{{ temp_dir }}{% endset %}
-    {{- remove_files(directory,none,task) }}
-
 
 - name: vardict_filter_variants_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype }}, constitutional, snp_indel_caller, VarDict, {{ sample.name }}]
@@ -303,6 +299,9 @@
 
 
 {{- annotate_vcfs(sample, temp_dir, results_dir, pass_vcf, taskPrefix, aligner, 'vardict', 'constitutional', 'snp_indel_caller') }}
+{% set task %}bcftools_annotate_vardict_{{ sample.name }}_{{ aligner }}{% endset %}
+{% set directory %}{{ temp_dir }}{% endset %}
+{{- remove_files(directory,none,task) }}
 {{- vcf_stats(pass_vcf, results_dir) }}
 {{- vcf_stats(all_vcf, results_dir) }}
 
