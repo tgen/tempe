@@ -1,5 +1,4 @@
 {% from 'modules/annotation/main.jst' import annotate_vcfs with context %}
-{% from 'utilities/remove_files.jst' import remove_files with context %}
 {% from 'utilities/vcf_stats.jst' import vcf_stats with context %}
 
 {% macro vardict_constitutional(sample, aligner='bwa', taskPrefix='Genome') %}
@@ -299,9 +298,6 @@
 
 
 {{- annotate_vcfs(sample, temp_dir, results_dir, pass_vcf, taskPrefix, aligner, 'vardict', 'constitutional', 'snp_indel_caller') }}
-{% set task %}bcftools_annotate_vardict_{{ sample.name }}_{{ aligner }}{% endset %}
-{% set directory %}{{ temp_dir }}{% endset %}
-{{- remove_files(directory,none,task) }}
 {{- vcf_stats(pass_vcf, results_dir) }}
 {{- vcf_stats(all_vcf, results_dir) }}
 
