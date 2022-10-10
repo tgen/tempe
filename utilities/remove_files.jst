@@ -12,7 +12,14 @@
 
 - name: removing_files_{{ task_name }}
   {% if before is not none %}
-  before-re: {{ before }}
+  before-re:
+    {% if before is string %}
+    - {{ before }}
+    {% else %}
+    {% for task in before %}
+    - {{ task }}
+    {% endfor %}
+    {% endif %}
   {% endif %}
   after-re:
     {% if after is string %}
