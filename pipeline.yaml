@@ -2,7 +2,7 @@ __pipeline__:
   name: tempe
   main: main.jst
   description: Rapid Human GRCh38 genomics suite
-  version: v1.0.0
+  version: development
 constants:
   tools:
     base:
@@ -97,8 +97,8 @@ constants:
       container: ghcr.io/tgen/jetstream_containers/vardict:1.7.9
       digest: 0f7e273e1c7f7f74c285b9d1e04fd484f5fc1fa767bb9a0b7a077ae5da21eabc
     vcfmerger:
-      container: ghcr.io/tgen/jetstream_containers/vcfmerger2:0.9.0
-      digest: 0bc446d0f44f399068889a9d3c96ee662037861def06906c8e655ce18947abeb
+      container: ghcr.io/tgen/jetstream_containers/vcfmerger2:0.9.1
+      digest: 9a2f75b32ef56b81ef0b7419f8214a7043c6f8f892d6e504b6d12cdc43f9dba9
     vep:
       container: ghcr.io/tgen/jetstream_containers/ensembl-vep:release_107.0
       digest: 2762c6efff95ecac45bcb1dfccdb7c139e2cc4700b855b68632dcdf45d9c7712
