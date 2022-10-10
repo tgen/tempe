@@ -161,8 +161,12 @@
     samtools index -@ 10 "{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam"
 
 {% set task %}no_baserecalibration_{{ sample.name }}_{{ aligner }}{% endset %}
+{% set before_list = [] %}
 {% set before %}freebayes_sex_check_{{ sample.name }}_{{ aligner }}{% endset %}
+{% do before_list.append(before) %}
+{% set before %}samtools_process_freebayes_sex_check_{{ sample.name }}_{{ aligner }}{% endset %}
+{% do before_list.append(before) %}
 {% set directory %}temp/{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}{% endset %}
-{{- remove_files(directory,before,task) }}
+{{- remove_files(directory,before_list,task) }}
 
 {% endmacro %}
