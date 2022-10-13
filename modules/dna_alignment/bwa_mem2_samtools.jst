@@ -131,16 +131,23 @@
       -u \
       "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.bam" \
       {% for rgid, rg in sample.read_groups.items() %}
-      {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
-      {% set n_chunks = (r1fastq.numberOfReads / 2 / reads_per_chunk)|round(0, method='ceil')|int %}
-      {% for i in range(n_chunks) %}
-      {% set chunk_suffix = '%02d' % i %}
-      {% if not loop.last %}
-      {{ temp_dir }}/{{ rgid }}/{{ chunk_suffix }}.{{ aligner }}.bam \
-      {% else %}
-      {{ temp_dir }}/{{ rgid }}/{{ chunk_suffix }}.{{ aligner }}.bam
-      {% endif %}
-      {% endfor %}
+        {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
+        {% set n_chunks = (r1fastq.numberOfReads / 2 / reads_per_chunk)|round(0, method='ceil')|int %}
+        {% if not loop.last %}
+          {% for i in range(n_chunks) %}
+            {% set chunk_suffix = '%02d' % i %}
+            {{ temp_dir }}/{{ rgid }}/{{ chunk_suffix }}.{{ aligner }}.bam \
+          {% endfor %}
+        {% else %}
+          {% for i in range(n_chunks) %}
+            {% set chunk_suffix = '%02d' % i %}
+            {% if not loop.last %}
+              {{ temp_dir }}/{{ rgid }}/{{ chunk_suffix }}.{{ aligner }}.bam \
+            {% else %}
+              {{ temp_dir }}/{{ rgid }}/{{ chunk_suffix }}.{{ aligner }}.bam
+            {% endif %}
+          {% endfor %}
+        {% endif %}
       {% endfor %}
 
 
