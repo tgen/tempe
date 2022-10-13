@@ -33,8 +33,8 @@
     - {{ constants.tempe.bwa_mem2_index }}
   output: {{ temp_dir }}/{{ rgid }}/{{ chunk_suffix }}.{{ aligner }}.bam
   walltime: "24:00:00"
-  cpus: 20
-  mem: 80G
+  cpus: 10
+  mem: 32G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bwa_mem2_samtools.container }}
   digest: {{ constants.tools.bwa_mem2_samtools.digest }}
@@ -74,21 +74,21 @@
       -v 3 \
       -Y \
       -K 100000000 \
-      -t 19 \
+      -t 9 \
       -R "{{ read_group_line(rg, format='bwa') }}" \
       "{{ constants.tempe.bwa_mem2_index }}" \
       "temp/fastqs/{{ sample.name }}/{{ rgid }}/{{ r1fastq.basename }}/{{ chunk_suffix }}" \
       "temp/fastqs/{{ sample.name }}/{{ rgid }}/{{ r2fastq.basename }}/{{ chunk_suffix }}" |\
     samtools fixmate \
-      --threads 19 \
+      --threads 9 \
       -m \
       - \
       - |\
     samtools sort \
       -T "{{ temp_dir }}/{{ rgid }}/{{ chunk_suffix }}_st_sort_temp/{{ chunk_suffix }}" \
       -u \
-      -m 3G \
-      --threads 19 \
+      -m 768M \
+      --threads 9 \
       --output-fmt BAM \
       -o "{{ temp_dir }}/{{ rgid }}/{{ chunk_suffix }}.{{ aligner }}.bam" \
       -
@@ -110,7 +110,7 @@
   {% endfor %}
   output: {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.bam
   walltime: "24:00:00"
-  cpus: 16
+  cpus: 8
   mem: 8G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bwa_mem2_samtools.container }}
@@ -125,7 +125,7 @@
       -l INT       Compression level, from 0 to 9 [-1]
     #}
     samtools merge \
-      --threads 16 \
+      --threads 8\
       -c \
       -f \
       -u \
@@ -154,11 +154,11 @@
     - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam
     - {{ results_dir }}/stats/{{ sample.name }}.{{ aligner }}.bam.samtools.markdup.txt
   walltime: "96:00:00"
-  cpus: 20
-  mem: 20G
+  cpus: 4
+  mem: 16G
   queue_preset: "DEFAULT-LONG"
-  container: {{ constants.tools.bwa_mem2_samtools.container }}
-  digest: {{ constants.tools.bwa_mem2_samtools.digest }}
+  container: {{ constants.tools.samtools.container }}
+  digest: {{ constants.tools.samtools.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -188,11 +188,10 @@
       --no-multi-dup \
       {% endif %}
       -d {{ opt_dup_distance }} \
-      {% if not nosupdup %}
       -S \
-      {% endif %}
+      --use-read-groups \
       -f "{{ results_dir }}/stats/{{ sample.name }}.{{ aligner }}.bam.samtools.markdup.txt" \
-      --threads 20 \
+      --threads 4 \
       --write-index \
       -u \
       -T "{{ temp_dir }}/markdup_temp/{{ sample.name }}" \
@@ -201,20 +200,18 @@
 
 
 {% if sample.gltype == 'genome' %}
-  {# shorten to tasks.Genome_alignment_base_recalibration_gatk|default(false) #}
-  {% if tasks.Genome_alignment_base_recalibration_gatk is defined and tasks.Genome_alignment_base_recalibration_gatk %}
+  {% if tasks.Genome_alignment_base_recalibration_gatk|default(false)%}
     {{- baserecalibration(sample, aligner) }}
   {% else %}
     {{- nobaserecalibration(sample, aligner) }}
   {% endif %}
 {% elif sample.gltype == 'exome' %}
-  {% if tasks.Exome_alignment_base_recalibration_gatk is defined and tasks.Exome_alignment_base_recalibration_gatk %}
+  {% if tasks.Exome_alignment_base_recalibration_gatk|default(false) %}
     {{- baserecalibration(sample, aligner) }}
   {% else %}
     {{- nobaserecalibration(sample, aligner) }}
   {% endif %}
 {% endif %}
 {{- bam_to_cram(sample, aligner) }}
-
 
 {% endmacro %}
