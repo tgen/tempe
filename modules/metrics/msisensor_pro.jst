@@ -7,7 +7,7 @@
 {% set normal_nodup_bam %}{{ temp_dir }}/{{ pair.normal.name }}.{{ aligner }}.bam{% endset %}
 
 - name: msisensor_pro_prep_{{ pair.name }}_{{ aligner }}
-  tags: [msisensor, {{ pair.gltype }}]
+  tags: [{{ pair.gltype }}, metrics, msisensor, {{ pair.name }} ]
   input:
     - {{ normal_bam }}
     - {{ tumor_bam }}
@@ -46,7 +46,7 @@
     samtools index {{ normal_nodup_bam }}
 
 - name: msisensor_pro_{{ pair.name }}_{{ aligner }}
-  tags: [msisensor, {{ pair.gltype }}]
+  tags: [{{ pair.gltype }}, metrics, msisensor, {{ pair.name }} ]
   reset: predecessors
   input:
     - {{ normal_nodup_bam }}

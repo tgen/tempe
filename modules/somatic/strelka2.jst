@@ -13,6 +13,7 @@
 
 {# empty input, is this okay? #}
 - name: strelka2_build_call_regions_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, somatic, snp_indel_caller, strelka2, {{ pair.name }}]
   output:
     - {{ temp_dir }}/callRegions.bed
   cpus: 1
@@ -44,6 +45,7 @@
 
 
 - name: strelka2_process_call_regions_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, somatic, snp_indel_caller, strelka2, {{ pair.name }}]
   reset: predecessors
   input:
     - {{ temp_dir }}/callRegions.bed

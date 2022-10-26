@@ -23,6 +23,7 @@
 {% endif %}
 
 - name: tgen_mutation_burden_{{ variant_caller }}_{{ pair.name }}_{{ aligner }}_{{ annotate_flag }}
+  tags: [{{ pair.gltype }}, metrics, mutation_burden, {{ pair.name }} ]
   input:
     - {{ input_vcf }}
     - {{ normal_bam }}

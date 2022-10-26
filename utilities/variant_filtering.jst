@@ -15,7 +15,7 @@
 {% endif %}
 
 - name: tumor_only_variant_filtering_{{ pair.name }}_{{ variant_caller }}
-  tags: [tumor_only, variant_filter. {{ variant_caller }}]
+  tags: [{{ pair.gltype }}, tumor_only, variant_filter, {{ variant_caller }}, {{ pair.name }}]
   {% if temp_dir in input_vcf %}
   reset: predecessors
   {% endif %}
@@ -95,7 +95,7 @@
 {% endif %}
 
 - name: variant_filtering_{{ pair.name }}_{{ task }}
-  tags: [variant_filter]
+  tags: [{{ pair.gltype }}, somatic, variant_filter, {{ pair.name }}]
   input: {{ input_vcf }}
   output: {{ output_vcf }}
   cpus: 1

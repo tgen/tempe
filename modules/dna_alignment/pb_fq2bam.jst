@@ -17,7 +17,7 @@
 {% set md_metrics_json %}{{ md_metrics }}.json{% endset %}
 
 - name: fq2bam_{{ sample.name }}_{{ aligner }}
-  tags: [{{ sample.gltype }}, alignment, dna_alignment, bwa, {{ sample.name }}]
+  tags: [{{ sample.gltype }}, dna_alignment, fq2bam, {{ sample.name }}]
   reset: predecessors
   input:
   {% for rgid, rg in sample.read_groups.items() %}
@@ -107,7 +107,7 @@
 {% if tasks.Genome_alignment_base_recalibration_gatk | default(false) or tasks.Exome_alignment_base_recalibration_gatk | default(false) %}
 
 - name: pbrun_applybqsr_{{ sample.name }}_{{ aligner }}
-  tags: [{{ sample.gltype }}, alignment, dna_alignment, bwa, {{ sample.name }}]
+  tags: [{{ sample.gltype }}, dna_alignment, fq2bam, {{ sample.name }}]
   reset: predecessors
   input:
     - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam

@@ -11,8 +11,8 @@
 {%- set all_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.strelka2.all.vcf.gz{% endset %}
 {%- set pass_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.strelka2.pass.vcf.gz{% endset %}
 
-{# empty input, is this okay? #}
 - name: strelka2_build_call_regions_{{ sample.name }}_{{ aligner }}
+  tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, strelka2, {{ sample.name }}]
   output:
     - {{ temp_dir }}/callRegions.bed
   cpus: 1
@@ -44,6 +44,7 @@
 
 
 - name: strelka2_process_call_regions_{{ sample.name }}_{{ aligner }}
+  tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, strelka2, {{ sample.name }}]
   reset: predecessors
   input:
     - {{ temp_dir }}/callRegions.bed
@@ -121,7 +122,7 @@
 
 
 - name: strelka2_save_evidence_{{ sample.name }}_{{ aligner }}
-  tags: [{{ sample.gltype }}, somatic, snp_indel_caller, strelka2, {{ sample.name }}]
+  tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, strelka2, {{ sample.name }}]
   reset: predecessors
   input:
     - {{ temp_dir }}/results/realigned/realigned.S1.bam

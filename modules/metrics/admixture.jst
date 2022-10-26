@@ -12,7 +12,7 @@
 {{- filter_variants(pair, all_vcf, temp_vcf_dir, filt_vcf, task) }}
 
 - name: admixture_{{ variant_caller }}_{{ pair.name }}_{{ aligner }}
-  tags:
+  tags: [{{ pair.gltype }}, metrics, admixture, {{ pair.name }} ]
   input:
     - {{ filt_vcf }}
   walltime: "24:00:00"

@@ -16,6 +16,7 @@
 
 {% if snpsniffer_list | length > 1 %}
 - name: snpsniffer_summary
+  tags: [all_libraries, snpsniffer_summary]
   input:
     {% for result in snpsniffer_list %}
     - {{ result }}
@@ -184,7 +185,7 @@
   {% set output %}qc/snpSniffer/{{ project }}_SnpSniffer_Mismatch_Summary.tsv{% endset %}
   {% set json %}qc/snpSniffer/{{ project }}_SnpSniffer_Mismatch_Summary.json{% endset %}
 
-  {{ stats2json("all libraries", project, project, output, json, "snpsniffer_summary") }}
+  {{ stats2json("all_libraries", project, project, output, json, "snpsniffer_summary") }}
 
 {% endif %}
 

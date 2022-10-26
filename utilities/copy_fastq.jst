@@ -3,7 +3,6 @@
 - name: copy_fastqs_{{ fastq.basename | replace(".", "_") }}
   input: {{ fastq.fastqPath }}
   output: temp/fastqs/{{ fastq.basename }}
-  tags: [rsync,]
   retry: 2
   cpus: 6
   walltime: "4:00:00"
