@@ -8,7 +8,7 @@
 
 # This macro splits large fastqs into chunks prior to aligning.
 # If fastq is less than reads_per_chunk (48000000) then one chunk is made.
-{% macro bwa_mem2_samtools(sample, reads_per_chunk, opt_dup_distance, aligner, nomultidup=false, nosupdup=false) %}
+{% macro bwa_mem2_samtools(sample, reads_per_chunk, opt_dup_distance, aligner) %}
 
 {% set temp_dir %}temp/{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}{% endset %}
 {% set results_dir %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}{% endset %}
@@ -151,15 +151,27 @@
       {% endfor %}
 
 
+{% macro samtools_markdup(sample, reads_per_chunk, opt_dup_distance, aligner, nomultidup=false, use_rg=false, marksup=false) %}
 
-- name: samtools_markdup_{{ sample.name }}_{{ aligner }}
+{% set markdup_flags = [] %}
+{% if nomultidup %}
+{% do markdup_flags.append('nmd') %}
+{% endif %}
+{% if use_rg %}
+{% do markdup_flags.append('userg') %}
+{% endif %}
+{% if marksup %}
+{% do markdup_flags.append('marksup') %}
+{% endif %}
+
+- name: samtools_markdup_{{ markdup_flags|join('_') }}_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype }}, alignment, mark_duplicates, samtools, {{ sample.name }}]
   reset: predecessors
   methods: Duplicate reads for {{ sample.name }} were marked with samtools markdup.
   input: {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.bam
   output:
-    - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam
-    - {{ results_dir }}/stats/{{ sample.name }}.{{ aligner }}.bam.samtools.markdup.txt
+    - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md_{{ markdup_flags|join('_') }}.bam
+    - {{ results_dir }}/stats_{{ markdup_flags|join('_') }}/{{ sample.name }}.{{ aligner }}.bam.samtools.markdup.txt
   walltime: "96:00:00"
   cpus: 4
   mem: 16G
@@ -175,9 +187,9 @@
     # that will cause errors with samtools markdup. Here, we purge any
     # existing temp files before making the directory again.
     #}
-    rm -r "{{ temp_dir }}/markdup_temp/" || true
-    mkdir -p "{{ temp_dir }}/markdup_temp/"
-    mkdir -p "{{ results_dir }}/stats/"
+    rm -r "{{ temp_dir }}/markdup_temp_{{ markdup_flags|join('_') }}/" || true
+    mkdir -p "{{ temp_dir }}/markdup_temp_{{ markdup_flags|join('_') }}/"
+    mkdir -p "{{ results_dir }}/stats_{{ markdup_flags|join('_') }}/"
 
     {#
     # Choose an optical distance based on sequencer
@@ -194,18 +206,22 @@
       {% if nomultidup %}
       --no-multi-dup \
       {% endif %}
-      -d {{ opt_dup_distance }} \
-      -S \
+      {% if use_rg %}
       --use-read-groups \
-      -f "{{ results_dir }}/stats/{{ sample.name }}.{{ aligner }}.bam.samtools.markdup.txt" \
+      {% endif %}
+      {% if marksup %}
+      -S \
+      {% endif %}
+      -d {{ opt_dup_distance }} \
+      -f "{{ results_dir }}/stats_{{ markdup_flags|join('_') }}/{{ sample.name }}.{{ aligner }}.bam.samtools.markdup.txt" \
       --threads 4 \
       --write-index \
       -u \
-      -T "{{ temp_dir }}/markdup_temp/{{ sample.name }}" \
+      -T "{{ temp_dir }}/markdup_temp_{{ markdup_flags|join('_') }}/{{ sample.name }}" \
       "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.bam" \
-      "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam"
+      "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md_{{ markdup_flags|join('_') }}.bam"
 
-
+{#
 {% if sample.gltype == 'genome' %}
   {% if tasks.Genome_alignment_base_recalibration_gatk|default(false)%}
     {{- baserecalibration(sample, aligner) }}
@@ -220,5 +236,16 @@
   {% endif %}
 {% endif %}
 {{- bam_to_cram(sample, aligner) }}
+#}
+{% endmacro %}
+
+{{- samtools_markdup(sample, reads_per_chunk, opt_dup_distance, aligner='bwa', nomultidup=false, use_rg=false, marksup=false) }}
+{{- samtools_markdup(sample, reads_per_chunk, opt_dup_distance, aligner='bwa', nomultidup=false, use_rg=false, marksup=true) }}
+{{- samtools_markdup(sample, reads_per_chunk, opt_dup_distance, aligner='bwa', nomultidup=false, use_rg=true, marksup=false) }}
+{{- samtools_markdup(sample, reads_per_chunk, opt_dup_distance, aligner='bwa', nomultidup=false, use_rg=true, marksup=true) }}
+{{- samtools_markdup(sample, reads_per_chunk, opt_dup_distance, aligner='bwa', nomultidup=true, use_rg=false, marksup=false) }}
+{{- samtools_markdup(sample, reads_per_chunk, opt_dup_distance, aligner='bwa', nomultidup=true, use_rg=false, marksup=true) }}
+{{- samtools_markdup(sample, reads_per_chunk, opt_dup_distance, aligner='bwa', nomultidup=true, use_rg=true, marksup=false) }}
+{{- samtools_markdup(sample, reads_per_chunk, opt_dup_distance, aligner='bwa', nomultidup=true, use_rg=true, marksup=true) }}
 
 {% endmacro %}

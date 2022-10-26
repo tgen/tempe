@@ -32,7 +32,7 @@
     #}
     {% if 'bwa' in sample.aligners %}
       {{- bwa_mem2_samtools(sample, reads_per_chunk, opt_dup_distance, aligner='bwa') }}
-      {{- bam_qc(sample, aligner='bwa') }}
+      {# {{- bam_qc(sample, aligner='bwa') }} #}
     {% endif %}
     {% if 'parabricks' in sample.aligners %}
       {{- fq2bam(sample, opt_dup_distance, aligner='parabricks') }}
