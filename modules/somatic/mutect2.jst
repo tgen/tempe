@@ -149,7 +149,7 @@
     bcftools index --tbi --force "{{ temp_dir }}/{{ pair.name }}_{{ aligner }}.mutect2.raw.vcf.gz"
 
 - name: mutect2_merge_stats_{{ pair.name }}_{{ aligner }}
-  tags: [{{ pair.gltype }},l somatic, snp_indel_caller, gatk_mutect2, {{ pair.name }}]
+  tags: [{{ pair.gltype }}, somatic, snp_indel_caller, gatk_mutect2, {{ pair.name }}]
   reset: predecessors
   input:
     {% for b in constants.tempe.calling_intervals %}
