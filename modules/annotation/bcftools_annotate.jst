@@ -11,25 +11,25 @@
     - {{ output_vcf }}
     - {{ output_vcf }}.tbi
     {% endif %}
-    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_dbsnp"]|default(true) %}
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_dbsnp"]|default(false) %}
     - {{ constants.tempe.dbsnp }}
     {% endif %}
-    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_gnomad_exome"]|default(true) %}
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_gnomad_exome"]|default(false) %}
     - {{ constants.tempe.gnomad_exome }}
     {% endif %}
-    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_gnomad_genome"]|default(true) %}
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_gnomad_genome"]|default(false) %}
     - {{ constants.tempe.gnomad_genome }}
     {% endif %}
-    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_cosmic_coding"]|default(true) %}
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_cosmic_coding"]|default(false) %}
     - {{ constants.tempe.cosmic_coding }}
     {% endif %}
-    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_cosmic_noncoding"]|default(true) %}
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_cosmic_noncoding"]|default(false) %}
     - {{ constants.tempe.cosmic_noncoding }}
     {% endif %}
-    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_clinvar"]|default(true) %}
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_clinvar"]|default(false) %}
     - {{ constants.tempe.clinvar }}
     {% endif %}
-    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_topmed"]|default(true) %}
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_topmed"]|default(false) %}
     - {{ constants.tempe.topmed }}
     {% endif %}
   walltime: "8:00:00"
@@ -56,7 +56,7 @@
 
     bcftools index --threads 4 --force "{{ output_bcf }}"
 
-    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_dbsnp"]|default(true) %}
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_dbsnp"]|default(false) %}
     {# annotate with dbsnp #}
     bcftools annotate \
       --threads 4 \
@@ -73,7 +73,7 @@
     bcftools index --threads 4 --force "{{ output_bcf }}"
     {% endif %}
 
-    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_gnomad_exome"]|default(true) %}
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_gnomad_exome"]|default(false) %}
     {# annotate with gnomad exome #}
     bcftools annotate \
       --threads 4 \
@@ -90,7 +90,7 @@
     bcftools index --threads 4 --force "{{ output_bcf }}"
     {% endif %}
 
-    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_gnomad_genome"]|default(true) %}
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_gnomad_genome"]|default(false) %}
     {# annotate with gnomad genome #}
     bcftools annotate \
       --threads 4 \
@@ -107,7 +107,7 @@
     bcftools index --threads 4 --force "{{ output_bcf }}"
     {% endif %}
 
-    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_cosmic_coding"]|default(true) %}
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_cosmic_coding"]|default(false) %}
     {# annotate with cosmic #}
     bcftools annotate \
       --threads 4 \
@@ -124,7 +124,7 @@
     bcftools index --threads 4 --force "{{ output_bcf }}"
     {% endif %}
 
-    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_cosmic_noncoding"]|default(true) %}
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_cosmic_noncoding"]|default(false) %}
     {# annotate with cosmic_nc #}
     bcftools annotate \
       --threads 4 \
@@ -141,7 +141,7 @@
     bcftools index --threads 4 --force "{{ output_bcf }}"
     {% endif %}
 
-    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_clinvar"]|default(true) %}
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_clinvar"]|default(false) %}
     {# annotate with clinvar #}
     bcftools annotate \
       --threads 4 \
@@ -157,7 +157,7 @@
     bcftools index --threads 4 --force "{{ output_bcf }}"
     {% endif %}
 
-    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_topmed"]|default(true) %}
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_topmed"]|default(false) %}
     {# annotate with topmed #}
     bcftools annotate \
       --threads 4 \

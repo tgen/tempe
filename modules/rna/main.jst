@@ -8,7 +8,7 @@
 {% macro rna_fusion_detection(samples) %}
 
 {% for sample in samples.values() if sample.gltype == 'rna' %}
-    {% if tasks.RNA_transcriptome_fusion_caller_STAR_Fusion|default(true) %}
+    {% if tasks.RNA_transcriptome_fusion_caller_STAR_Fusion|default(false) %}
     {{- star_fusion(sample) }}
     {% endif %}
 {% endfor %}
@@ -26,7 +26,7 @@
       {% set opt_dup_distance = 100 %}
     {% endif %}
 
-    {% if tasks.RNA_transcriptome_quantify_expression_salmon_fastqs|default(true) %}
+    {% if tasks.RNA_transcriptome_quantify_expression_salmon_fastqs|default(false) %}
       {{- salmon(sample) }}
     {% endif %}
 

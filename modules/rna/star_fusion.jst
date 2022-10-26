@@ -126,7 +126,7 @@
     - {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_evidence_reads_1.fq
     - {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_evidence_reads_2.fq
     - {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_candidates.preliminary.wSpliceInfo.wAnnot.annot_filter.pass
-    {% if tasks.RNA_transcriptome_fusion_caller_Keep_STAR_Fusion_BAM|default(true) %}
+    {% if tasks.RNA_transcriptome_fusion_caller_Keep_STAR_Fusion_BAM|default(false) %}
     - {{ results_dir }}/{{ sample.name }}_starfusion.bam
     - {{ results_dir }}/{{ sample.name }}_starfusion.bam.bai
     {% endif %}
@@ -179,13 +179,13 @@
         mv {{ temp_dir }}/FusionInspector-inspect/fi_workdir/trinity_GG/Trinity-GG.fasta {{ results_dir }}/{{ sample.name }}_Trinity-GG.fasta
     fi
 
-    {% if tasks.RNA_transcriptome_fusion_caller_Keep_STAR_Fusion_BAM|default(true) %}
+    {% if tasks.RNA_transcriptome_fusion_caller_Keep_STAR_Fusion_BAM|default(false) %}
     mv {{ temp_dir }}/{{ sample.name }}.Aligned.sorted.bam {{ results_dir }}/{{ sample.name }}_starfusion.bam
     mv {{ temp_dir }}/{{ sample.name }}.Aligned.sorted.bam.bai {{ results_dir }}/{{ sample.name }}_starfusion.bam.bai
     {% endif %}
 
 
-{% if tasks.RNA_transcriptome_fusion_caller_Keep_STAR_Fusion_BAM|default(true) %}
+{% if tasks.RNA_transcriptome_fusion_caller_Keep_STAR_Fusion_BAM|default(false) %}
 {% if cram|default(true) %}
 {% set bam_path %}{{ results_dir }}/{{ sample.name }}_starfusion.bam{% endset %}
 {% set cram_path %}{{ results_dir }}/{{ sample.name }}_starfusion.cram{% endset %}

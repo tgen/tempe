@@ -3,7 +3,7 @@
 {% from 'modules/qc/stats2json.jst' import stats2json with context %}
 
 {% macro bam_qc_gatk_collectwgsmetrics(sample, libraryCount, sample_lb, aligner='bwa', bam_level=true) %}
-{% if tasks["Genome_quality_control_stats_gatk_CollectWgsMetrics"]|default(true) %}
+{% if tasks["Genome_quality_control_stats_gatk_CollectWgsMetrics"]|default(false) %}
 
   {% set results_dir %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/stats{% endset %}
 
@@ -60,7 +60,7 @@
 
 
 {% macro bam_qc_gatk_collectwgsmetricswithnonzerocoverage(sample, libraryCount, sample_lb, aligner='bwa', bam_level=true) %}
-{% if tasks["Genome_quality_control_stats_gatk_CollectWgsMetricsWithNonZeroCoverage"]|default(true) %}
+{% if tasks["Genome_quality_control_stats_gatk_CollectWgsMetricsWithNonZeroCoverage"]|default(false) %}
 
   {% set results_dir %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/stats{% endset %}
 
@@ -128,7 +128,7 @@
 
 
 {% macro bam_qc_gatk_collectrawwgsmetrics(sample, libraryCount, sample_lb, aligner='bwa', bam_level=true) %}
-{% if tasks["Genome_quality_control_stats_gatk_CollectRawWgsMetrics"]|default(true) %}
+{% if tasks["Genome_quality_control_stats_gatk_CollectRawWgsMetrics"]|default(false) %}
 
   {% set results_dir %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/stats{% endset %}
 

@@ -49,7 +49,7 @@ fastq from the source location.
       {% if general_library_type in 'exome' %}
         {% set taskPrefix = 'Exome' %}
 
-        {% if tasks[taskPrefix+"_constitutional_snp_indel_caller_deepvariant"]|default(true) %}
+        {% if tasks[taskPrefix+"_constitutional_snp_indel_caller_deepvariant"]|default(false) %}
           for line in `find ../{{ general_library_type }}/constitutional_variant_calls/deepvariant -name "*.deepvariant.pass.vcf.gz"`
           do
             ln --symbolic --force ${line}
@@ -57,7 +57,7 @@ fastq from the source location.
           done
         {% endif %}
 
-        {% if tasks[taskPrefix+"_somatic_merge_vcfs_vcfMerger2"]|default(true) %}
+        {% if tasks[taskPrefix+"_somatic_merge_vcfs_vcfMerger2"]|default(false) %}
           for line in `find ../{{ general_library_type }}/somatic_variant_calls/vcfmerger2 -name "*.merged.vcf.gz"`
           do
             ln --symbolic --force ${line}
@@ -65,7 +65,7 @@ fastq from the source location.
           done
         {% endif %}
 
-        {% if tasks[taskPrefix+"_somatic_cna_caller_gatk"]|default(true) %}
+        {% if tasks[taskPrefix+"_somatic_cna_caller_gatk"]|default(false) %}
           for line in `find ../{{ general_library_type }}/somatic_copy_number/gatk -name "*.re_centered.cr.igv.seg"`
           do
             ln --symbolic --force ${line}
@@ -74,7 +74,7 @@ fastq from the source location.
       {% elif general_library_type in 'genome' %}
         {% set taskPrefix = 'Genome' %}
 
-        {% if tasks[taskPrefix+"_constitutional_snp_indel_caller_deepvariant"]|default(true) %}
+        {% if tasks[taskPrefix+"_constitutional_snp_indel_caller_deepvariant"]|default(false) %}
           for line in `find ../{{ general_library_type }}/constitutional_variant_calls/deepvariant -name "*.deepvariant.pass.vcf.gz"`
           do
             ln --symbolic --force ${line}
@@ -82,14 +82,14 @@ fastq from the source location.
           done
         {% endif %}
 
-        {% if tasks[taskPrefix+"_constitutional_cna_caller_ichor"]|default(true) %}
+        {% if tasks[taskPrefix+"_constitutional_cna_caller_ichor"]|default(false) %}
           for line in `find ../{{ general_library_type }}/copy_number_analysis/ichorCNA -name "*.ichorCNA.cna.seg"`
           do
             ln --symbolic --force ${line}
           done
         {% endif %}
 
-        {% if tasks[taskPrefix+"_somatic_merge_vcfs_vcfMerger2"]|default(true) %}
+        {% if tasks[taskPrefix+"_somatic_merge_vcfs_vcfMerger2"]|default(false) %}
           for line in `find ../{{ general_library_type }}/somatic_variant_calls/vcfmerger2 -name "*.merged.vcf.gz"`
           do
             ln --symbolic --force ${line}
@@ -97,7 +97,7 @@ fastq from the source location.
           done
         {% endif %}
 
-        {% if tasks[taskPrefix+"_somatic_cna_caller_gatk"]|default(true) %}
+        {% if tasks[taskPrefix+"_somatic_cna_caller_gatk"]|default(false) %}
           for line in `find ../{{ general_library_type }}/somatic_copy_number/gatk -name "*.re_centered.cr.igv.seg"`
           do
             ln --symbolic --force ${line}
@@ -108,7 +108,7 @@ fastq from the source location.
 
       {% elif general_library_type in 'singlecellrna' and data_files[0].glprep in 'singlecellrna' %}
         {% set taskPrefix = 'SingleCellRNA' %}
-        {% if tasks[taskPrefix+"_transcriptome_quantify_expression_cellranger_count"]|default(true) %}
+        {% if tasks[taskPrefix+"_transcriptome_quantify_expression_cellranger_count"]|default(false) %}
           for line in `find ../{{ general_library_type }}/alignment/cellranger_count -name "*.cellranger_count.bam.web_summary.html"`
           do
             ln --symbolic --force ${line}
@@ -121,7 +121,7 @@ fastq from the source location.
         {% endif %}
       {% elif general_library_type in 'singlecellrna' and data_files[0].glprep in 'singlecellenrichment' %}
         {% set taskPrefix = 'SingleCellEnrichment' %}
-        {% if tasks[taskPrefix+"_transcriptome_quantify_expression_cellranger_count"]|default(true) %}
+        {% if tasks[taskPrefix+"_transcriptome_quantify_expression_cellranger_count"]|default(false) %}
           for line in `find ../{{ general_library_type }}/vdj_assembly/cellranger_vdj -name "*.web_summary.html"`
           do
             ln --symbolic --force ${line}

@@ -3,7 +3,7 @@
 {% from 'modules/qc/stats2json.jst' import stats2json with context %}
 
 {% macro bam_qc_verifybamid2(sample, libraryCount, sample_lb, taskPrefix='Genome', aligner='bwa', bam_level=true) %}
-{% if tasks[taskPrefix+"_quality_control_constitutional_contamination_check_VerifyBamID"]|default(true) %}
+{% if tasks[taskPrefix+"_quality_control_constitutional_contamination_check_VerifyBamID"]|default(false) %}
 
   {% set results_dir %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/stats{% endset %}
 
@@ -128,7 +128,7 @@
 
 
 {% macro sex_check(sample, libraryCount, sample_lb, taskPrefix='Genome', aligner='bwa', bam_level=true) %}
-{% if tasks[taskPrefix+"_quality_control_constitutional_sex_check_freebayes"]|default(true) %}
+{% if tasks[taskPrefix+"_quality_control_constitutional_sex_check_freebayes"]|default(false) %}
 
   {% set results_dir %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/stats{% endset %}
 
