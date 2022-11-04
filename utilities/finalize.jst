@@ -9,7 +9,7 @@ fastq from the source location.
 - name: clean_up_source
   input: 
     {% for fastq in dataFiles %}
-    - {{ fastq.fastqPath }}
+    - {{ fastq.fastqPath | dirname }}
     {% endfor %}
   before: finalize
   after-re: ^(?!finalize).*$
@@ -22,7 +22,7 @@ fastq from the source location.
     set -euv
 
     {% for fastq in dataFiles %}
-    rm {{ fastq.fastqPath }}
+    rm -f {{ fastq.fastqPath }}
     {% endfor %}
 
 {% endif %}
