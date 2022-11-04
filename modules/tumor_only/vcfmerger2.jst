@@ -40,7 +40,6 @@
   tags: [{{ pair.gltype }}, somatic, merge_vcfs, vcfMerger2, {{ pair.name }}]
   input: 
     - {{ gzipped_path }}
-    - {{ bam }}
     - {{ constants.tempe.reference_fasta }}
   output: {{ prepped_path }}
   cpus: 4

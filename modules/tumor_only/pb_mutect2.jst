@@ -13,7 +13,7 @@
   output:
     - {{ all_vcf }}
   walltime: "24:00:00"
-  queue_args: ['-p', 'gpu', '--exclusive', '--profile=ltask', '--acctg-freq=task=1']
+  queue_args: ['-p', 'gpu', '--exclusive']
   queue_preset: "DEFAULT"
   container: {{ constants.tools.parabricks.container }}
   runner_args: ['-B', '/packages/parabricks-v3.7.0_V100/:/INSTALL/']

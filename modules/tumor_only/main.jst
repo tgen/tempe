@@ -5,16 +5,14 @@
 {% from 'modules/tumor_only/vardict.jst' import vardict_tumor_only with context %}
 {% from 'modules/tumor_only/octopus.jst' import octopus_tumor_only with context %}
 {% from 'modules/tumor_only/vcfmerger2.jst' import vcfmerger2_tumor_only with context %}
-{% from 'modules/tumor_only/delly.jst' import delly_tumor_only with context %}
-{% from 'modules/tumor_only/gridss.jst' import gridss_tumor_only with context %}
 {% from 'modules/tumor_only/gatk_cnv.jst' import gatk_cnv_tumor_only with context %}
 {% from 'modules/tumor_only/manta.jst' import manta_tumor_only with context %}
 {% from 'modules/tumor_only/deepvariant.jst' import deepvariant_tumor_only with context %}
-{% from 'modules/tumor_only/lumosvar2.jst' import lumosvar2_tumor_only with context %}
+{# {% from 'modules/tumor_only/lumosvar2.jst' import lumosvar2_tumor_only with context %}
 {% from 'modules/tumor_only/mm_igtx_calling.jst' import mm_igtx_pairoscope with context %}
 {% from 'modules/tumor_only/mm_igtx_calling.jst' import mm_igtx_manta with context %}
 {% from 'modules/tumor_only/mm_igtx_calling.jst' import mm_igtx_gammit with context %}
-{% from 'modules/tumor_only/mm_igtx_calling.jst' import mm_igtx_summarize with context %}
+{% from 'modules/tumor_only/mm_igtx_calling.jst' import mm_igtx_summarize with context %} #}
 
 
 {% macro tumor_only_variant_calling(samples) %}
@@ -118,7 +116,7 @@
         {% if tasks[taskPrefix+"_tumor_only_snp_indel_caller_gatk_mutect2"]|default(false) %}
             {# skipping for now #}
             {{- mutect2_tumor_only(tumor, aligner) }}
-            {{- pb_mutect2_tumor_only(tumor, aligner) }}
+            {# {{- pb_mutect2_tumor_only(tumor, aligner) }} #}
         {% endif %}
 
     {% endfor %}
@@ -134,16 +132,46 @@
 
     {% for aligner in pair.tumor.aligners %}
 
+        {% if pair.normal.pathToBam is defined %}
+        {% if tasks[taskPrefix+"_tumor_only_snp_indel_caller_gatk_mutect2"]|default(false) %}
+            {{- mutect2_tumor_only(pair, aligner) }}
+        {% endif %}
+
         {% if tasks[taskPrefix+"_tumor_only_structural_caller_manta"]|default(false) %}
             {{- manta_tumor_only(pair, aligner) }}
         {% endif %}
+
+        {#
+        {% if tasks[taskPrefix+"_disease_specific_multiple_myeloma"]|default(false) %}
+            {{- mm_igtx_manta(pair, aligner) }}
+        {% endif %}
+        #}
 
         {% if tasks[taskPrefix+"_tumor_only_snp_indel_caller_strelka2"]|default(false) %}
             {{- strelka2_tumor_only(pair, aligner) }}
         {% endif %}
 
+        {% if tasks[taskPrefix+"_tumor_only_snp_indel_caller_lancet"]|default(false) %}
+            {{- lancet_tumor_only(pair, aligner) }}
+        {% endif %}
+
+        {% if tasks[taskPrefix+"_tumor_only_snp_indel_caller_VarDict"]|default(false) %}
+            {{- vardict_tumor_only(pair, aligner) }}
+        {% endif %}
+
+        {% if tasks[taskPrefix+"_tumor_only_snp_indel_caller_octopus"]|default(false) %}
+            {{- octopus_tumor_only(pair, aligner) }}
+        {% endif %}
+
+        {% if tasks[taskPrefix+"_tumor_only_merge_vcfs_vcfMerger2"]|default(false) %}
+            {{- vcfmerger2_tumor_only(pair, aligner, taskPrefix=taskPrefix) }}
+        {% endif %}
+        {% endif %}
+
+        {% if pair.normal.gatkCnvPon is defined %}
         {% if tasks[taskPrefix+"_tumor_only_cna_caller_gatk"]|default(false) %}
             {{- gatk_cnv_tumor_only(pair, aligner) }}
+        {% endif %}
         {% endif %}
 
     {% endfor %}
