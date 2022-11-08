@@ -23,6 +23,9 @@ constants:
     deepvariant_gpu:
       container: ghcr.io/tgen/jetstream_containers/deepvariant:1.4.0-GPU
       digest: d25565b61aa9100ae852aed0bf43b4922e73a246d7b4d85e33778634b9ba0627
+    dle:
+      container: /home/tgenref/containers/dle_0.1.5.sif
+      digest: notarealdigest
     expansion_hunter:
       container: ghcr.io/tgen/jetstream_containers/expansion_hunter:4.0.2
       digest: 8dca35f2f5d05f92b2b0973486ea0bf2852d99aff690d5aa56ca8d13e9a36d6e
@@ -51,6 +54,9 @@ constants:
     manta:
       container: ghcr.io/tgen/jetstream_containers/manta:1.6.0
       digest: 726c3f8a09f2729559320584fa6a2869929e4677e7b08bc8efe93f0724d3d9c9
+    lumosvar2:
+      container: /home/tgenref/containers/lumosvar2_1.1.sif
+      digest: notarealdigest
     msisensor:
       container: ghcr.io/tgen/jetstream_containers/msisensor:1.1.a
       digest: dd49987f11b5a302e79f1c13b6e911cfc6cc424226782783914734771e627118
@@ -60,6 +66,9 @@ constants:
     octopus:
       container: ghcr.io/tgen/jetstream_containers/octopus:0.7.4
       digest: cdb7d5116db69a79832bf0fbda5d11be172ccd2765ab445d030cc54fd7dad692
+    pairoscope:
+      container: /home/tgenref/containers/pairoscope_0.4.2.sif
+      digest: notarealdigest
     python3:
       container: ghcr.io/tgen/jetstream_containers/python:3.7.2
       digest: 8adbd3e0a1fdb0659c434eb13e6ef100d3e37dd41e44813b3ac60ff4ce9a2884

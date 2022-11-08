@@ -20,12 +20,12 @@
   cpus: 1
   mem: 4G
   walltime: "4:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.pairoscope.container }}
+  digest: {{ constants.tools.pairoscope.digest }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.pairoscope.module }}
-    module load {{ constants.tools.python_3_7_2.module }}
 
     {# Purge any existing run files prior to starting #}
     rm -r "{{ temp_dir }}" || true
@@ -85,6 +85,9 @@
   walltime: "12:00:00"
   cpus: 4
   mem: 8G
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.dle.container }}
+  digest: {{ constants.tools.dle.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -94,9 +97,6 @@
     rm -r "{{ results_dir }}" || true
     mkdir -p "{{ temp_dir }}"
     mkdir -p "{{ results_dir }}"
-
-    module load {{ constants.tools.python_3_7_2.module }}
-    module load {{ constants.tools.dle.module }}
 
     dle.py \
       --alignment-file {{ tumor_bam }} \
@@ -132,14 +132,13 @@
   walltime: "24:00:00"
   cpus: 4
   mem: 10G
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.star_fusion.container }}
+  digest: {{ constants.tools.star_fusion.digest }}
   cmd: |
     set -eu
     set -o pipefail
 
-    module load {{ constants.tools.bwa.module }}
-    module load {{ constants.tools.samtools.module }}
-    {# star_fusion loads Trinity and it's dependencies in the background, ensuring compatibility #}
-    module load {{ constants.tools.star_fusion.module }}
     trin_path=$(dirname `which Trinity`)
 
     {# Build a list of fastqs to iterate through #}
@@ -525,11 +524,12 @@
   walltime: "24:00:00"
   cpus: 2
   mem: 4G
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.R.container }}
+  digest: {{ constants.tools.R.digest }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.R.module }}
 
     mkdir -p {{ results_dir }}
 
