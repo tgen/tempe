@@ -7,10 +7,6 @@
 
 - name: mm_igtx_pairoscope_{{ tumor.name }}_{{ aligner }}
   tags: [{{ tumor.gltype }}, structural_caller, pairoscope, {{ tumor.name }}]
-  tags: [pairoscope, mm_igtx_calling, {{ tumor.gltype }}]
-  methods: >
-    Myeloma specific calling of immunoglobulin translocations for {{ tumor.name }} ({{ aligner }})
-    were called with {{ constants.tools.pairoscope.verbose }}.
   input:
     - {{ tumor_bam }}
   output:
@@ -281,9 +277,6 @@
 
 - name: mm_igtx_manta_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, tumor_only, structural_caller, manta, {{ pair.name }}]
-  methods: >
-    somatic structural variants and indels for {{ pair.name }} ({{ aligner }})
-    were called with {{ constants.tools.manta.verbose }}.
   reset: prepare_tumor_only_{{ pair.normal.name }}
   input:
     - {{ normal_bam }}
