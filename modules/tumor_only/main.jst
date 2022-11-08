@@ -108,7 +108,6 @@
 
     {% for aligner in tumor.aligners %}
 
-        {{- ichorcna(tumor, aligner) }}
         {%- if tasks[taskPrefix+"_tumor_only_snp_indel_caller_deepvariant"]|default(false) %}
             {{- deepvariant_tumor_only(tumor, aligner, taskPrefix=taskPrefix) }}
         {% endif %}
