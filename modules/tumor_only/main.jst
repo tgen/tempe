@@ -112,11 +112,10 @@
             {{- deepvariant_tumor_only(tumor, aligner, taskPrefix=taskPrefix) }}
         {% endif %}
 
-        {% if tasks[taskPrefix+"_tumor_only_snp_indel_caller_gatk_mutect2"]|default(false) %}
-            {# skipping for now #}
+        {# {% if tasks[taskPrefix+"_tumor_only_snp_indel_caller_gatk_mutect2"]|default(false) %}
             {{- mutect2_tumor_only(tumor, aligner) }}
-            {# {{- pb_mutect2_tumor_only(tumor, aligner) }} #}
-        {% endif %}
+            {{- pb_mutect2_tumor_only(tumor, aligner) }}
+        {% endif %} #}
 
         {% if tasks[taskPrefix+"_disease_specific_multiple_myeloma"]|default(false) %}
             {{- mm_igtx_gammit(tumor, aligner) }}
