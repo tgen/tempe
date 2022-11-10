@@ -39,6 +39,7 @@
       {% else %}
       --reference "{{ constants.tempe.reference_fasta }}" \
       {% endif %}
+      --no-PG \
       -o "{{ cram_path }}" \
       "{{ bam_path }}"
 
