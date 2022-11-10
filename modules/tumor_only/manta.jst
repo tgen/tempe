@@ -94,7 +94,7 @@
 
 
 - name: tumor_only_manta_filter_pass_{{ pair.tumor.name }}_{{ aligner }}
-  tags: [{{ pair.gltype }}, somatic, manta, flag, {{ pair.tumor.name }}]
+  tags: [{{ pair.gltype }}, tumor_only, manta, flag, {{ pair.tumor.name }}]
   input:
     - {{ results_dir }}/{{ pair.tumor.name }}.{{ aligner }}.manta.somaticSV.vcf.gz
     - {{ results_dir }}/{{ pair.tumor.name }}.{{ aligner }}.manta.somaticSV.vcf.gz.tbi
@@ -114,7 +114,7 @@
     {# Ensuring that the output dir exists for bcftools filter #}
     mkdir -p {{ temp_dir }}/results/variants
 
-    {# filtering somatic vcf by PASS #}
+    {# filtering tumor_only vcf by PASS #}
     bcftools filter \
       -i 'FILTER == "PASS"' \
       -O z \
@@ -125,7 +125,7 @@
 
 
 - name: tumor_only_manta_flag_{{ pair.tumor.name }}_{{ aligner }}
-  tags: [{{ pair.gltype }}, somatic, manta, flag, {{ pair.tumor.name }}]
+  tags: [{{ pair.gltype }}, tumor_only, manta, flag, {{ pair.tumor.name }}]
   reset: tumor_only_manta_filter_pass_{{ pair.tumor.name }}_{{ aligner }}
   input:
     - {{ temp_dir }}/results/variants/somaticSV.pass.vcf.gz
@@ -173,7 +173,7 @@
 
 
 - name: tumor_only_manta_compress_flag_{{ pair.tumor.name }}_{{ aligner }}
-  tags: [{{ pair.gltype }}, somatic, manta, flag, {{ pair.tumor.name }}]
+  tags: [{{ pair.gltype }}, tumor_only, manta, flag, {{ pair.tumor.name }}]
   reset: predecessors
   input:
     - {{ temp_dir }}/results/variants/somaticSV.pass.flag.vcf

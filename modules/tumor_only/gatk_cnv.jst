@@ -264,7 +264,7 @@
 
 
 - name: tumor_only_gatk_call_cnv_step2_plot_cnv_{{ pair.tumor.name }}_{{ aligner }}
-  tags: [{{ pair.gltype }}, somatic, cna_caller, gatk, {{ pair.tumor.name }}]
+  tags: [{{ pair.gltype }}, tumor_only, cna_caller, gatk, {{ pair.tumor.name }}]
   reset: tumor_only_gatk_call_cnv_step2_{{ pair.tumor.name }}_{{ aligner }}
   input:
     - {{ temp_dir }}/results/{{ pair.tumor.name }}.{{ aligner }}.denoisedCR.genderCorrected.tsv
