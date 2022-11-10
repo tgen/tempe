@@ -133,6 +133,8 @@
 
 {% endfor %}
 
+{% for pair in pairs %}{% do pair.update({'callers': []}) %}{% endfor %}
+
 {% for pair in pairs %}
     {% if pair.gltype in 'exome' %}
         {% set taskPrefix = 'Exome' %}
