@@ -321,7 +321,7 @@
   input:
     - {{ all_vcf }}
     - {{ all_vcf }}.tbi
-    {% if tumor.gltype == 'exome' %}
+    {% if pair.tumor.gltype == 'exome' %}
     - {{ pair.tumor.capture_kit.extended_bed }}
     {% endif %}
   output:
@@ -339,7 +339,7 @@
     bcftools filter \
       --output-type z \
       --include 'FILTER == "PASS"' \
-      {% if tumor.gltype == 'exome' %}
+      {% if pair.tumor.gltype == 'exome' %}
       --targets-file "{{ pair.tumor.capture_kit.extended_bed }}" \
       {% endif %}
       "{{ all_vcf }}" \
