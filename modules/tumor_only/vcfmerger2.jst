@@ -5,7 +5,7 @@
 {% from 'utilities/remove_files.jst' import remove_files with context %}
 {% from 'utilities/vcf_stats.jst' import vcf_stats with context %}
 
-{% macro vcfmerger2(pair, aligner='bwa', taskPrefix='Genome') %}
+{% macro vcfmerger2_tumor_only(pair, aligner='bwa', taskPrefix='Genome') %}
 
 {% set tumor_only_temp %}temp/tumor_only/control_data_files/{{ pair.normal.assayCode }}{% endset %}
 {% set normal_bam %}{{ tumor_only_temp }}/{{ pair.normal.pathToBam | basename }}{% endset %}
