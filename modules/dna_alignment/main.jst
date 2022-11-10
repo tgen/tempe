@@ -1,6 +1,7 @@
 # DNA Alignment with BWA MEM
 # Take DNA fastq data files to aligned bams with qc data
 {% from 'modules/dna_alignment/bwa_mem2_samtools.jst' import bwa_mem2_samtools with context %}
+{% from 'modules/dna_alignment/fgbio_umi.jst' import fgbio_bwa_mem with context %}
 {% from 'modules/dna_alignment/pb_fq2bam.jst' import fq2bam with context %}
 {% from 'modules/dna_alignment/split_fastq.jst' import split_fastqs with context %}
 {% from 'modules/qc/main.jst' import bam_qc with context %}
@@ -31,7 +32,11 @@
     {% endif %}
     #}
     {% if 'bwa' in sample.aligners %}
+      {% if sample.umiType != "" | default(false) %}
+        {{- fgbio_bwa_mem(sample, aligner='bwa') }}
+      {% else %}
       {{- bwa_mem2_samtools(sample, reads_per_chunk, opt_dup_distance, aligner='bwa') }}
+      {% endif %}
       {{- bam_qc(sample, aligner='bwa') }}
     {% endif %}
     {% if 'parabricks' in sample.aligners %}

@@ -2,17 +2,17 @@
 {% from 'utilities/read_group_line.jst' import read_group_line with context %}
 {% from 'utilities/remove_files.jst' import remove_files with context %}
 
-{% macro fgbio_bwa_mem(sample) %}
+{% macro fgbio_bwa_mem(sample, aligner) %}
 
-{% set temp_dir %}temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}{% endset %}
-{% set results_dir %}{{ sample.gltype }}/alignment/bwa/{{ sample.name }}{% endset %}
+{% set temp_dir %}temp/{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}{% endset %}
+{% set results_dir %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}{% endset %}
 
 {% for rgid, rg in sample.read_groups.items() %}
 {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
 {% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
 
 - name: create_uBAM_{{ r1fastq.basename | replace(".", "_") }}
-  tags: [{{ sample.gltype }}, alignment, dna_alignment, bwa, umi, {{ sample.name }}]
+  tags: [{{ sample.gltype }}, alignment, dna_alignment, {{ aligner }}, umi, {{ sample.name }}]
   reset: predecessors
   input:
     {% for fastq in [r1fastq, r2fastq] %}
@@ -20,7 +20,7 @@
     {% endfor %}
   output: 
     - {{ temp_dir }}/{{ rgid }}/{{ sample.rgid }}_UMI_uBAM.bam
-    - {{ results_dir }}/stats/{{ sample.rgsm }}_UMIcorr_bwa.txt
+    - {{ results_dir }}/stats/{{ sample.rgsm }}_UMIcorr_{{ aligner }}.txt
   cpus: 4
   mem: 32G
   walltime: "4:00:00"
@@ -72,7 +72,7 @@
         --umi-tag RX \
         --umi-files ${KNOWN_UMI} \
         --dont-store-original-umis \
-        --metrics {{ results_dir }}/stats/{{ sample.rgsm }}_UMIcorr_bwa.txt
+        --metrics {{ results_dir }}/stats/{{ sample.rgsm }}_UMIcorr_{{ aligner }}.txt
 
 {% endfor %}
 
@@ -80,7 +80,7 @@
 ## If uBAM are merged then we should have a chunk process to produce 50M chunks (uBAM interleaved so 100M) for alignment
 #}
 - name: merge_uBAM_{{ sample.name }}
-  tags: [{{ sample.gltype }}, alignment, dna_alignment, bwa, umi, {{ sample.name }}]
+  tags: [{{ sample.gltype }}, alignment, dna_alignment, {{ aligner }}, umi, {{ sample.name }}]
   reset: predecessors
   input:
     {% for rgid in sample.read_groups %}
@@ -118,14 +118,14 @@
 ## For speed should move to bwa-mem2 #}
 
 - name: bwa_mem_merge_umi_alignment_{{ sample.name }}
-  tags: [{{ sample.gltype }}, alignment, dna_alignment, bwa, umi, {{ sample.name }}]
+  tags: [{{ sample.gltype }}, alignment, dna_alignment, {{ aligner }}, umi, {{ sample.name }}]
   reset: predecessors
   input:
     - {{ temp_dir }}/{{ sample.rgsm }}_UMI_uBAM.bam
     - {{ constants.tempe.bwa_mem2_index }} 
     - {{ constants.tempe.reference_fasta }}
   output:
-    - {{ temp_dir }}/{{ sample.rgsm }}_UMI_bwa.bam
+    - {{ temp_dir }}/{{ sample.rgsm }}_UMI_{{ aligner }}.bam
   cpus: 10
   mem: 32G
   walltime: "4:00:00"
@@ -149,7 +149,7 @@
     fgbio --compression 1 --async-io ZipperBams \
       --unmapped {{ temp_dir }}/{{ sample.rgsm }}_UMI_uBAM.bam \
       --ref {{ constants.tempe.reference_fasta }} \
-      --output {{ temp_dir }}/{{ sample.rgsm }}_UMI_bwa.bam
+      --output {{ temp_dir }}/{{ sample.rgsm }}_UMI_{{ aligner }}.bam
 
 
 {# Testing showed the expected increase in coverage using UMI aware duplicate marking by 7-20%
@@ -171,13 +171,13 @@
 ## Corrected UMIs - With Single Read Error Correction #}
 
 - name: fgbio_consensus_reads_{{ sample.name }}
-  tags: [{{ sample.gltype }}, alignment, dna_alignment, bwa, umi, {{ sample.name }}]
+  tags: [{{ sample.gltype }}, alignment, dna_alignment, {{ aligner }}, umi, {{ sample.name }}]
   reset: predecessors
   input:
-    - {{ temp_dir }}/{{ sample.rgsm }}_UMI_bwa.bam
+    - {{ temp_dir }}/{{ sample.rgsm }}_UMI_{{ aligner }}.bam
   output:
     - {{ temp_dir }}/{{ sample.rgsm }}_con_uBAM.bam
-    - {{ results_dir }}/stats/{{ sample.rgsm }}_UMIcorr_bwa_gd_hist.txt
+    - {{ results_dir }}/stats/{{ sample.rgsm }}_UMIcorr_{{ aligner }}_gd_hist.txt
   cpus: 4
   mem: 32G
   walltime: "24:00:00"
@@ -192,21 +192,21 @@
     fgbio --tmp-dir {{ temp_dir }}/fgbio_tmp \
       --compression 1 --async-io \
       GroupReadsByUmi \
-      --input {{ temp_dir }}/{{ sample.rgsm }}_UMI_bwa.bam \
+      --input {{ temp_dir }}/{{ sample.rgsm }}_UMI_{{ aligner }}.bam \
       --strategy paired \
       --allow-inter-contig true \
-      --family-size-histogram {{ results_dir }}/stats/{{ sample.rgsm }}_UMIcorr_bwa_gd_hist.txt \
+      --family-size-histogram {{ results_dir }}/stats/{{ sample.rgsm }}_UMIcorr_{{ aligner }}_gd_hist.txt \
       --raw-tag RX \
       --assign-tag MI \
       --edits 1 \
       --min-map-q 20 \
-      --output {{ temp_dir }}/{{ sample.rgsm }}_UMI_bwa_gd.bam
+      --output {{ temp_dir }}/{{ sample.rgsm }}_UMI_{{ aligner }}_gd.bam
 
     {# Collapse single read families (review parameters) #}
     fgbio --tmp-dir {{ temp_dir }}/fgbio_tmp \
       --compression 1 \
       CallMolecularConsensusReads \
-      --input {{ temp_dir }}/{{ sample.rgsm }}_UMI_bwa_gd.bam \
+      --input {{ temp_dir }}/{{ sample.rgsm }}_UMI_{{ aligner }}_gd.bam \
       --threads 4 \
       --min-reads 1 \
       --tag MI \
@@ -219,14 +219,14 @@
     #--error-rate-post-umi 30 \ #}
 
 - name: bwa_mem_umi_collapsed_{{ sample.name }}
-  tags: [{{ sample.gltype }}, alignment, dna_alignment, bwa, umi, {{ sample.name }}]
+  tags: [{{ sample.gltype }}, alignment, dna_alignment, {{ aligner }}, umi, {{ sample.name }}]
   reset: predecessors
   input:
     - {{ temp_dir }}/{{ sample.rgsm }}_con_uBAM.bam
     - {{ constants.tempe.bwa_mem2_index }} 
     - {{ constants.tempe.reference_fasta }}
   output:
-    - {{ temp_dir }}/{{ sample.name }}.bwa.md.bam
+    - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam
   cpus: 10
   mem: 32G
   walltime: "4:00:00"
@@ -240,7 +240,7 @@
     {# Align UMI collapsed single read families
     ## This produces a final BAM that is ready for metrics and variant calling
     ## DUPLICATE MARKING IS NOT REQUIRED, as they are removed in previous steps
-    ## For QC might want duplicate numbers on the original BAM ({{ sample.rgsm }}_UMI_bwa.bam)
+    ## For QC might want duplicate numbers on the original BAM ({{ sample.rgsm }}_UMI_{{ aligner }}.bam)
     ## For speed should move to bwa-mem2 #}
     samtools fastq {{ temp_dir }}/{{ sample.rgsm }}_con_uBAM.bam |\
     bwa-mem2 mem \
@@ -256,12 +256,12 @@
       --ref {{ constants.tempe.reference_fasta }} \
       --tags-to-reverse Consensus \
       --tags-to-revcomp Consensus \
-      --output {{ temp_dir }}/{{ sample.name }}.bwa.uns.bam
+      --output {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.uns.bam
 
     samtools sort \
       --threads 10 \
-      -o {{ temp_dir }}/{{ sample.name }}.bwa.md.bam \
+      -o {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam \
       --write-index \
-      {{ temp_dir }}/{{ sample.name }}.bwa.uns.bam
+      {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.uns.bam
 
 {% endmacro %}
