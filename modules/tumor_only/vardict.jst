@@ -48,7 +48,7 @@
 
 - name: tumor_only_vardict_{{ pair.name }}_{{ aligner }}_{{ loop.index }}
   tags: [{{ pair.gltype }}, somatic, snp_indel_caller, VarDict, {{ pair.name }}]
-  reset: vardict_makewindows_{{ pair.name }}_{{ aligner }}_{{ loop.index }}
+  reset: tumor_only_vardict_makewindows_{{ pair.name }}_{{ aligner }}_{{ loop.index }}
   input:
     - {{ normal_bam }}
     - {{ tumor_bam }}

@@ -137,7 +137,7 @@
 
 - name: tumor_only_add_matched_rna_freebayes_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, merge_vcfs, vcfMerger2, {{ pair.name }}]
-  reset: vcfmerger2_{{ pair.name }}_{{ aligner }}
+  reset: tumor_only_vcfmerger2_{{ pair.name }}_{{ aligner }}
   input:
     - {{ input_vcf }}
     - {{ star_bam_final }}
