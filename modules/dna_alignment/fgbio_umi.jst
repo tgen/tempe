@@ -1,6 +1,8 @@
 # This alignment command prefix is shared by all modules using bwa
 {% from 'utilities/read_group_line.jst' import read_group_line with context %}
 {% from 'utilities/remove_files.jst' import remove_files with context %}
+{% from 'modules/dna_alignment/gatk_baserecalibration.jst' import baserecalibration, nobaserecalibration with context %}
+{% from 'utilities/bam_to_cram.jst' import bam_to_cram with context %}
 
 {% macro fgbio_bwa_mem(sample, aligner) %}
 
@@ -263,5 +265,13 @@
       -o {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam \
       --write-index \
       {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.uns.bam
+
+
+{% if tasks[sample.gltype|capitalize+"_alignment_base_recalibration_gatk"]|default(false) %}
+  {{- baserecalibration(sample, aligner) }}
+{% else %}
+  {{- nobaserecalibration(sample, aligner) }}
+{% endif %}
+{{- bam_to_cram(sample, aligner) }}
 
 {% endmacro %}
