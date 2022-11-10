@@ -2,7 +2,7 @@
 
 {% macro add_rna_header_to_vcf(input_vcf, output_vcf, pair, aligner, temp_dir) %}
 
-- name: add_rna_header_to_vcf_{{ pair.name }}_{{ aligner }}
+- name: tumor_only_add_rna_header_to_vcf_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, merge_vcfs, vcfMerger2, {{ pair.name }}]
   input: {{ input_vcf }}
   output:
@@ -53,7 +53,7 @@
 {% set rna_sample = pair.tumor.rna_samples[0].rna_name %}
 {% set star_bam_final %}rna/alignment/star/{{ rna_sample }}/{{ rna_sample }}.star.bam{% endset %}
 
-- name: add_matched_rna_bcftools_prep_{{ pair.name }}_{{ aligner }}
+- name: tumor_only_add_matched_rna_bcftools_prep_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, merge_vcfs, vcfMerger2, {{ pair.name }}]
   reset: predecessors
   input: 
@@ -89,7 +89,7 @@
       {{ temp_dir }}/temp_variant_pos.bed
 
 
-- name: add_matched_rna_bedtools_prep_{{ pair.name }}_{{ aligner }}
+- name: tumor_only_add_matched_rna_bedtools_prep_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, merge_vcfs, vcfMerger2, {{ pair.name }}]
   reset: predecessors
   input:
@@ -135,7 +135,7 @@
       {{ temp_dir }}/temp_target_intervals.bed
 
 
-- name: add_matched_rna_freebayes_{{ pair.name }}_{{ aligner }}
+- name: tumor_only_add_matched_rna_freebayes_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, merge_vcfs, vcfMerger2, {{ pair.name }}]
   reset: vcfmerger2_{{ pair.name }}_{{ aligner }}
   input:
@@ -169,7 +169,7 @@
       {{ star_bam_final }}
 
 
-- name: add_matched_rna_bcftools_process_{{ pair.name }}_{{ aligner }}
+- name: tumor_only_add_matched_rna_bcftools_process_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, merge_vcfs, vcfMerger2, {{ pair.name }}]
   reset: predecessors
   input:

@@ -7,7 +7,8 @@
 
 {% macro vcfmerger2(pair, aligner='bwa', taskPrefix='Genome') %}
 
-{% set normal_bam %}{{ pair.normal.gltype }}/alignment/{{ aligner }}/{{ pair.normal.name }}/{{ pair.normal.name }}.{{ aligner }}.bam{% endset %}
+{% set tumor_only_temp %}temp/tumor_only/control_data_files/{{ pair.normal.assayCode }}{% endset %}
+{% set normal_bam %}{{ tumor_only_temp }}/{{ pair.normal.pathToBam | basename }}{% endset %}
 {% set tumor_bam %}{{ pair.tumor.gltype }}/alignment/{{ aligner }}/{{ pair.tumor.name }}/{{ pair.tumor.name }}.{{ aligner }}.bam{% endset %}
 {% set temp_dir %}temp/{{ pair.gltype }}/somatic_variant_calls/vcfmerger2/{{ pair.name }}_{{ aligner }}{% endset %}
 {% set results_dir %}{{ pair.gltype }}/somatic_variant_calls/vcfmerger2/{{ pair.name }}{% endset %}
@@ -36,7 +37,7 @@
   'filtered_path': filtered_path
 }) %}
 
-- name: vcfmerger2_prep_{{ caller }}_{{ pair.name }}_{{ aligner }}
+- name: tumor_only_vcfmerger2_prep_{{ caller }}_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, merge_vcfs, vcfMerger2, {{ pair.name }}]
   input: 
     - {{ gzipped_path }}
@@ -70,7 +71,7 @@
       -o "{{ prepped_path }}"
 
 
-- name: vcfmerger2_filter_{{ caller }}_{{ pair.name }}_{{ aligner }}
+- name: tumor_only_vcfmerger2_filter_{{ caller }}_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, merge_vcfs, vcfMerger2, {{ pair.name }}]
   reset: predecessors
   input: {{ prepped_path }}
@@ -94,7 +95,7 @@
 {% endfor %}
 
 
-- name: vcfmerger2_{{ pair.name }}_{{ aligner }}
+- name: tumor_only_vcfmerger2_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, merge_vcfs, vcfMerger2, {{ pair.name }}]
   reset: predecessors
   input:

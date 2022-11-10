@@ -5,7 +5,7 @@
 {% set all_vcf %}{{ results_dir }}/{{ tumor.name }}.{{ aligner }}.mutect2.all.vcf.gz{% endset %}
 {% set pass_vcf %}{{ results_dir }}/{{ tumor.name }}.{{ aligner }}.mutect2.pass.vcf.gz{% endset %}
 
-- name: pb_mutect2_tumor_only_{{ tumor.name }}_{{ aligner }}
+- name: tumor_only_pb_mutect2_tumor_only_{{ tumor.name }}_{{ aligner }}
   tags: [{{ tumor.gltype }}, tumor_only, snp_indel_caller, gatk_mutect2, {{ tumor.name }}]
   input:
     - {{ tumor_bam }}
@@ -29,7 +29,7 @@
       --out-vcf {{ all_vcf }}
 
 
-- name: pb_mutect2_tumor_only_filter_variants_{{ tumor.name }}_{{ aligner }}
+- name: tumor_only_pb_mutect2_tumor_only_filter_variants_{{ tumor.name }}_{{ aligner }}
   tags: [{{ tumor.gltype }}, tumor_only, snp_indel_caller, gatk_mutect2, {{ tumor.name }}]
   input:
     - {{ all_vcf }}

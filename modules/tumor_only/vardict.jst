@@ -1,9 +1,10 @@
 {% from 'utilities/remove_files.jst' import remove_files with context %}
 {% from 'utilities/vcf_stats.jst' import vcf_stats with context %}
 
-{% macro vardict_somatic(pair, aligner='bwa') %}
+{% macro vardict_tumor_only(pair, aligner='bwa') %}
 {% do pair.callers.append('vardict') %}
-{% set normal_bam %}{{ pair.normal.gltype }}/alignment/{{ aligner }}/{{ pair.normal.name }}/{{ pair.normal.name }}.{{ aligner }}.bam{% endset %}
+{% set tumor_only_temp %}temp/tumor_only/control_data_files/{{ pair.normal.assayCode }}{% endset %}
+{% set normal_bam %}{{ tumor_only_temp }}/{{ pair.normal.pathToBam | basename }}{% endset %}
 {% set tumor_bam %}{{ pair.tumor.gltype }}/alignment/{{ aligner }}/{{ pair.tumor.name }}/{{ pair.tumor.name }}.{{ aligner }}.bam{% endset %}
 {% set results_dir %}{{ pair.gltype }}/somatic_variant_calls/vardict/{{ pair.name }}{% endset %}
 {% set temp_dir %}temp/{{ pair.gltype }}/somatic_variant_calls/vardict/{{ pair.name }}_{{ aligner }}{% endset %}
@@ -12,7 +13,7 @@
 
 
 {% for batch in constants.tempe.calling_intervals %}
-- name: vardict_makewindows_{{ pair.name }}_{{ aligner }}_{{ loop.index }}
+- name: tumor_only_vardict_makewindows_{{ pair.name }}_{{ aligner }}_{{ loop.index }}
   tags: [{{ pair.gltype }}, somatic, snp_indel_caller, VarDict, {{ pair.name }}]
   input:
     - {{ normal_bam }}
@@ -45,7 +46,7 @@
     EOF
 
 
-- name: vardict_{{ pair.name }}_{{ aligner }}_{{ loop.index }}
+- name: tumor_only_vardict_{{ pair.name }}_{{ aligner }}_{{ loop.index }}
   tags: [{{ pair.gltype }}, somatic, snp_indel_caller, VarDict, {{ pair.name }}]
   reset: vardict_makewindows_{{ pair.name }}_{{ aligner }}_{{ loop.index }}
   input:
@@ -205,7 +206,7 @@
 {% endfor %}
 
 
-- name: vardict_merge_chunks_{{ pair.name }}_{{ aligner }}
+- name: tumor_only_vardict_merge_chunks_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, snp_indel_caller, VarDict, {{ pair.name }}]
   reset: predecessors
   input:
@@ -255,7 +256,7 @@
     {{- remove_files(directory,none,task) }}
 
 
-- name: vardict_filter_variants_{{ pair.name }}_{{ aligner }}
+- name: tumor_only_vardict_filter_variants_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, snp_indel_caller, VarDict, {{ pair.name }}]
   input:
     - {{ all_vcf }}

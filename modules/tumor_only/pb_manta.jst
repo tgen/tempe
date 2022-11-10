@@ -3,7 +3,7 @@
 {% set results_dir %}{{ tumor.gltype }}/tumor_only_structural_calls/pb_manta/{{ tumor.name }}_{{ aligner }}{% endset %}
 {% set temp_dir %}temp/{{ tumor.gltype }}/tumor_only_structural_calls/pb_manta/{{ tumor.name }}_{{ aligner }}{% endset %}
 
-- name: pb_manta_tumor_only_{{ tumor.name }}_{{ aligner }}
+- name: tumor_only_pb_manta_tumor_only_{{ tumor.name }}_{{ aligner }}
   tags: [{{ tumor.gltype }}, tumor_only, structural_caller, manta, {{ tumor.name }}]
   input:
     - {{ tumor_bam }}

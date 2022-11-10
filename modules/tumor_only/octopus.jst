@@ -1,9 +1,10 @@
 {% from 'utilities/remove_files.jst' import remove_files with context %}
 {% from 'utilities/vcf_stats.jst' import vcf_stats with context %}
 
-{% macro octopus_somatic(pair, aligner='bwa') %}
+{% macro octopus_tumor_only(pair, aligner='bwa') %}
 {% do pair.callers.append('octopus') %}
-{% set normal_bam %}{{ pair.normal.gltype }}/alignment/{{ aligner }}/{{ pair.normal.name }}/{{ pair.normal.name }}.{{ aligner }}.bam{% endset %}
+{% set tumor_only_temp %}temp/tumor_only/control_data_files/{{ pair.normal.assayCode }}{% endset %}
+{% set normal_bam %}{{ tumor_only_temp }}/{{ pair.normal.pathToBam | basename }}{% endset %}
 {% set tumor_bam %}{{ pair.tumor.gltype }}/alignment/{{ aligner }}/{{ pair.tumor.name }}/{{ pair.tumor.name }}.{{ aligner }}.bam{% endset %}
 {% set temp_dir %}temp/{{ pair.gltype }}/somatic_variant_calls/octopus/{{ pair.name }}_{{ aligner }}{% endset %}
 {% set results_dir %}{{ pair.gltype }}/somatic_variant_calls/octopus/{{ pair.name }}{% endset %}
@@ -11,7 +12,7 @@
 {% set pass_vcf %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.octopus.pass.vcf.gz{% endset %}
 
 {% for batch in constants.tempe.primary_contig_calling_intervals %}
-- name: octopus_{{ pair.name }}_{{ aligner }}_{{ loop.index }}
+- name: tumor_only_octopus_{{ pair.name }}_{{ aligner }}_{{ loop.index }}
   tags: [{{ pair.gltype }}, somatic, snp_indel_caller, octopus, {{ pair.name }}]
   input:
     - {{ normal_bam }}
@@ -63,7 +64,7 @@
 {% endfor %}
 
 
-- name: octopus_merge_chunks_{{ pair.name }}_{{ aligner }}
+- name: tumor_only_octopus_merge_chunks_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, snp_indel_caller, octopus, {{ pair.name }}]
   reset: predecessors
   input:
@@ -105,7 +106,7 @@
     bcftools index --tbi --force "{{ all_vcf }}"
 
 
-- name: octopus_filter_variants_{{ pair.name }}_{{ aligner }}
+- name: tumor_only_octopus_filter_variants_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, snp_indel_caller, octopus, {{ pair.name }}]
   input:
     - {{ all_vcf }}
