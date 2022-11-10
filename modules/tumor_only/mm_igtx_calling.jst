@@ -281,6 +281,7 @@
   input:
     - {{ normal_bam }}
     - {{ tumor_bam }}
+    - {{ constants.tempe.reference_fasta }}
   output:
     - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.candidateSmallIndels.vcf.gz
     - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.candidateSmallIndels.vcf.gz.tbi
@@ -293,13 +294,12 @@
   cpus: 20
   mem: 20G
   walltime: "24:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.manta_tgen.container }}
+  digest: {{ constants.tools.manta_tgen.digest }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.manta_tgen.module }}
-    module load {{ constants.tools.htslib.module }}
-    module load {{ constants.tools.python_2_7_15.module }}
 
     {# Purge any existing run files prior to starting #}
     rm -r "{{ temp_dir }}" || true
@@ -382,6 +382,9 @@
   cpus: 4
   mem: 4G
   walltime: "12:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.manta_tgen.container }}
+  digest: {{ constants.tools.manta_tgen.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -455,6 +458,9 @@
   cpus: 4
   mem: 16G
   walltime: "12:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.manta_tgen.container }}
+  digest: {{ constants.tools.manta_tgen.digest }}
   cmd: |
     set -eu
     set -o pipefail

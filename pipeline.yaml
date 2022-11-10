@@ -54,6 +54,9 @@ constants:
     manta:
       container: ghcr.io/tgen/jetstream_containers/manta:1.6.0
       digest: 726c3f8a09f2729559320584fa6a2869929e4677e7b08bc8efe93f0724d3d9c9
+    manta_tgen:
+      container: /home/tgenref/containers/manta_v1.6.0-tgen.sif
+      digest: notarealdigest
     lumosvar2:
       container: /home/tgenref/containers/lumosvar2_1.1.sif
       digest: notarealdigest
