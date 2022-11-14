@@ -60,8 +60,6 @@
     PREPVCF="$(dirname $(dirname $(which vcfMerger2.py)))"/prep_vcfs_somatic/prep_vcf_somatic.sh
     WORKDIR=`pwd`
 
-    normal_rgsm=$(samtools view -H {{ normal_bam }} | grep '^@RG' | sed "s/.*SM:\([^\t]*\).*/\1/g" | uniq)
-
     ${PREPVCF} \
       --ref-genome "{{ constants.tempe.reference_fasta }}" \
       --dir-work "{{ temp_dir }}" \
@@ -124,8 +122,6 @@
     fi
 
     mkdir -p "{{ results_dir }}"
-
-    normal_rgsm=$(samtools view -H {{ normal_bam }} | grep '^@RG' | sed "s/.*SM:\([^\t]*\).*/\1/g" | uniq)
 
     vcfMerger2.py \
       --skip-prep-vcfs \

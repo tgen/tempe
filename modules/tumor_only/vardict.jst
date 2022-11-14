@@ -74,8 +74,6 @@
     # forward strand read which might be second in pairs that typically has worse quality.
     #}
 
-    normal_rgsm=$(samtools view -H {{ normal_bam }} | grep '^@RG' | sed "s/.*SM:\([^\t]*\).*/\1/g" | uniq)
-
     {# No long options available for the following:
       VarDict
           -th <INT>                           Threads count.

@@ -49,10 +49,7 @@
       might want to enable "--bam-output "{{ temp_dir }}/{{ loop.index }}.bamout.bam" \"
       but it makes a very big bam file
     #}
-
-    {# Grabbing the normal rgsm from the bam #}
-    normal_rgsm=$(gatk ViewSam -I {{ normal_bam }} --HEADER_ONLY --ALIGNMENT_STATUS All --PF_STATUS All 2> /dev/null | grep '^@RG' | sed "s/.*SM:\([^\t]*\).*/\1/g" | uniq)
-
+    
     gatk Mutect2 \
       --java-options "-Xmx14G" \
       --tmp-dir {{ temp_dir }}/temp_mutect2_{{ loop.index }}/ \
