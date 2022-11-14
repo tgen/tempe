@@ -22,7 +22,11 @@
 {% if controlDataFiles is defined %}
 {% for file in controlDataFiles %}
 
-    {% set name %}{{ study }}_{{ file.assayCode }}{% endset %}
+    {% if file.rgsm is defined %}
+        {% set name %}{{ file.rgsm }}_{{ file.assayCode }}{% endset %}
+    {% else %}
+        {% set name %}{{ study }}_{{ file.assayCode }}{% endset %}
+    {% endif %}
     {% do file.update({'name': name}) %}
 
     {% if name not in normSamples %}
@@ -31,32 +35,6 @@
     {% endif %}
 {% endfor %}
 {% endif %}
-
-
-{# Setup calculated props for samples #}
-{% for sample in samples.values() if sample.gltype == 'exome' %}
-    {% do sample.update({'library_code': sample.assayCode[0:2]|upper}) %}
-    {% do sample.update({'capture_kit_code': sample.assayCode[2:5]|upper}) %}
-
-    {% set targets_interval_list %}{{ constants.tempe.capture_kit_path }}/{{ sample.capture_kit_code }}/{{ sample.capture_kit_code }}_{{ constants.tempe.genome_subversion_name }}_{{ constants.tempe.gene_model_name }}.targets.interval_list{% endset %}
-    {% set no_header_targets_interval_list %}{{ constants.tempe.capture_kit_path }}/{{ sample.capture_kit_code }}/{{ sample.capture_kit_code }}_{{ constants.tempe.genome_subversion_name }}_{{ constants.tempe.gene_model_name }}.no.header.targets.interval_list{% endset %}
-    {% set baits_interval_list %}{{ constants.tempe.capture_kit_path }}/{{ sample.capture_kit_code }}/{{ sample.capture_kit_code }}_{{ constants.tempe.genome_subversion_name }}_{{ constants.tempe.gene_model_name }}.baits.interval_list{% endset %}
-    {% set extended_bed %}{{ constants.tempe.capture_kit_path }}/{{ sample.capture_kit_code }}/{{ sample.capture_kit_code }}_{{ constants.tempe.genome_subversion_name }}_{{ constants.tempe.gene_model_name }}.extended.bed{% endset %}
-
-    {% do sample.update({'capture_kit': {}}) %}
-    {% do sample['capture_kit'].update({'targets_interval_list': targets_interval_list}) %}
-    {% do sample['capture_kit'].update({'no_header_targets_interval_list': no_header_targets_interval_list}) %}
-    {% do sample['capture_kit'].update({'baits_interval_list': baits_interval_list}) %}
-    {% do sample['capture_kit'].update({'extended_bed': extended_bed}) %}
-{% endfor %}
-
-{% for sample in samples.values() if sample.gltype == 'rna' %}
-    {% set readOrientation=sample.readOrientation|default('inward')|lower %}
-    {% set rnaStrandType=sample.rnaStrandType|default('unstranded')|lower %}
-    {% set rnaStrandDirection=sample.rnaStrandDirection|default('notapplicable')|lower %}
-    {% set strandedness %}{{ readOrientation }}-{{ rnaStrandType }}-{{ rnaStrandDirection }}{% endset %}
-    {% do sample.update({'strandedness': strandedness}) %}
-{% endfor %}
 
 {% set pairs = [] %}
 {% for tumor in samples.values() if tumor.subGroup|lower == 'tumor' and tumor.gltype == 'exome' %}

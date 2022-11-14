@@ -190,7 +190,7 @@
       "{{ temp_dir }}/{{ loop.index }}.bed" \
     | testsomatic.R \
     | var2vcf_paired.pl \
-      -N "{{ pair.tumor.rgsm }}|${normal_rgsm}" \
+      -N "{{ pair.tumor.rgsm }}|{{ pair.normal.rgsm }}" \
       -c 0 \
       -I 12 \
       -m 5.25 \

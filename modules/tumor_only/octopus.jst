@@ -58,7 +58,7 @@
       --regions-file "{{ loop.index }}.bed" \
       --skip-regions-file {{ constants.tempe.black_list }} \
       --reads "{{ normal_bam }}" "{{ tumor_bam }}" \
-      --normal-sample "${normal_rgsm}" \
+      --normal-sample "{{ pair.normal.rgsm }}" \
       --temp-directory-prefix "{{ loop.index }}" \
       --bamout "{{ loop.index }}.realigned.bam" \
       --output "{{ loop.index }}.octopus.vcf"

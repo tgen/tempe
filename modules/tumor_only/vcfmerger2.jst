@@ -67,7 +67,7 @@
       --dir-work "{{ temp_dir }}" \
       --bam ${WORKDIR}/{{ bam }} \
       --toolname "{{ caller }}" \
-      --normal-sname "${normal_rgsm}" \
+      --normal-sname "{{ pair.normal.rgsm }}" \
       --tumor-sname "{{ pair.tumor.rgsm }}" \
       --vcf "{{ unzipped_path }}" \
       -o "{{ prepped_path }}"
@@ -135,7 +135,7 @@
       --vcfs "{{ vcfs_to_merge|map(attribute='filtered_path')|join('|') }}" \
       -g "{{ constants.tempe.reference_fasta }}" \
       --dict "{{ constants.tempe.reference_dict }}" \
-      --normal-sname "${normal_rgsm}" \
+      --normal-sname "{{ pair.normal.rgsm }}" \
       --tumor-sname "{{ pair.tumor.rgsm }}" \
       -d "{{ temp_dir }}" \
       -o "{{ merged_vcf }}"
