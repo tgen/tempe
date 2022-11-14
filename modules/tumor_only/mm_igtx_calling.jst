@@ -16,6 +16,7 @@
   cpus: 1
   mem: 4G
   walltime: "4:00:00"
+  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   queue_preset: "DEFAULT"
   container: {{ constants.tools.pairoscope.container }}
   digest: {{ constants.tools.pairoscope.digest }}
@@ -128,6 +129,7 @@
   walltime: "24:00:00"
   cpus: 4
   mem: 10G
+  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   queue_preset: "DEFAULT"
   container: {{ constants.tools.star_fusion.container }}
   digest: {{ constants.tools.star_fusion.digest }}
@@ -382,6 +384,7 @@
   cpus: 4
   mem: 4G
   walltime: "12:00:00"
+  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   queue_preset: "DEFAULT"
   container: {{ constants.tools.manta_tgen.container }}
   digest: {{ constants.tools.manta_tgen.digest }}
@@ -458,6 +461,7 @@
   cpus: 4
   mem: 16G
   walltime: "12:00:00"
+  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   queue_preset: "DEFAULT"
   container: {{ constants.tools.manta_tgen.container }}
   digest: {{ constants.tools.manta_tgen.digest }}
