@@ -67,7 +67,7 @@ constants:
       container: ghcr.io/tgen/jetstream_containers/msisensor:1.1.a
       digest: dd49987f11b5a302e79f1c13b6e911cfc6cc424226782783914734771e627118
     mutation_burden:
-      container: ghcr.io/tgen/jetstream_containers/mutation-burden:1.2.3
+      container: ghcr.io/tgen/jetstream_containers/mutation-burden:1.2.4
       digest: 04c0d7b76bbedb910134985147e8960ea1f9705c537433d2087c0ea777132f3e
     octopus:
       container: ghcr.io/tgen/jetstream_containers/octopus:0.7.4
