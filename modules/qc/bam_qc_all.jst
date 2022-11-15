@@ -104,9 +104,6 @@
     {% if sample.gltype == 'rna' or sample.gltype == 'singlecellrna' %}
     - {{ constants.tempe.star_fasta }}
     - {{ constants.tempe.reference_non_N_interval_list }}
-    {% elif sample.gltype == 'chip' %}
-    - {{ constants.tempe.chip_fasta }}
-    - {{ constants.tempe.reference_non_N_interval_list }}
     {% else %}
       {% if sample.gltype == 'exome' %}
     - {{ regions }}
@@ -159,9 +156,6 @@
       --coverage 1,2500,1 \
       {% if sample.gltype == 'rna' or sample.gltype == 'singlecellrna' %}
       --reference "{{ constants.tempe.star_fasta }}" \
-      --target-regions "{{ constants.tempe.reference_non_N_interval_list }}" \
-      {% elif sample.gltype == 'chip' %}
-      --reference "{{ constants.tempe.chip_fasta }}" \
       --target-regions "{{ constants.tempe.reference_non_N_interval_list }}" \
       {% else %}
         {% if sample.gltype == 'exome' %}
@@ -488,8 +482,6 @@
     - {{ bam }}.bai
     {% if sample.gltype == 'rna' or sample.gltype == 'singlecellrna' %}
     - {{ constants.tempe.star_fasta }}
-    {% elif sample.gltype == 'chip' %}
-    - {{ constants.tempe.chip_fasta }}
     {% else %}
     - {{ constants.tempe.reference_fasta }}
     {% endif %}
@@ -545,8 +537,6 @@
       --OUTPUT "{{ results_dir }}/{{ bam|basename }}" \
       {% if sample.gltype == 'rna' or sample.gltype == 'singlecellrna' %}
       --REFERENCE_SEQUENCE "{{ constants.tempe.star_fasta }}" \
-      {% elif sample.gltype == 'chip' %}
-      --REFERENCE_SEQUENCE "{{ constants.tempe.chip_fasta }}" \
       {% else %}
       --REFERENCE_SEQUENCE "{{ constants.tempe.reference_fasta }}" \
       {% endif %}
@@ -611,8 +601,6 @@
     - {{ bam }}.bai
     {% if sample.gltype == 'rna' or sample.gltype == 'singlecellrna' %}
     - {{ constants.tempe.star_fasta }}
-    {% elif sample.gltype == 'chip' %}
-    - {{ constants.tempe.chip_fasta }}
     {% else %}
     - {{ constants.tempe.reference_fasta }}
     {% endif %}
@@ -643,8 +631,6 @@
     --OUTPUT "{{ results_dir }}/{{ bam|basename }}" \
     {% if sample.gltype == 'rna' or sample.gltype == 'singlecellrna' %}
     --REFERENCE_SEQUENCE "{{ constants.tempe.star_fasta }}" \
-    {% elif sample.gltype == 'chip' %}
-    --REFERENCE_SEQUENCE "{{ constants.tempe.chip_fasta }}" \
     {% else %}
     --REFERENCE_SEQUENCE "{{ constants.tempe.reference_fasta }}" \
     {% endif %}
@@ -652,8 +638,6 @@
     gatk ConvertSequencingArtifactToOxoG \
       {% if sample.gltype == 'rna' or sample.gltype == 'singlecellrna' %}
       --REFERENCE_SEQUENCE "{{ constants.tempe.star_fasta }}" \
-      {% elif sample.gltype == 'chip' %}
-      --REFERENCE_SEQUENCE "{{ constants.tempe.chip_fasta }}" \
       {% else %}
       --REFERENCE_SEQUENCE "{{ constants.tempe.reference_fasta }}" \
       {% endif %}
@@ -719,8 +703,6 @@
     - {{ bam }}.bai
     {% if sample.gltype == 'rna' or sample.gltype == 'singlecellrna' %}
     - {{ constants.tempe.star_fasta }}
-    {% elif sample.gltype == 'chip' %}
-    - {{ constants.tempe.chip_fasta }}
     {% else %}
     - {{ constants.tempe.reference_fasta }}
     {% endif %}
@@ -751,8 +733,6 @@
       --min-BQ 13 \
       {% if sample.gltype == 'rna' or sample.gltype == 'singlecellrna' %}
       --fasta-ref "{{ constants.tempe.star_fasta }}" \
-      {% elif sample.gltype == 'chip' %}
-      --fasta-ref "{{ constants.tempe.chip_fasta }}" \
       {% else %}
       --fasta-ref "{{ constants.tempe.reference_fasta }}" \
       {% endif %}
