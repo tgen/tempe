@@ -17,7 +17,7 @@
     - {{ normal_bam }}
     - {{ tumor_bam }}
     - {{ constants.tempe.reference_fasta }}
-    - {{ constants.tempe.black_list }}
+    - {{ constants.tempe.denylist }}
   output:
     - {{ temp_dir }}/{{ loop.index }}.realigned.bam
     - {{ temp_dir }}/{{ loop.index }}.octopus.vcf
@@ -53,7 +53,7 @@
       --working-directory {{ temp_dir }} \
       --reference "{{ constants.tempe.reference_fasta }}" \
       --regions-file "{{ loop.index }}.bed" \
-      --skip-regions-file {{ constants.tempe.black_list }} \
+      --skip-regions-file {{ constants.tempe.denylist }} \
       --reads "{{ normal_bam }}" "{{ tumor_bam }}" \
       --normal-sample "{{ pair.normal.rgsm }}" \
       --temp-directory-prefix "{{ loop.index }}" \
