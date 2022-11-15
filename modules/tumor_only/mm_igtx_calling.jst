@@ -12,11 +12,9 @@
   output:
     - {{ results_dir }}/{{ tumor.name }}.{{ aligner }}_pairoscope_igtx.png
     - {{ results_dir }}/{{ tumor.name }}.{{ aligner }}_pairoscope_igtx_discordantTable.txt
-    - {{ results_dir }}/{{ tumor.name }}.{{ aligner }}_pairoscope_igtx_calls.txt
   cpus: 1
   mem: 4G
   walltime: "4:00:00"
-  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   queue_preset: "DEFAULT"
   container: {{ constants.tools.pairoscope.container }}
   digest: {{ constants.tools.pairoscope.digest }}
@@ -32,26 +30,40 @@
     # Run pairoscope process
     pairoscope -q 0 -m 1000000 -H 1400 -W 1024 -u 2000 -l 200 \
       -o {{ results_dir }}/{{ tumor.name }}.{{ aligner }}_pairoscope_igtx.png \
-      {{ tumor_bam }} chr2 88750483 90261139 \
-      {{ tumor_bam }} chr4 1798273 1998273 \
-      {{ tumor_bam }} chr6 41632262 42332262 \
-      {{ tumor_bam }} chr8 124987758 129487754 \
-      {{ tumor_bam }} chr8 142918584 143925832 \
-      {{ tumor_bam }} chr11 68732532 69685232 \
-      {{ tumor_bam }} chr12 3690834 4690834 \
-      {{ tumor_bam }} chr14 105533663 106881350 \
-      {{ tumor_bam }} chr16 78096103 79950000 \
-      {{ tumor_bam }} chr20 39671358 40971360 \
-      {{ tumor_bam }} chr22 21995603 23057822 2> {{ temp_dir }}/{{ tumor.name }}.{{ aligner }}_pairoscope_igtx_discordantReads.txt
+      {% for region in constants.tempe.igtx_regions %}
+      {{ tumor_bam }} {{ region.contig }} {{ region.start }} {{ region.stop }} \
+      {% endfor %}
+      {% for region in constants.tempe.igtx_gene_regions %}
+      {{ tumor_bam }} {{ region.contig }} {{ region.start }} {{ region.stop }} \
+      {% endfor %}
+      2> {{ temp_dir }}/{{ tumor.name }}.{{ aligner }}_pairoscope_igtx_discordantReads.txt
 
     numLines=$(grep -v "Non-matching mate orientation." -c {{ temp_dir }}/{{ tumor.name }}.{{ aligner }}_pairoscope_igtx_discordantReads.txt || :)
     if [[ $numLines -gt 0 ]]; then
       grep -v "Non-matching mate orientation." {{ temp_dir }}/{{ tumor.name }}.{{ aligner }}_pairoscope_igtx_discordantReads.txt |\
-      gawk -v var1="{{ tumor.rgsm }}" 'BEGIN{OFS="\t" ; print "Specimen", "ChrA", "PositionA", "ChrB", "PositionB"}{print var1, $1, $2, $3, $4}' > \
+      awk -v var1="{{ tumor.rgsm }}" 'BEGIN{OFS="\t" ; print "Specimen", "ChrA", "PositionA", "ChrB", "PositionB"}{print var1, $1, $2, $3, $4}' > \
       {{ results_dir }}/{{ tumor.name }}.{{ aligner }}_pairoscope_igtx_discordantTable.txt
     else
       echo $'Specimen\tChrA\tPositionA\tChrB\tPositionB' > {{ results_dir }}/{{ tumor.name }}.{{ aligner }}_pairoscope_igtx_discordantTable.txt
     fi
+
+
+- name: mm_igtx_pairoscope_process_{{ tumor.name }}_{{ aligner }}
+  tags: [{{ tumor.gltype }}, structural_caller, pairoscope, {{ tumor.name }}]
+  input:
+    - {{ results_dir }}/{{ tumor.name }}.{{ aligner }}_pairoscope_igtx_discordantTable.txt
+  output:
+    - {{ results_dir }}/{{ tumor.name }}.{{ aligner }}_pairoscope_igtx_calls.txt
+  cpus: 1
+  mem: 4G
+  walltime: "4:00:00"
+  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.python3.container }}
+  digest: {{ constants.tools.python3.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
 
     python ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.pairoscope_mm_igtx_calling_script }} \
       --input_file {{ results_dir }}/{{ tumor.name }}.{{ aligner }}_pairoscope_igtx_discordantTable.txt \
@@ -65,6 +77,7 @@
       --call_requirement 4
       {% endif %}
 
+
 {% endmacro %}
 
 
@@ -75,7 +88,9 @@
 
 - name: discordant_loci_extraction_{{ tumor.name }}
   tags: [assembly,]
-  input: {{ tumor_bam }}
+  input: 
+    - {{ tumor_bam }}
+    - {{ constants.tempe.reference_fasta }}
   output: 
     - {{ results_dir }}/{{ tumor.name }}_list_of_fastqs.txt
     - {{ results_dir }}/{{ tumor.name }}_fastqs.tar.gz
@@ -95,11 +110,25 @@
     mkdir -p "{{ temp_dir }}"
     mkdir -p "{{ results_dir }}"
 
+    IGTX_GENE_BED={{ temp_dir }}/igtx_gene_regions.bed
+    cat <<EOF > ${IGTX_GENE_BED}
+    {% for region in constants.tempe.igtx_gene_regions %}
+    {{ region.contig }}$'\t'{{ region.start }}$'\t'{{ region.stop }}$'\t'{{ region.name }}
+    {% endfor %}
+    EOF
+
+    IGTX_BED={{ temp_dir }}/igtx_regions.bed
+    cat <<EOF > ${IGTX_BED}
+    {% for region in constants.tempe.igtx_regions %}
+    {{ region.contig }}$'\t'{{ region.start }}$'\t'{{ region.stop }}$'\t'{{ region.name }}
+    {% endfor %}
+    EOF
+
     dle.py \
       --alignment-file {{ tumor_bam }} \
       --reference-genome {{ constants.tempe.reference_fasta }} \
-      --regions-bed-file {{ constants.tempe.igtx_gene_regions }} \
-      --igs-regions-bed-file {{ constants.tempe.igtx_regions }} \
+      --regions-bed-file ${IGTX_GENE_BED} \
+      --igs-regions-bed-file ${IGTX_BED} \
       --dir-out-fq {{ results_dir }} \
       --prefix-fq {{ tumor.name }} \
       --min-mapq 0 \
@@ -233,13 +262,23 @@
 
       samtools index -@ 4 {{ results_dir }}/{{ tumor.name }}_Trinity_All_Clusters_sorted.bam
 
+      PAIROSCOPE_BED={{ temp_dir }}/igtx_gene_regions.bed
+      cat <<EOF > ${IGTX_GENE_BED}
+    {% for region in constants.tempe.igtx_regions %}
+    {{ region.contig }}$'\t'{{ region.start }}$'\t'{{ region.stop }}
+    {% endfor %}
+    {% for region in constants.tempe.igtx_gene_regions %}
+    {{ region.contig }}$'\t'{{ region.start }}$'\t'{{ region.stop }}
+    {% endfor %}
+    EOF
+
       python3 ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.process_assembled_bam }} \
         --input_bam {{ results_dir }}/{{ tumor.name }}_Trinity_All_Clusters_sorted.bam \
         --fastq_dir {{ results_dir }} \
         --contig 125 \
         --reads 3 \
         --window 25 \
-        --pairoscope_bed_file {{ constants.tempe.igtx_pairoscope_regions }} \
+        --pairoscope_bed_file ${PAIROSCOPE_BED} \
         --output_path {{ results_dir }} \
         --specimen {{ tumor.name }} \
         --bam_path {{ results_dir }}
@@ -267,7 +306,6 @@
 
 
 {% endmacro %}
-
 
 {% macro mm_igtx_manta(pair, aligner='bwa') %}
 {% set tumor_only_temp %}temp/tumor_only/control_data_files/{{ pair.normal.assayCode }}{% endset %}
@@ -433,9 +471,23 @@
 
     bcftools index --threads 2 --tbi --force {{ temp_dir }}/results/variants/translocations.pass.flag.vcf.gz
 
+    IGTX_GENE_BED={{ temp_dir }}/igtx_gene_regions.bed
+    cat <<EOF > ${IGTX_GENE_BED}
+    {% for region in constants.tempe.igtx_gene_regions %}
+    {{ region.contig }}$'\t'{{ region.start }}$'\t'{{ region.stop }}$'\t'{{ region.name }}
+    {% endfor %}
+    EOF
+
+    IGTX_BED={{ temp_dir }}/igtx_regions.bed
+    cat <<EOF > ${IGTX_BED}
+    {% for region in constants.tempe.igtx_regions %}
+    {{ region.contig }}$'\t'{{ region.start }}$'\t'{{ region.stop }}$'\t'{{ region.name }}
+    {% endfor %}
+    EOF
+
     bash transParser.sh \
-      --bed-genes {{ constants.tempe.igtx_gene_regions }} \
-      --bed-igs {{ constants.tempe.igtx_regions }} \
+      --bed-genes ${IGTX_GENE_BED} \
+      --bed-igs ${IGTX_BED} \
       --vcf {{ temp_dir }}/results/variants/translocations.pass.flag.vcf.gz \
       --samplename {{ pair.tumor.rgsm }} \
       --threads 2 \
@@ -497,7 +549,6 @@
 
 {% endmacro %}
 
-
 {% macro mm_igtx_summarize(sample, aligner='bwa') %}
 
 {% set control = {} %}
@@ -545,5 +596,6 @@
         -o {{ results_dir }}/{{ sample.name }}_mm_igtx_summary.txt \
         -c 2 \
         -s {{ sample.name }}
+
 
 {% endmacro %}

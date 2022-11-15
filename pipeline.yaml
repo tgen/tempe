@@ -204,8 +204,21 @@ constants:
     gtf: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/Homo_sapiens.GRCh38.103.ucsc.gtf
     ref_flat: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/Homo_sapiens.GRCh38.103.ucsc.refFlat.txt
     ig_ENST_filter: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/disease_specific_resources/myeloma/Homo_sapiens_GRCh38_103_ucsc_ig_ENST_to_filter_out.tsv
-    igtx_regions: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/disease_specific_resources/myeloma/Homo_sapiens_GRCh38_103_ucsc_igtx_regions.bed
-    igtx_gene_regions: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/disease_specific_resources/myeloma/Homo_sapiens_GRCh38_103_ucsc_igtx_gene_regions.bed
+    # igtx_regions: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/disease_specific_resources/myeloma/Homo_sapiens_GRCh38_103_ucsc_igtx_regions.bed
+    igtx_regions:
+      - {"contig": "chr2", "start": 88750483, "stop": 90261139, "name": "IgK" }
+      - {"contig": "chr14", "start": 105533663, "stop": 106881350, "name": "IgH" }
+      - {"contig": "chr22", "start": 21995603, "stop": 23057822, "name": "IgL" }
+    # igtx_gene_regions: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/disease_specific_resources/myeloma/Homo_sapiens_GRCh38_103_ucsc_igtx_gene_regions.bed
+    igtx_gene_regions:
+      - {"contig": "chr4", "start": 1798273, "stop": 1998273, "name": "NSD2"}
+      - {"contig": "chr6", "start": 41632262, "stop": 42332262, "name": "CCND3"}
+      - {"contig": "chr8", "start": 124987758, "stop": 129487754, "name": "MYC"}
+      - {"contig": "chr8", "start": 142918584, "stop": 143925832, "name": "MAFA"}
+      - {"contig": "chr11", "start": 68732532, "stop": 69685232, "name": "CCND1"}
+      - {"contig": "chr12", "start": 3690834, "stop": 4690834, "name": "CCND2"}
+      - {"contig": "chr16", "start": 78096103, "stop": 79950000, "name": "MAF"}
+      - {"contig": "chr20", "start": 39671358, "stop": 40971360, "name": "MAFB"}
     igtx_pairoscope_regions: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/disease_specific_resources/myeloma/Homo_sapiens_GRCh38_103_ucsc_igtx_pairoscope_regions.bed
     ribo_locations: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/Homo_sapiens.GRCh38.103.ucsc.ribo.interval_list
     gatk_cnv_primary_contigs_female: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/gatk_cnv/Homo_sapiens.GRCh38.primary.contigs.female.interval_list
