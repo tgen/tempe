@@ -110,17 +110,18 @@
     mkdir -p "{{ temp_dir }}"
     mkdir -p "{{ results_dir }}"
 
+    TAB=$'\t'
     IGTX_GENE_BED={{ temp_dir }}/igtx_gene_regions.bed
     cat <<EOF > ${IGTX_GENE_BED}
     {% for region in constants.tempe.igtx_gene_regions %}
-    {{ region.contig }}$'\t'{{ region.start }}$'\t'{{ region.stop }}$'\t'{{ region.name }}
+    {{ region.contig }}${TAB}{{ region.start }}${TAB}{{ region.stop }}${TAB}{{ region.name }}
     {% endfor %}
     EOF
 
     IGTX_BED={{ temp_dir }}/igtx_regions.bed
     cat <<EOF > ${IGTX_BED}
     {% for region in constants.tempe.igtx_regions %}
-    {{ region.contig }}$'\t'{{ region.start }}$'\t'{{ region.stop }}$'\t'{{ region.name }}
+    {{ region.contig }}${TAB}{{ region.start }}${TAB}{{ region.stop }}${TAB}{{ region.name }}
     {% endfor %}
     EOF
 
@@ -262,13 +263,14 @@
 
       samtools index -@ 4 {{ results_dir }}/{{ tumor.name }}_Trinity_All_Clusters_sorted.bam
 
+      TAB=$'\t'
       PAIROSCOPE_BED={{ temp_dir }}/igtx_gene_regions.bed
       cat <<EOF > ${IGTX_GENE_BED}
     {% for region in constants.tempe.igtx_regions %}
-    {{ region.contig }}$'\t'{{ region.start }}$'\t'{{ region.stop }}
+    {{ region.contig }}${TAB}{{ region.start }}${TAB}{{ region.stop }}
     {% endfor %}
     {% for region in constants.tempe.igtx_gene_regions %}
-    {{ region.contig }}$'\t'{{ region.start }}$'\t'{{ region.stop }}
+    {{ region.contig }}${TAB}{{ region.start }}${TAB}{{ region.stop }}
     {% endfor %}
     EOF
 
@@ -471,17 +473,18 @@
 
     bcftools index --threads 2 --tbi --force {{ temp_dir }}/results/variants/translocations.pass.flag.vcf.gz
 
+    TAB=$'\t'
     IGTX_GENE_BED={{ temp_dir }}/igtx_gene_regions.bed
     cat <<EOF > ${IGTX_GENE_BED}
     {% for region in constants.tempe.igtx_gene_regions %}
-    {{ region.contig }}$'\t'{{ region.start }}$'\t'{{ region.stop }}$'\t'{{ region.name }}
+    {{ region.contig }}${TAB}{{ region.start }}${TAB}{{ region.stop }}${TAB}{{ region.name }}
     {% endfor %}
     EOF
 
     IGTX_BED={{ temp_dir }}/igtx_regions.bed
     cat <<EOF > ${IGTX_BED}
     {% for region in constants.tempe.igtx_regions %}
-    {{ region.contig }}$'\t'{{ region.start }}$'\t'{{ region.stop }}$'\t'{{ region.name }}
+    {{ region.contig }}${TAB}{{ region.start }}${TAB}{{ region.stop }}${TAB}{{ region.name }}
     {% endfor %}
     EOF
 
