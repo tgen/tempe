@@ -15,6 +15,13 @@
   {% endif %}
 {% endif %}
 
+{% if control.rgsm is defined %}
+    {% set name %}{{ control.rgsm }}_{{ control.assayCode }}{% endset %}
+{% else %}
+    {% set name %}{{ study }}_{{ control.assayCode }}{% endset %}
+{% endif %}
+{% do control.update({'name': name}) %}
+
 - name: hmmcopy_make_wig_{{ aligner }}_{{ sample.name }}
   tags: [{{ sample.gltype}}, constitutional, cna_caller, ichor, {{ sample.name }}]
   input: 
@@ -46,7 +53,7 @@
 - name: ichor_cna_{{ aligner }}_{{ sample.name }}
   tags: [{{ sample.gltype}}, constitutional, cna_caller, ichor, {{ sample.name }}]
   {% if control.ichorPon is defined %}
-  reset: prepare_tumor_only_{{ study }}_{{ control.assayCode }}
+  reset: prepare_tumor_only_{{ control.name }}
   {% endif %}
   input:
     - {{ wig }}
