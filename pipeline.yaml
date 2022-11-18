@@ -68,7 +68,7 @@ constants:
       digest: dd49987f11b5a302e79f1c13b6e911cfc6cc424226782783914734771e627118
     mutation_burden:
       container: ghcr.io/tgen/jetstream_containers/mutation-burden:1.2.4
-      digest: 04c0d7b76bbedb910134985147e8960ea1f9705c537433d2087c0ea777132f3e
+      digest: eb64be73c74dd7ea57cf75369fc4d251c71dec706eb1f2f3d75cef84fde5e64b
     octopus:
       container: ghcr.io/tgen/jetstream_containers/octopus:0.7.4
       digest: cdb7d5116db69a79832bf0fbda5d11be172ccd2765ab445d030cc54fd7dad692
@@ -113,7 +113,7 @@ constants:
       digest: 0f7e273e1c7f7f74c285b9d1e04fd484f5fc1fa767bb9a0b7a077ae5da21eabc
     vcfmerger:
       container: ghcr.io/tgen/jetstream_containers/vcfmerger2:0.9.3
-      digest: 7471b02ce009129973c767bb1b1a46182dbdfba2c063ed81b76f44b9a0dcc9a7
+      digest: 2b1727deba0e206b192a44115ed9e5d7a961e9d23e093687409d4f2f8a2fbeb6
     vep:
       container: ghcr.io/tgen/jetstream_containers/ensembl-vep:release_107.0
       digest: 2762c6efff95ecac45bcb1dfccdb7c139e2cc4700b855b68632dcdf45d9c7712
