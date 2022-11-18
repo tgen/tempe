@@ -30,8 +30,8 @@ constants:
       container: ghcr.io/tgen/jetstream_containers/expansion_hunter:4.0.2
       digest: 8dca35f2f5d05f92b2b0973486ea0bf2852d99aff690d5aa56ca8d13e9a36d6e
     fgbio:
-      container: /home/tgenref/containers/fgbio_2.0.2.sif
-      digest: notarealdigest
+      container: ghcr.io/tgen/jetstream_containers/fgbio:2.0.2
+      digest: d4d986c59908c79f537421478417c5650849cab9f7aee5d9139fdad1e59369c1
     finalize:
       container: ghcr.io/tgen/jetstream_containers/multiqc:1.13
       digest: edf7d9b44251530ccb6449702b3c9802a6665d85c0f88eb7a75a54bae5796388
