@@ -20,7 +20,11 @@
 {% if controlDataFiles is defined %}
 {% for file in controlDataFiles %}
 
-    {% set name %}{{ study }}_{{ file.assayCode }}{% endset %}
+    {% if file.rgsm is defined %}
+        {% set name %}{{ file.rgsm }}_{{ file.assayCode }}{% endset %}
+    {% else %}
+        {% set name %}{{ study }}_{{ file.assayCode }}{% endset %}
+    {% endif %}
     {% do file.update({'name': name}) %}
 
     {% if name not in normSamples %}
