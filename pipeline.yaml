@@ -36,8 +36,8 @@ constants:
       container: ghcr.io/tgen/jetstream_containers/multiqc:1.13
       digest: edf7d9b44251530ccb6449702b3c9802a6665d85c0f88eb7a75a54bae5796388
     freebayes:
-      container: ghcr.io/tgen/jetstream_containers/freebayes:1.3.1
-      digest: 8e83bc3b3c258e09c1470667412983d5d19468a3413c4ee48f8e3accd3d0a1a8
+      container: ghcr.io/tgen/jetstream_containers/freebayes:1.3.6
+      digest: 41a5d2e71a9a5c4f9b034eebe18e1d6f93024c81e33e66f47d3fa0d3543cd6ae
     gatk:
       container: ghcr.io/tgen/jetstream_containers/gatk:4.1.8.0
       digest: 1a9dac3e0720f7fe6b597d2a6f8308939b6e2ad8cd0869b4a6ab57b73c13ba50
