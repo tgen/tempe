@@ -766,7 +766,7 @@ def picard_add_histogram_to_dict(input_dict, hist_data, hist_head, cols_per_leve
     # Initilize the data_dict_temp and calculate the column to start and end at.
     data_dict_temp = {}
     col_start = index * cols_per_level + 1
-    col_end = col_start + cols_per_level
+    col_end = len(hist_head)
 
     # Parse the keys from the hist_data from the first column
     keys = [x[0] for x in hist_data]

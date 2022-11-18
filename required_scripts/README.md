@@ -31,7 +31,7 @@ $ cp plotCNVplus.R /path/to/phoenix/required_scripts/plotCNVplus_4d89cb4.R
 [mm_igtx_pairoscope_calling_b38_356362b.py](https://github.com/tgen/mm_IgTx_Calling/commit/356362b03f13181f2762ab468f9b4f222439ea69)  
 [plotCNVplus_4d89cb4.R](https://github.com/tgen/plotCNVplus/commit/4d89cb4d8f35e48b916d660c82c52b8725ade16f)  
 [runIchorCNA_47ce8db.R](https://github.com/broadinstitute/ichorCNA/commit/47ce8db4d81ada2d3ce09280661d1240f3dcd530#diff-79cb887cc56cef135b77c5b7a725975c)  
-[samStats2json_3a90a2f.py](https://github.com/tgen/samStats2json/commit/3a90a2fefd8fc60a5ebd391dca6702fae419f32f)  
+[samStats2json_2f64a79.py](https://github.com/tgen/samStats2json/commit/2f64a79a484916e304ad003ea486098f7b253bd4)  
 [sigprofiler_7595614.py](https://github.com/tgen/jetstream_resources/commit/7595614ea08fdf9306b52af69e44b7b61b628925)  
 [seg_extend_229b8c7.py](https://github.com/tgen/jetstream_resources/commit/229b8c7641dd505789664aab88c1662d1f97e429)  
 [summarize_samstats_8c45d63.R](https://github.com/tgen/plot_samstats/commit/8c45d63dbd7f5037d7bb658ac91647898bf7509f)  
