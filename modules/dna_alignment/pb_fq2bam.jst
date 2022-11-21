@@ -27,6 +27,9 @@
     - temp/fastqs/{{ r2fastq.basename }}
   {% endfor %}
     - {{ constants.tempe.bwa_index }}
+    {% for vcf in constants.tempe.gatk_known_sites %}
+    - {{ vcf }}
+    {% endfor %}
   output:
     - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam
     - {{ md_metrics }}
