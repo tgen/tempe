@@ -77,6 +77,10 @@
         {% do file.update({'subGroup': 'constitutional'}) %}
     {% endif %}
 
+    {% if 'umiType' not in file %}
+        {% do file.update({'umiType': ''}) %}
+    {% endif %}
+
     {% if name not in samples %}
         {% do samples.update({name: {}}) %}
         {% do samples[name].update(file) %}
