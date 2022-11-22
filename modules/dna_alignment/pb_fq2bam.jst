@@ -27,13 +27,15 @@
     - temp/fastqs/{{ r2fastq.basename }}
   {% endfor %}
     - {{ constants.tempe.bwa_index }}
+    {% if tasks[sample.gltype|capitalize+"_alignment_base_recalibration_gatk"]|default(false) %}
     {% for vcf in constants.tempe.gatk_known_sites %}
     - {{ vcf }}
     {% endfor %}
+    {% endif %}
   output:
     - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam
     - {{ md_metrics }}
-    {% if tasks.Genome_alignment_base_recalibration_gatk | default(false) or tasks.Exome_alignment_base_recalibration_gatk | default(false) %}
+    {% if tasks[sample.gltype|capitalize+"_alignment_base_recalibration_gatk"]|default(false) %}
     - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.recal_data.table
     {% endif %}
   walltime: "24:00:00"
@@ -81,7 +83,7 @@
       {% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
       --in-fq "temp/fastqs/{{ r1fastq.basename }}" "temp/fastqs/{{ r2fastq.basename }}" "{{ read_group_line(rg, format='bwa') }}" \
     {% endfor %}
-    {% if tasks.Genome_alignment_base_recalibration_gatk | default(false) or tasks.Exome_alignment_base_recalibration_gatk | default(false) %}
+    {% if tasks[sample.gltype|capitalize+"_alignment_base_recalibration_gatk"]|default(false) %}
     --out-recal-file {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.recal_data.table \
     {% for vcf in constants.tempe.gatk_known_sites %}
     --knownSites "{{ vcf }}" \
