@@ -142,6 +142,7 @@
     fi
 
     $pbcmd applybqsr \
+      --num-gpus {{ '${#gpus}' }} \
       --ref "{{ constants.tempe.bwa_index }}" \
       --in-bam {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam \
       --in-recal-file {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.recal_data.table  \
