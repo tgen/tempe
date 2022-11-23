@@ -123,12 +123,15 @@
     - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.bam.bai
   walltime: "24:00:00"
   queue_preset: "PARABRICKS"
+  runner_args: ['--env', 'CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES/,/_}']
   runner_preset: "PARABRICKS"
   container: {{ constants.tools.parabricks.container }}
   digest: {{ constants.tools.parabricks.digest }}
   cmd: |
     set -eu
     set -o pipefail
+    CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES/_/,}
+    gpus=${CUDA_VISIBLE_DEVICES/,/}
 
     {# Enables some wider container compatibility #}
     if ! command -v pbrun &> /dev/null
