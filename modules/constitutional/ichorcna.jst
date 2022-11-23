@@ -3,8 +3,8 @@
 
 {% macro ichorcna(sample, aligner='bwa', taskPrefix='Genome') %}
 {% set bam %}{{ sample.gltype}}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
-{% set temp_dir %}temp/{{ sample.gltype }}/copy_number_analysis/ichorCNA/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.ichor_rundir{% endset %}
-{% set results_dir %}{{ sample.gltype }}/copy_number_analysis/ichorCNA/{{ sample.name }}{% endset %}
+{% set temp_dir %}temp/{{ sample.gltype }}/copy_number_analysis/ichorCNA/{{ sample.name }}_{{ aligner }}/{{ sample.name }}.{{ aligner }}.ichor_rundir{% endset %}
+{% set results_dir %}{{ sample.gltype }}/copy_number_analysis/ichorCNA/{{ sample.name }}_{{ aligner }}{% endset %}
 {% set wig %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.wig{% endset %}
 {% set ichor_json %}{{ results_dir }}/{{ sample.name}}.{{ aligner }}.ichorCNA.json{% endset %}
 

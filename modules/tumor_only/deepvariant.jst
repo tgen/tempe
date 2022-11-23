@@ -5,7 +5,7 @@
 
 {%- set bam %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
 {%- set temp_dir %}temp/{{ sample.gltype }}/tumor_only_variant_calls/deepvariant/{{ sample.name }}_{{ aligner }}{% endset %}
-{%- set results_dir %}{{ sample.gltype }}/tumor_only_variant_calls/deepvariant/{{ sample.name }}{% endset %}
+{%- set results_dir %}{{ sample.gltype }}/tumor_only_variant_calls/deepvariant/{{ sample.name }}_{{ aligner }}{% endset %}
 {%- set all_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.deepvariant.all.vcf.gz{% endset %}
 {%- set pass_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.deepvariant.pass.vcf.gz{% endset %}
 

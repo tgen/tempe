@@ -2,9 +2,9 @@
 
 {% macro admixture(pair, vcf_prefix, variant_caller, aligner) %}
 
-{% set temp_dir %}temp/{{ pair.gltype }}/metrics/admixture/{{ pair.name }}{% endset %}
+{% set temp_dir %}temp/{{ pair.gltype }}/metrics/admixture/{{ pair.name }}_{{ aligner }}{% endset %}
 {% set temp_vcf_dir %}{{ temp_dir }}/vcfs{% endset %}
-{% set results_dir %}{{ pair.gltype }}/metrics/admixture/{{ pair.name }}{% endset %}
+{% set results_dir %}{{ pair.gltype }}/metrics/admixture/{{ pair.name }}_{{ aligner }}{% endset %}
 {% set all_vcf %}{{ vcf_prefix }}.vcf.gz{% endset %}
 {% set filt_vcf %}{{ temp_vcf_dir }}/{{ vcf_prefix|basename }}.pass.vcf{% endset %}
 

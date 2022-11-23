@@ -7,7 +7,7 @@
 {% set tumor_bam %}{{ pair.tumor.gltype }}/alignment/{{ aligner }}/{{ pair.tumor.name }}/{{ pair.tumor.name }}.{{ aligner }}.bam{% endset %}
 {% set cnvSnps %}{{ tumor_only_temp }}/{{ pair.normal.gatkCnvSnps | basename }}{% endset %}
 {% set temp_dir %}temp/{{ pair.gltype }}/tumor_only_copy_number/gatk/{{ pair.tumor.name }}_{{ aligner }}{% endset %}
-{% set results_dir %}{{ pair.gltype }}/tumor_only_copy_number/gatk/{{ pair.tumor.name }}{% endset %}
+{% set results_dir %}{{ pair.gltype }}/tumor_only_copy_number/gatk/{{ pair.tumor.name }}_{{ aligner }}{% endset %}
 
 {% if wesAssayToPair is defined and pair.normal.gatkExomeCnvSnps is defined %}
   {% set exomeCnvSnps %}{{ tumor_only_temp }}/{{ pair.normal.gatkExomeCnvSnps | basename }}{% endset %}

@@ -11,7 +11,7 @@
 {% set normal_bam %}{{ tumor_only_temp }}/{{ pair.normal.pathToBam | basename }}{% endset %}
 {% set tumor_bam %}{{ pair.tumor.gltype }}/alignment/{{ aligner }}/{{ pair.tumor.name }}/{{ pair.tumor.name }}.{{ aligner }}.bam{% endset %}
 {% set temp_dir %}temp/{{ pair.gltype }}/tumor_only_variant_calls/vcfmerger2/{{ pair.name }}_{{ aligner }}{% endset %}
-{% set results_dir %}{{ pair.gltype }}/tumor_only_variant_calls/vcfmerger2/{{ pair.name }}{% endset %}
+{% set results_dir %}{{ pair.gltype }}/tumor_only_variant_calls/vcfmerger2/{{ pair.name }}_{{ aligner }}{% endset %}
 {% set merged_vcf %}{{ temp_dir }}/{{ pair.name }}.{{ aligner }}.merged.vcf{% endset %}
 {% set merged_vcf_gz %}{{ temp_dir }}/{{ pair.name }}.{{ aligner }}.merged.vcf.gz{% endset %}
 {% set output_vcf %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.merged.vcf.gz{% endset %}

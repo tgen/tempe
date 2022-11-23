@@ -7,7 +7,7 @@
 {% set normal_bam %}{{ tumor_only_temp }}/{{ pair.normal.pathToBam | basename }}{% endset %}
 {% set tumor_bam %}{{ pair.tumor.gltype }}/alignment/{{ aligner }}/{{ pair.tumor.name }}/{{ pair.tumor.name }}.{{ aligner }}.bam{% endset %}
 {% set temp_dir %}temp/{{ pair.gltype }}/tumor_only_variant_calls/mutect2/{{ pair.name }}_{{ aligner }}{% endset %}
-{% set results_dir %}{{ pair.gltype }}/tumor_only_variant_calls/mutect2/{{ pair.name }}{% endset %}
+{% set results_dir %}{{ pair.gltype }}/tumor_only_variant_calls/mutect2/{{ pair.name }}_{{ aligner }}{% endset %}
 {% set all_vcf %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.mutect2.all.vcf.gz{% endset %}
 {% set pass_vcf %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.mutect2.pass.vcf.gz{% endset %}
 

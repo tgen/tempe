@@ -23,8 +23,8 @@
     {% do bamList.append(bamPath) %}
   {% endfor %}
 
-  {% set results_dir %}{{ (tumor_samples|first).gltype }}/tumor_only_variant_calls/lumosvar2/{{ (tumor_samples|first).name }}{% endset %}
-  {% set temp_dir %}temp/{{ (tumor_samples|first).gltype }}/tumor_only_variant_calls/lumosvar2/{{ (tumor_samples|first).name }}{% endset %}
+  {% set temp_dir %}temp/{{ (tumor_samples|first).gltype }}/tumor_only_variant_calls/lumosvar2/{{ (tumor_samples|first).name }}_{{ aligner }}{% endset %}
+  {% set results_dir %}{{ (tumor_samples|first).gltype }}/tumor_only_variant_calls/lumosvar2/{{ (tumor_samples|first).name }}_{{ aligner }}{% endset %}
 
 - name: tumor_only_lumosvar2_{{ (tumor_samples|first).name }}
   tags: [lumosvar2, tumor_only, exome, snp_indel_caller]

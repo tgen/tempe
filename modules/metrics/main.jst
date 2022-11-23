@@ -60,7 +60,7 @@
   {% if tasks[taskPrefix+"_somatic_sample_metric_tucon"]|default(false) %}
     {% if tasks[taskPrefix+"_somatic_annotate_vcfs_bcftools_topmed"]|default(false) %}
     {% set final_vcf %}{{ final_vcf_prefix }}.vep.full.vcf.gz{% endset %}
-    {{- tucon(pair, final_vcf, 'vep') }}
+    {{- tucon(pair, final_vcf, 'vep', aligner) }}
     {% endif %}
   {% endif %}
 {% endif %}
@@ -72,7 +72,7 @@
   {% if tasks[taskPrefix+"_somatic_sample_metric_tucon"]|default(false) %}
     {% if tasks[taskPrefix+"_somatic_annotate_vcfs_bcftools_topmed"]|default(false) %}
     {% set final_vcf %}{{ final_vcf_prefix }}.snpeff.full.vcf.gz{% endset %}
-    {{- tucon(pair, final_vcf, 'snpeff') }}
+    {{- tucon(pair, final_vcf, 'snpeff', aligner) }}
     {% endif %}
   {% endif %}
 {% endif %}

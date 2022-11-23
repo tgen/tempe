@@ -1,9 +1,9 @@
 {% from 'utilities/remove_files.jst' import remove_files with context %}
 
 {% macro mm_igtx_pairoscope(tumor, aligner='bwa') %}
-{% set temp_dir %}temp/{{ tumor.gltype }}/tumor_only_structural_calls/mm_igtx_pairoscope/{{ tumor.name }}{% endset %}
 {% set tumor_bam %}{{ tumor.gltype }}/alignment/{{ aligner }}/{{ tumor.name }}/{{ tumor.name }}.{{ aligner }}.bam{% endset %}
-{% set results_dir %}{{ tumor.gltype }}/tumor_only_structural_calls/mm_igtx_pairoscope/{{ tumor.name }}{% endset %}
+{% set temp_dir %}temp/{{ tumor.gltype }}/tumor_only_structural_calls/mm_igtx_pairoscope/{{ tumor.name }}_{{ aligner }}{% endset %}
+{% set results_dir %}{{ tumor.gltype }}/tumor_only_structural_calls/mm_igtx_pairoscope/{{ tumor.name }}_{{ aligner }}{% endset %}
 
 - name: mm_igtx_pairoscope_{{ tumor.name }}_{{ aligner }}
   tags: [{{ tumor.gltype }}, structural_caller, pairoscope, {{ tumor.name }}]
@@ -83,8 +83,8 @@
 
 {% macro mm_igtx_gammit(tumor, aligner='bwa') %}
 {% set tumor_bam %}{{ tumor.gltype }}/alignment/{{ aligner }}/{{ tumor.name }}/{{ tumor.name }}.{{ aligner }}.bam{% endset %}
-{% set results_dir %}{{ tumor.gltype }}/tumor_only_structural_calls/mm_igtx_gammit/{{ tumor.name }}{% endset %}
-{% set temp_dir %}temp/{{ tumor.gltype }}/tumor_only_structural_calls/mm_igtx_gammit/{{ tumor.name }}{% endset %}
+{% set temp_dir %}temp/{{ tumor.gltype }}/tumor_only_structural_calls/mm_igtx_gammit/{{ tumor.name }}_{{ aligner }}{% endset %}
+{% set results_dir %}{{ tumor.gltype }}/tumor_only_structural_calls/mm_igtx_gammit/{{ tumor.name }}_{{ aligner }}{% endset %}
 
 - name: discordant_loci_extraction_{{ tumor.name }}
   tags: [assembly,]
@@ -313,8 +313,8 @@
 {% set tumor_only_temp %}temp/tumor_only/control_data_files/{{ pair.normal.assayCode }}{% endset %}
 {% set normal_bam %}{{ tumor_only_temp }}/{{ pair.normal.pathToBam | basename }}{% endset %}
 {% set tumor_bam %}{{ pair.tumor.gltype }}/alignment/{{ aligner }}/{{ pair.tumor.name }}/{{ pair.tumor.name }}.{{ aligner }}.bam{% endset %}
-{% set results_dir %}{{ pair.gltype }}/tumor_only_structural_calls/mm_igtx_manta/{{ pair.name }}{% endset %}
-{% set temp_dir %}temp/{{ pair.gltype }}/tumor_only_structural_calls/mm_igtx_manta/{{ pair.name }}{% endset %}
+{% set temp_dir %}temp/{{ pair.gltype }}/tumor_only_structural_calls/mm_igtx_manta/{{ pair.name }}_{{ aligner }}{% endset %}
+{% set results_dir %}{{ pair.gltype }}/tumor_only_structural_calls/mm_igtx_manta/{{ pair.name }}_{{ aligner }}{% endset %}
 {% set summary_samtools_stats %}{{ pair.gltype }}/alignment/{{ aligner }}/{{ pair.tumor.name }}/stats/{{ pair.tumor.name }}.{{ aligner }}.bam_samtools_insertSize_summary.tsv{% endset %}
 
 - name: mm_igtx_manta_{{ pair.name }}_{{ aligner }}
@@ -561,7 +561,7 @@
   {% endif %}
 {% endif %}
 
-{% set results_dir %}{{ sample.gltype }}/tumor_only_structural_calls/mm_igtx_summary/{{ sample.name }}{% endset %}
+{% set results_dir %}{{ sample.gltype }}/tumor_only_structural_calls/mm_igtx_summary/{{ sample.name }}_{{ aligner }}{% endset %}
 {% set gammit_path %}{{ sample.gltype }}/tumor_only_structural_calls/mm_igtx_gammit/{{ sample.name }}/{{ sample.name }}_DEX_IgTx_GA_Summary.txt{% endset %}
 {% set pairoscope_path %}{{ sample.gltype }}/tumor_only_structural_calls/mm_igtx_pairoscope/{{ sample.name }}/{{ sample.name }}.{{ aligner }}_pairoscope_igtx_calls.txt{% endset %}
 

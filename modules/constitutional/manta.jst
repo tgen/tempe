@@ -2,8 +2,8 @@
 
 {% macro manta_constitutional(sample, aligner='bwa', taskPrefix='Genome') %}
 {% set bam %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
-{% set results_dir %}{{ sample.gltype }}/constitutional_structural_calls/manta/{{ sample.name }}{% endset %}
-{% set temp_dir %}temp/{{ sample.gltype }}/constitutional_structural_calls/manta/{{ sample.name }}{% endset %}
+{% set temp_dir %}temp/{{ sample.gltype }}/constitutional_structural_calls/manta/{{ sample.name }}_{{ aligner }}{% endset %}
+{% set results_dir %}{{ sample.gltype }}/constitutional_structural_calls/manta/{{ sample.name }}_{{ aligner }}{% endset %}
 
 - name: manta_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype}}, constitutional, structural_caller, manta, {{ sample.name }}]

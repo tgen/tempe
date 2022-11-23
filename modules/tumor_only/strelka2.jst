@@ -3,13 +3,13 @@
 {% set normal_bam %}{{ tumor_only_temp }}/{{ pair.normal.pathToBam | basename }}{% endset %}
 {% set tumor_bam %}{{ pair.tumor.gltype }}/alignment/{{ aligner }}/{{ pair.tumor.name }}/{{ pair.tumor.name }}.{{ aligner }}.bam{% endset %}
 {% set indel_candidates %}{{ pair.gltype }}/tumor_only_structural_calls/manta/{{ pair.tumor.name }}_{{ aligner }}/{{ pair.tumor.name }}.{{ aligner }}.manta.candidateSmallIndels.vcf.gz{% endset %}
-{% set results_dir %}{{ pair.gltype }}/tumor_only_variant_calls/strelka2/{{ pair.tumor.name }}_{{ aligner }}{% endset %}
-{% set temp_dir %}temp/{{ pair.gltype }}/tumor_only_variant_calls/strelka2/{{ pair.tumor.name }}_{{ aligner }}{% endset %}
-{% set all_vcf %}{{ results_dir }}/{{ pair.tumor.name }}.{{ aligner }}.strelka2.all.vcf.gz{% endset %}
-{% set pass_vcf %}{{ results_dir }}/{{ pair.tumor.name }}.{{ aligner }}.strelka2.pass.vcf.gz{% endset %}
+{% set temp_dir %}temp/{{ pair.gltype }}/tumor_only_variant_calls/strelka2/{{ pair.name }}_{{ aligner }}{% endset %}
+{% set results_dir %}{{ pair.gltype }}/tumor_only_variant_calls/strelka2/{{ pair.name }}_{{ aligner }}{% endset %}
+{% set all_vcf %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.strelka2.all.vcf.gz{% endset %}
+{% set pass_vcf %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.strelka2.pass.vcf.gz{% endset %}
 
-- name: tumor_only_strelka2_build_call_regions_{{ pair.tumor.name }}_{{ aligner }}
-  tags: [{{ pair.gltype }}, tumor_only, snp_indel_caller, strelka2, {{ pair.tumor.name }}]
+- name: tumor_only_strelka2_build_call_regions_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, tumor_only, snp_indel_caller, strelka2, {{ pair.name }}]
   output:
     - {{ temp_dir }}/callRegions.bed
   cpus: 1
@@ -40,8 +40,8 @@
     EOF
 
 
-- name: tumor_only_strelka2_process_call_regions_{{ pair.tumor.name }}_{{ aligner }}
-  tags: [{{ pair.gltype }}, tumor_only, snp_indel_caller, strelka2, {{ pair.tumor.name }}]
+- name: tumor_only_strelka2_process_call_regions_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, tumor_only, snp_indel_caller, strelka2, {{ pair.name }}]
   reset: predecessors
   input:
     - {{ temp_dir }}/callRegions.bed
@@ -62,11 +62,11 @@
     tabix -f -p bed "{{ temp_dir }}/callRegions.bed.gz"
 
 
-- name: tumor_only_strelka2_{{ pair.tumor.name }}_{{ aligner }}
-  tags: [{{ pair.gltype }}, tumor_only, snp_indel_caller, strelka2, {{ pair.tumor.name }}]
+- name: tumor_only_strelka2_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, tumor_only, snp_indel_caller, strelka2, {{ pair.name }}]
   reset:
     - prepare_tumor_only_{{ pair.normal.name }}
-    - tumor_only_strelka2_process_call_regions_{{ pair.tumor.name }}_{{ aligner }}
+    - tumor_only_strelka2_process_call_regions_{{ pair.name }}_{{ aligner }}
   input:
     - {{ normal_bam }}
     - {{ tumor_bam }}
@@ -118,8 +118,8 @@
     mkdir -p "{{ results_dir }}/evidence"
 
 
-- name: tumor_only_strelka2_save_evidence_{{ pair.tumor.name }}_{{ aligner }}
-  tags: [{{ pair.gltype }}, tumor_only, snp_indel_caller, strelka2, {{ pair.tumor.name }}]
+- name: tumor_only_strelka2_save_evidence_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, tumor_only, snp_indel_caller, strelka2, {{ pair.name }}]
   reset: predecessors
   input:
     - {{ temp_dir }}/results/realigned/realigned.normal.bam
@@ -173,8 +173,8 @@
     {% endif %}
 
 
-- name: tumor_only_strelka2_filter_variants_{{ pair.tumor.name }}_{{ aligner }}
-  tags: [{{ pair.gltype }}, tumor_only, snp_indel_caller, strelka2, {{ pair.tumor.name }}]
+- name: tumor_only_strelka2_filter_variants_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, tumor_only, snp_indel_caller, strelka2, {{ pair.name }}]
   reset: predecessors
   input:
     - {{ temp_dir }}/results/variants/somatic.indels.vcf.gz
