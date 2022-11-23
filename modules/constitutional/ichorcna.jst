@@ -3,10 +3,10 @@
 
 {% macro ichorcna(sample, aligner='bwa', taskPrefix='Genome') %}
 {% set bam %}{{ sample.gltype}}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
+{% set temp_dir %}temp/{{ sample.gltype }}/copy_number_analysis/ichorCNA/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.ichor_rundir{% endset %}
 {% set results_dir %}{{ sample.gltype }}/copy_number_analysis/ichorCNA/{{ sample.name }}{% endset %}
 {% set wig %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.wig{% endset %}
 {% set ichor_json %}{{ results_dir }}/{{ sample.name}}.{{ aligner }}.ichorCNA.json{% endset %}
-{% set temp_dir %}temp/{{ sample.gltype }}/copy_number_analysis/ichorCNA/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.ichor_rundir{% endset %}
 
 {% set control = {} %}
 {% if controlDataFiles is defined %}
@@ -150,7 +150,7 @@
     {% for contig in constants.tempe.calling_contigs %}
     {# Stopping at chrX #}
     {% if loop.index < 24 %}
-    mv {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA/{{ sample.name }}.{{ aligner }}.ichorCNA_CNA_chr{{ contig.contig }}.pdf {{ results_dir }}/
+    mv {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA/{{ sample.name }}.{{ aligner }}.ichorCNA_CNA_chr{{ contig.contig }}.pdf {{ results_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA_CNA_{{ contig.contig }}.pdf
     {% endif %}
     {% endfor %}
     mv "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA/{{ sample.name }}.{{ aligner }}.ichorCNA_genomeWide_all_sols.pdf" "{{ results_dir }}/"
