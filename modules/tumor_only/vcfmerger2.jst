@@ -24,7 +24,7 @@
 #}
 {% for caller in pair.callers %}
 {% set bam %}{{ pair.tumor.gltype }}/alignment/{{ aligner }}/{{ pair.tumor.name }}/{{ pair.tumor.name }}.{{ aligner }}.bam{% endset %}
-{% set gzipped_path %}{{ pair.gltype }}/tumor_only_variant_calls/{{ caller }}/{{ pair.name }}/{{ pair.name }}.{{ aligner }}.{{ caller }}.pass.vcf.gz{% endset %}
+{% set gzipped_path %}{{ pair.gltype }}/tumor_only_variant_calls/{{ caller }}/{{ pair.name }}_{{ aligner }}/{{ pair.name }}.{{ aligner }}.{{ caller }}.pass.vcf.gz{% endset %}
 {% set unzipped_path %}{{ temp_dir }}/{{ caller }}.vcf{% endset %}
 {% set prepped_path %}{{ temp_dir }}/{{ caller }}.prepz.vcf{% endset %}
 {% set filtered_path %}{{ temp_dir }}/{{ caller }}.filt.vcf{% endset %}
