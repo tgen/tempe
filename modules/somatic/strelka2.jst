@@ -46,7 +46,7 @@
 
 - name: strelka2_process_call_regions_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, snp_indel_caller, strelka2, {{ pair.name }}]
-  reset: predecessors
+  reset: strelka2_build_call_regions_{{ pair.name }}_{{ aligner }}
   input:
     - {{ temp_dir }}/callRegions.bed
   output:
@@ -68,7 +68,7 @@
 
 - name: strelka2_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, snp_indel_caller, strelka2, {{ pair.name }}]
-  reset: predecessors
+  reset: strelka2_process_call_regions_{{ pair.name }}_{{ aligner }}
   input:
     - {{ normal_bam }}
     - {{ tumor_bam }}
