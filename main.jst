@@ -120,7 +120,8 @@
     {% endif %}
 
     {% if sample.gltype in 'rna' %}
-        {% if tasks.RNA_alignment_rna_alignment_STAR|default(false) %}
+        {# default to adding star as aligner until we have more than one aligner #}
+        {% if tasks.RNA_alignment_rna_alignment_STAR|default(true) %}
             {% do sample.aligners.append('star') %}
         {% endif %}
     {% endif %}
