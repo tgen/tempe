@@ -302,7 +302,11 @@
 {{- vcf_stats(all_vcf, results_dir) }}
 
 {# We expect the annotate_vcfs macro to output the following annotated vcf #}
+{% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_vep"] or tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_snpEff_ann"] %}
+{% set annotated_vcf %}{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.vardict.pass.db.vcf.gz{% endset %}
+{% else %}
 {% set annotated_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.vardict.pass.db.vcf.gz{% endset %}
+{% endif %}
 {% set filtered_annot_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.vardict.pass.db.chip.vcf.gz{% endset %}
 
 - name: vardict_filter_chip_variants_{{ sample.name }}_{{ aligner }}
