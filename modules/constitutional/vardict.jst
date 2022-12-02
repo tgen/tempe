@@ -331,12 +331,12 @@
 {% endmacro %}
 
 {# We require the topmed and gnomad_genome annotations for chip filtering to work #}
-{% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_topmed"]|default(false) and tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_gnomad_genome"]|default(false) %}
-  {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_vep"]|default(false) %}
+{% if tasks[taskPrefix+"_constitutional_annotate_vcfs_bcftools_topmed"]|default(false) and tasks[taskPrefix+"_constitutional_annotate_vcfs_bcftools_gnomad_genome"]|default(false) %}
+  {% if tasks[taskPrefix+"_constitutional_annotate_vcfs_vep"]|default(false) %}
     {% set annotated_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.vardict.pass.db.vep.pick.vcf.gz{% endset %}
     {% set filtered_annot_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.vardict.pass.db.vep.pick.chip.vcf.gz{% endset %}
     {{- filter_chip_variants(sample, aligner, 'vep', annotated_vcf, filtered_annot_vcf) }}
-  {% elif tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_snpEff_ann"]|default(false) %}
+  {% elif tasks[taskPrefix+"_constitutional_annotate_vcfs_snpEff_ann"]|default(false) %}
     {% set annotated_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.vardict.pass.db.snpeff.can.vcf.gz{% endset %}
     {% set filtered_annot_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.vardict.pass.db.snpeff.can.chip.vcf.gz{% endset %}
     {{- filter_chip_variants(sample, aligner, 'snpeff', annotated_vcf, filtered_annot_vcf) }}
