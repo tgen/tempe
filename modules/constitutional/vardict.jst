@@ -301,5 +301,34 @@
 {{- vcf_stats(pass_vcf, results_dir) }}
 {{- vcf_stats(all_vcf, results_dir) }}
 
+{# We expect the annotate_vcfs macro to output the following annotated vcf #}
+{% set annotated_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.vardict.pass.db.vcf.gz{% endset %}
+{% set filtered_annot_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.vardict.pass.db.chip.vcf.gz{% endset %}
+
+- name: vardict_filter_chip_variants_{{ sample.name }}_{{ aligner }}
+  tags: [{{ sample.gltype }}, constitutional, snp_indel_caller, VarDict, {{ sample.name }}]
+  input:
+    - {{ annotated_vcf }}
+  output:
+    - {{ filtered_annot_vcf }}
+    - {{ filtered_annot_vcf }}.tbi
+  cpus: 1
+  mem: 4G
+  walltime: "12:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.bcftools.container }}
+  digest: {{ constants.tools.bcftools.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+    
+    bcftools filter \
+      --output-type v \
+      --include 'INFO/DP>=100 && FMT/ALD[*:0]>=4 && FMT/ALD[*:1]>=4 && INFO/MQ>=45 && INFO/QUAL>=30 && PMEAN>=11.5 && PMEAN <= 33 && (INFO/DP * INFO/AF)>=8 && INFO/AF >= 0.01 && INFO/AF < 0.4 && GNOMAD_GENOME_AF < 0.0001 && TOPMED_AF < 0.0001' \
+      --output {{ filtered_annot_vcf }} \
+      {{ annotated_vcf }}
+    
+    bcftools index --tbi --force {{ filtered_annot_vcf }}
+
 
 {% endmacro %}
