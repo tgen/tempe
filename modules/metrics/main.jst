@@ -82,7 +82,7 @@
 {% endif %}
 
 {% if tasks[taskPrefix+"_somatic_sample_metric_sigprofiler"]|default(false) %}
-  {# {{- sigprofiler(pair, vcf_prefix, variant_caller, aligner) }} #}
+  {{- sigprofiler(pair, vcf_prefix, variant_caller, aligner) }}
 {% endif %}
 
 {% endmacro %}

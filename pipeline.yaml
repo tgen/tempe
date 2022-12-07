@@ -93,6 +93,9 @@ constants:
     samtools:
       container: ghcr.io/tgen/jetstream_containers/samtools:1.16.1
       digest: 37e2122779da2b840817a509b84e43f627a77e310e4b6d2814abde5459c2e246
+    sigprofiler:
+      container: /home/tgenref/containers/sigprofiler_0.0.21.sif
+      digest: notarealdigest
     snpeff:
       container: ghcr.io/tgen/jetstream_containers/snpeff:4_3t
       digest: bd1aa0314843e414388330f6fe69bc442459c18de7999e9c91afaeef2c05a02d
