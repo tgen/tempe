@@ -286,7 +286,7 @@
     samtools index -@ 10 "{{ star_bam_final }}"
 
 
-{{- stats2json(sample.gltype, sample.name, task, rna_md_metrics, rna_md_metrics_json, "picard_mark_duplicates_metrics", sample_name=sample.name) }}
+{{- stats2json(sample.gltype, sample.name, task, rna_md_metrics, rna_md_metrics_json, "picard_mark_duplicates_metrics", sample=sample, sample_name=sample.name) }}
 
 {% set task_list = [] %}
 

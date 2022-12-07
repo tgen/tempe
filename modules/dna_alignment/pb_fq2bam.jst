@@ -107,7 +107,7 @@
 
 
 {% set task %}fq2bam_{{ sample.name }}_{{ aligner }}{% endset %}
-{{- stats2json(sample.gltype, sample.name, task, md_metrics, md_metrics_json, "picard_mark_duplicates_metrics", sample_name=sample.name) }}
+{{- stats2json(sample.gltype, sample.name, task, md_metrics, md_metrics_json, "picard_mark_duplicates_metrics", sample=sample, sample_name=sample.name) }}
 
 {% if tasks[sample.gltype|capitalize+"_alignment_base_recalibration_gatk"]|default(false) %}
 
