@@ -12,26 +12,26 @@
 {{- filter_variants(pair, all_vcf, temp_vcf_dir, filt_vcf, task) }}
 
 - name: sigprofiler_{{ variant_caller }}_{{ pair.name }}_{{ aligner }}
-  tags:
+  tags: [{{ pair.gltype }}, somatic, mutational_signatures, sigprofiler, {{ pair.name }}]
   input:
     - {{ filt_vcf }}
   output:
-    - {{ results_dir }}/SBS96/Suggested_Solution/COSMIC_SBS96_Decomposed_Solution/Activities/COSMIC_SBS96_Activities_refit.txt
-    - {{ results_dir }}/SBS96/Suggested_Solution/COSMIC_SBS96_Decomposed_Solution/Activities/COSMIC_SBS96_Activity_Plots_refit.pdf
-    - {{ results_dir }}/SBS96/Suggested_Solution/COSMIC_SBS96_Decomposed_Solution/Activities/COSMIC_SBS96_TMB_plot_refit.pdf
-    - {{ results_dir }}/SBS96/Suggested_Solution/COSMIC_SBS96_Decomposed_Solution/Activities/Decomposed_Mutation_Probabilities.txt
-    - {{ results_dir }}/SBS96/Suggested_Solution/COSMIC_SBS96_Decomposed_Solution/Signatures/COSMIC_SBS96_Signatures.txt
-    - {{ results_dir }}/SBS96/Suggested_Solution/COSMIC_SBS96_Decomposed_Solution/Signatures/SBS_96_plots_COSMIC_SBS96.pdf
-    - {{ results_dir }}/SBS96/Suggested_Solution/COSMIC_SBS96_Decomposed_Solution/De_Novo_map_to_COSMIC_SBS96.csv
-    - {{ results_dir }}/SBS96/Suggested_Solution/COSMIC_SBS96_Decomposed_Solution/SBS96_Decomposition_Plots.pdf
-    - {{ results_dir }}/DBS78/Suggested_Solution/COSMIC_DBS78_Decomposed_Solution/Activities/COSMIC_DBS78_Activities_refit.txt
-    - {{ results_dir }}/DBS78/Suggested_Solution/COSMIC_DBS78_Decomposed_Solution/Activities/COSMIC_DBS78_Activity_Plots_refit.pdf
-    - {{ results_dir }}/DBS78/Suggested_Solution/COSMIC_DBS78_Decomposed_Solution/Activities/COSMIC_DBS78_TMB_plot_refit.pdf
-    - {{ results_dir }}/DBS78/Suggested_Solution/COSMIC_DBS78_Decomposed_Solution/Activities/Decomposed_Mutation_Probabilities.txt
-    - {{ results_dir }}/DBS78/Suggested_Solution/COSMIC_DBS78_Decomposed_Solution/Signatures/COSMIC_DBS78_Signatures.txt
-    - {{ results_dir }}/DBS78/Suggested_Solution/COSMIC_DBS78_Decomposed_Solution/Signatures/DBS_78_plots_COSMIC_DBS78.pdf
-    - {{ results_dir }}/DBS78/Suggested_Solution/COSMIC_DBS78_Decomposed_Solution/De_Novo_map_to_COSMIC_DBS78.csv
-    - {{ results_dir }}/DBS78/Suggested_Solution/COSMIC_DBS78_Decomposed_Solution/DBS78_Decomposition_Plots.pdf
+    - {{ results_dir }}/SBS/Assignment_Solution/Activities/Assignment_Solution_Activities.txt
+    - {{ results_dir }}/SBS/Assignment_Solution/Activities/Assignment_Solution_Activity_Plots.pdf
+    - {{ results_dir }}/SBS/Assignment_Solution/Activities/Assignment_Solution_TMB_plot.pdf
+    - {{ results_dir }}/SBS/Assignment_Solution/Activities/Decomposed_MutationType_Probabilities.txt
+    - {{ results_dir }}/SBS/Assignment_Solution/Signatures/Assignment_Solution_Signatures.txt
+    - {{ results_dir }}/SBS/Assignment_Solution/Signatures/SBS_96_plots_Assignment_Solution.pdf
+    - {{ results_dir }}/SBS/Assignment_Solution/Solution_Stats/Assignment_Solution_Samples_Stats.txt
+    - {{ results_dir }}/SBS/Assignment_Solution/Solution_Stats/Assignment_Solution_Signature_Assignment_log.txt
+    - {{ results_dir }}/DBS/Assignment_SolutionActivities/Assignment_Solution_Activities.txt
+    - {{ results_dir }}/DBS/Assignment_SolutionActivities/Assignment_Solution_Activity_Plots.pdf
+    - {{ results_dir }}/DBS/Assignment_SolutionActivities/Assignment_Solution_TMB_plot.pdf
+    - {{ results_dir }}/DBS/Assignment_SolutionActivities/Decomposed_MutationType_Probabilities.txt
+    - {{ results_dir }}/DBS/Assignment_SolutionSignatures/Assignment_Solution_Signatures.txt
+    - {{ results_dir }}/DBS/Assignment_SolutionSignatures/DBS_78_plots_Assignment_Solution.pdf
+    - {{ results_dir }}/DBS/Assignment_SolutionSolution_Stats/Assignment_Solution_Samples_Stats.txt
+    - {{ results_dir }}/DBS/Assignment_SolutionSolution_Stats/Assignment_Solution_Signature_Assignment_log.txt
   cpus: 4
   mem: 8G
   walltime: "24:00:00"
@@ -51,7 +51,10 @@
 
     sigprofiler_assignment.py \
       --vcfpath {{ temp_dir }}/vcfs \
-      --output {{ temp_dir }} \
+      --output {{ results_dir }} \
+      {% if pair.gltype == 'exome' %}
+      --exome \
+      {% endif %}
       --project {{ pair.name }}
 
 {% endmacro %}
