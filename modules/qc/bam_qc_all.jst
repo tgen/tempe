@@ -577,11 +577,11 @@
     {% endif %}
 
   {% if bam_level is sameas true %}
-    {{ stats2json(sample.gltype, sample.name, task, alignment_summary_metrics, alignment_summary_metrics_json, "picard_alignment_summary_metrics") }}
+    {{ stats2json(sample.gltype, sample.name, task, alignment_summary_metrics, alignment_summary_metrics_json, "picard_alignment_summary_metrics", sample=sample) }}
     {% if not sample.gltype == 'singlecellrna' %}
-    {{ stats2json(sample.gltype, sample.name, task, insert_size_metrics, insert_size_metrics_json, "picard_insert_size_metrics") }}
+    {{ stats2json(sample.gltype, sample.name, task, insert_size_metrics, insert_size_metrics_json, "picard_insert_size_metrics", sample=sample) }}
     {% endif %}
-    {{ stats2json(sample.gltype, sample.name, task, gc_bias_metrics, gc_bias_metrics_json, "picard_gc_bias_summary_metrics") }}
+    {{ stats2json(sample.gltype, sample.name, task, gc_bias_metrics, gc_bias_metrics_json, "picard_gc_bias_summary_metrics", sample=sample) }}
   {% endif %}
 
 {% endif %}

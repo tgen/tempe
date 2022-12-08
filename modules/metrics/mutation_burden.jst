@@ -97,6 +97,10 @@
       --verbose
 
     {% set task %}{{ pair.tumor.rgsm }}_{{ aligner }}_{{ annotate_flag }}{% endset %}
+    {% if pair.tumor.aligners > 1 and aligner != 'bwa' %}
+    {{ stats2json(pair.gltype, pair.name, task, mutation_burden_output, mutation_burden_json, "tgen_mutation_burden", lims_upload=false) }}
+    {% else %}
     {{ stats2json(pair.gltype, pair.name, task, mutation_burden_output, mutation_burden_json, "tgen_mutation_burden") }}
+    {% endif %}
 
 {% endmacro %}
