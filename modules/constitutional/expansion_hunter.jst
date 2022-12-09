@@ -4,7 +4,7 @@
 {% set temp_dir %}temp/{{ sample.gltype }}/constitutional_variant_calls/expansion_hunter/{{ sample.name }}_{{ aligner }}{% endset %}
 {% set results_dir %}{{ sample.gltype }}/constitutional_variant_calls/expansion_hunter/{{ sample.name }}_{{ aligner }}{% endset %}
 
-- name: expansion_hunter_{{ aligner }}_{{ sample.name }}_{{ aligner }}
+- name: expansion_hunter_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype }}, repeats, expansion, SRT, {{ sample.name }}]
   input: 
     - {{ bam }}
