@@ -44,7 +44,7 @@
       {{ file_type }}
 
     {% if lims_upload is sameas true %}
-      {{ stats2lims(tag1, tag2, task, output_file, file_type) }}
+      {{- stats2lims(tag1, tag2, task, output_file, file_type) }}
     {% endif %}
 
 {% endmacro %}
