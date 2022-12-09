@@ -224,7 +224,7 @@
       -o "{{ star_bam_sorted }}"
 
 
-{% set task %}markduplicates_star_gatk_{{ sample.name }}{% endset %}
+{% set task %}{{ sample.name }}_star{% endset %}
 {% set rna_md_metrics %}{{ results_dir }}/stats/{{ sample.name }}.star.bam.md_metrics{% endset %}
 {% set rna_md_metrics_json %}{{ rna_md_metrics }}.json{% endset %}
 - name: markduplicates_star_gatk_{{ sample.name }}

@@ -158,7 +158,7 @@
     mv "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA/{{ sample.name }}.{{ aligner }}.ichorCNA_tpdf.pdf" "{{ results_dir }}/"
 
     {# Remove the remaining files #}
-    {% set task %}ichor_cna_{{ aligner }}_{{ sample.name }}{% endset %}
+    {% set task %}{{ sample.name }}_{{ aligner }}{% endset %}
     {% set directory %}{{ temp_dir }}{% endset %}
     {{- remove_files(directory,none,task) }}
     {{- stats2lims(sample.gltype, sample.name, task, ichor_json, "ichor_cna") }}
