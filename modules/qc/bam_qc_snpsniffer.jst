@@ -185,7 +185,7 @@
   {% set output %}qc/snpSniffer/{{ project }}_SnpSniffer_Mismatch_Summary.tsv{% endset %}
   {% set json %}qc/snpSniffer/{{ project }}_SnpSniffer_Mismatch_Summary.json{% endset %}
 
-  {{ stats2json("all_libraries", project, project, output, json, "snpsniffer_summary") }}
+  {{- stats2json("all_libraries", project, project, output, json, "snpsniffer_summary") }}
 
 {% endif %}
 

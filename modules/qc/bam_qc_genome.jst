@@ -118,9 +118,9 @@
     {% endif %}
 
   {% if libraryCount == 1 %}
-    {{ stats2json(sample.gltype, sample.name, task, sample_lb_output, json, "picard_wgs_wnzc_metrics", sample=sample, sample_name=sample.name, library_name=sample_lb) }}
+    {{- stats2json(sample.gltype, sample.name, task, sample_lb_output, json, "picard_wgs_wnzc_metrics", sample=sample, sample_name=sample.name, library_name=sample_lb) }}
   {% elif bam_level is sameas false %}
-    {{ stats2json(sample.gltype, sample.name, task, output, json, "picard_wgs_wnzc_metrics", sample=sample, sample_name=sample.name, library_name=sample_lb) }}
+    {{- stats2json(sample.gltype, sample.name, task, output, json, "picard_wgs_wnzc_metrics", sample=sample, sample_name=sample.name, library_name=sample_lb) }}
   {% endif %}
 
 {% endif %}
