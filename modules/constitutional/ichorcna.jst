@@ -22,7 +22,7 @@
 {% endif %}
 {% do control.update({'name': name}) %}
 
-- name: hmmcopy_make_wig_{{ aligner }}_{{ sample.name }}
+- name: hmmcopy_make_wig_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype}}, constitutional, cna_caller, ichor, {{ sample.name }}]
   input: 
     - {{ bam }}
@@ -50,7 +50,7 @@
       > "{{ wig }}"
 
 
-- name: ichor_cna_{{ aligner }}_{{ sample.name }}
+- name: ichor_cna_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype}}, constitutional, cna_caller, ichor, {{ sample.name }}]
   {% if control.ichorPon is defined %}
   reset: prepare_tumor_only_{{ control.name }}
@@ -158,9 +158,11 @@
     mv "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA/{{ sample.name }}.{{ aligner }}.ichorCNA_tpdf.pdf" "{{ results_dir }}/"
 
     {# Remove the remaining files #}
-    {% set task %}{{ sample.name }}_{{ aligner }}{% endset %}
+    {% set task %}ichor_cna_{{ sample.name }}_{{ aligner }}{% endset %}
     {% set directory %}{{ temp_dir }}{% endset %}
     {{- remove_files(directory,none,task) }}
+
+    {% set task %}{{ sample.name }}_{{ aligner }}{% endset %}
     {{- stats2lims(sample.gltype, sample.name, task, ichor_json, "ichor_cna") }}
 
 {% endmacro %}
