@@ -125,7 +125,6 @@
     - {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.abridged.coding_effect.tsv
     - {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_evidence_reads_1.fq
     - {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_evidence_reads_2.fq
-    - {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_candidates.preliminary.wSpliceInfo.wAnnot.annot_filter.pass
     {% if tasks.RNA_transcriptome_fusion_caller_Keep_STAR_Fusion_BAM|default(false) %}
     - {{ results_dir }}/{{ sample.name }}_starfusion.bam
     - {{ results_dir }}/{{ sample.name }}_starfusion.bam.bai
@@ -156,13 +155,13 @@
       --outTmpDir "{{ temp_dir }}" \
       --tmpdir "{{ temp_dir }}"
 
-    mv {{ temp_dir }}/star-fusion.fusion_evidence_reads_1.fq {{ results_dir }}/{{ sample.name }}_starfusion_evidence_reads_1.fq
-    mv {{ temp_dir }}/star-fusion.fusion_evidence_reads_2.fq {{ results_dir }}/{{ sample.name }}_starfusion_evidence_reads_2.fq
-    mv {{ temp_dir }}/star-fusion.fusion_predictions.abridged.coding_effect.tsv {{ results_dir }}/{{ sample.name }}_starfusion_predictions.abridged.coding_effect.tsv
-    mv {{ temp_dir }}/star-fusion.fusion_predictions.abridged.tsv {{ results_dir }}/{{ sample.name }}_starfusion_predictions.abridged.tsv
-    mv {{ temp_dir }}/star-fusion.fusion_predictions.tsv {{ results_dir }}/{{ sample.name }}_starfusion_predictions.tsv
+    mv {{ temp_dir }}/star-fusion.fusion_evidence_reads_1.fq {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_evidence_reads_1.fq
+    mv {{ temp_dir }}/star-fusion.fusion_evidence_reads_2.fq {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_evidence_reads_2.fq
+    mv {{ temp_dir }}/star-fusion.fusion_predictions.abridged.coding_effect.tsv {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.abridged.coding_effect.tsv
+    mv {{ temp_dir }}/star-fusion.fusion_predictions.abridged.tsv {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.abridged.tsv
+    mv {{ temp_dir }}/star-fusion.fusion_predictions.tsv {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.tsv
 
-    NUM_FUSIONS=$(grep -w "#FusionName" -c -v {{ temp_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.abridged.coding_effect.tsv || :)
+    NUM_FUSIONS=$(grep -w "#FusionName" -c -v {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.abridged.coding_effect.tsv || :)
     if (( NUM_FUSIONS == 0 )); then
         echo "Zero fusions found, no FusionInspector results will exist, skipping moves"
     else

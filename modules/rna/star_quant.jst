@@ -52,7 +52,7 @@
     - {{ star_bam_unsort }}
     - {{ star_finalcountsdir }}/{{ sample.name }}.ReadsPerGene.out.tab
     - {{ star_finalcountsdir }}/{{ sample.name }}.star.junctions
-    - {{ star_finalcountsdir }}/{{ sample.name }}_star.Log.final.out
+    - {{ results_dir }}/stats/{{ sample.name }}_star.Log.final.out
     {% if tasks.RNA_transcriptome_quantify_expression_salmon_bam or tasks.RNA_transcriptome_quantify_expression_RSEM %}
     - {{ star_bam_transcript }}
     {% elif tasks.RNA_transcriptome_quantify_expression_RSEM is not defined %}
