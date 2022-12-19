@@ -8,7 +8,7 @@
 {% set sample_bam %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
 {% set cnvSnps %}{{ normal_temp }}/{{ normal.gatkCnvSnps | basename }}{% endset %}
 {% set temp_dir %}temp/{{ sample.gltype }}/constitutional_copy_number/gatk/{{ sample.name }}_{{ aligner }}{% endset %}
-{% set results_dir %}{{ sample.gltype }}/constitutional_copy_number/gatk/{{ sample.name }}{% endset %}
+{% set results_dir %}{{ sample.gltype }}/constitutional_copy_number/gatk/{{ sample.name }}_{{ aligner }}{% endset %}
 
 {% if wesAssayToPair is defined and normal.gatkExomeCnvSnps is defined %}
   {% set exomeCnvSnps %}{{ normal_temp }}/{{ normal.gatkExomeCnvSnps | basename }}{% endset %}
@@ -66,9 +66,6 @@
   cmd: |
     set -eu
     set -o pipefail
-
-    {# Load modules #}
-    module load {{ constants.tools.gatk.module }}
 
     {# Make working and temp directories #}
     mkdir -p "{{ temp_dir }}/temp"
@@ -144,6 +141,7 @@
       --input {{ results_dir }}/{{ sample.name }}.{{ aligner }}.cr.seg \
       --output {{ results_dir }}/{{ sample.name }}.{{ aligner }}.called.seg
 
+
 {# Step 2 #}
 - name: constitutional_gatk_call_cnv_step2_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype }}, constitutional, cna_caller, gatk, {{ sample.name }}]
@@ -190,6 +188,8 @@
   cpus: 1
   mem: 16G
   walltime: "24:00:00"
+  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
+  queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
   digest: {{ constants.tools.gatk.digest }}
   cmd: |
@@ -197,10 +197,6 @@
     set -o pipefail
 
     rm -r {{ results_dir }}/plots || true
-
-    {# Load modules #}
-    module load {{ constants.tools.R.module }}
-    module load {{ constants.tools.python_3_7_2.module }}
 
     {# Make working and temp directories #}
     mkdir -p "{{ temp_dir }}"

@@ -5,7 +5,7 @@
 {% macro haplotypecallergvcf(sample, aligner='bwa', taskPrefix='Genome') %}
 {% set bam %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
 {% set temp_dir %}temp/{{ sample.gltype }}/constitutional_variant_calls/haplotypecaller/{{ sample.name }}_{{ aligner }}{% endset %}
-{% set results_dir %}{{ sample.gltype }}/constitutional_variant_calls/haplotypecaller/{{ sample.name }}{% endset %}
+{% set results_dir %}{{ sample.gltype }}/constitutional_variant_calls/haplotypecaller/{{ sample.name }}_{{ aligner }}{% endset %}
 {% set gvcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.hc.g.vcf.gz{% endset %}
 
 {% for batch in constants.tempe.calling_intervals %}
@@ -78,7 +78,7 @@
     {% elif sample.gltype in 'genome' %}
         {% set taskPrefix = 'Genome' %}
     {% endif %}
-    {%- if tasks[taskPrefix+"_constitutional_genotype_hc_gvcf_gatk_GenotypeGVCFs"]|default(true) %}
+    {%- if tasks[taskPrefix+"_constitutional_genotype_hc_gvcf_gatk_GenotypeGVCFs"]|default(false) %}
     {% set before %}genotypegvcf_{{ sample.name }}_{{ aligner }}_.*{% endset %}
     {{- remove_files(directory,before,task) }}
     {% else %}

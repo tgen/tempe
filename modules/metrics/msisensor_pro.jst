@@ -1,13 +1,13 @@
 {% macro msisensor_pro(pair, normal_bam, tumor_bam, aligner) %}
 
-{% set temp_dir %}temp/{{ pair.gltype }}/metrics/msisensor_pro/{{ pair.name }}{% endset %}
-{% set results_dir %}{{ pair.gltype }}/metrics/msisensor_pro/{{ pair.name }}{% endset %}
+{% set temp_dir %}temp/{{ pair.gltype }}/metrics/msisensor_pro/{{ pair.name }}_{{ aligner }}{% endset %}
+{% set results_dir %}{{ pair.gltype }}/metrics/msisensor_pro/{{ pair.name }}_{{ aligner }}{% endset %}
 
 {% set tumor_nodup_bam %}{{ temp_dir }}/{{ pair.tumor.name }}.{{ aligner }}.bam{% endset %}
 {% set normal_nodup_bam %}{{ temp_dir }}/{{ pair.normal.name }}.{{ aligner }}.bam{% endset %}
 
 - name: msisensor_pro_prep_{{ pair.name }}_{{ aligner }}
-  tags: [msisensor, {{ pair.gltype }}]
+  tags: [{{ pair.gltype }}, metrics, msisensor, {{ pair.name }} ]
   input:
     - {{ normal_bam }}
     - {{ tumor_bam }}
@@ -46,7 +46,7 @@
     samtools index {{ normal_nodup_bam }}
 
 - name: msisensor_pro_{{ pair.name }}_{{ aligner }}
-  tags: [msisensor, {{ pair.gltype }}]
+  tags: [{{ pair.gltype }}, metrics, msisensor, {{ pair.name }} ]
   reset: predecessors
   input:
     - {{ normal_nodup_bam }}

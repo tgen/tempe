@@ -6,7 +6,7 @@
 {% set normal_bam %}{{ pair.normal.gltype }}/alignment/{{ aligner }}/{{ pair.normal.name }}/{{ pair.normal.name }}.{{ aligner }}.bam{% endset %}
 {% set tumor_bam %}{{ pair.tumor.gltype }}/alignment/{{ aligner }}/{{ pair.tumor.name }}/{{ pair.tumor.name }}.{{ aligner }}.bam{% endset %}
 {% set temp_dir %}temp/{{ pair.gltype }}/somatic_variant_calls/octopus/{{ pair.name }}_{{ aligner }}{% endset %}
-{% set results_dir %}{{ pair.gltype }}/somatic_variant_calls/octopus/{{ pair.name }}{% endset %}
+{% set results_dir %}{{ pair.gltype }}/somatic_variant_calls/octopus/{{ pair.name }}_{{ aligner }}{% endset %}
 {% set all_vcf %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.octopus.all.vcf.gz{% endset %}
 {% set pass_vcf %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.octopus.pass.vcf.gz{% endset %}
 
@@ -17,7 +17,7 @@
     - {{ normal_bam }}
     - {{ tumor_bam }}
     - {{ constants.tempe.reference_fasta }}
-    - {{ constants.tempe.black_list }}
+    - {{ constants.tempe.denylist }}
   output:
     - {{ temp_dir }}/{{ loop.index }}.realigned.bam
     - {{ temp_dir }}/{{ loop.index }}.octopus.vcf
@@ -53,7 +53,7 @@
       --working-directory {{ temp_dir }} \
       --reference "{{ constants.tempe.reference_fasta }}" \
       --regions-file "{{ loop.index }}.bed" \
-      --skip-regions-file {{ constants.tempe.black_list }} \
+      --skip-regions-file {{ constants.tempe.denylist }} \
       --reads "{{ normal_bam }}" "{{ tumor_bam }}" \
       --normal-sample "{{ pair.normal.rgsm }}" \
       --temp-directory-prefix "{{ loop.index }}" \

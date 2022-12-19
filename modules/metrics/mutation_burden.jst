@@ -2,8 +2,8 @@
 
 {% macro mutation_burden(pair, normal_bam, tumor_bam, input_vcf, variant_caller, aligner, annotate_flag) %}
 
-{% set temp_dir %}temp/{{ pair.gltype }}/metrics/mutation_burden/{{ pair.name }}{% endset %}
-{% set results_dir %}{{ pair.gltype }}/metrics/mutation_burden/{{ pair.name }}{% endset %}
+{% set temp_dir %}temp/{{ pair.gltype }}/metrics/mutation_burden/{{ pair.name }}_{{ aligner }}{% endset %}
+{% set results_dir %}{{ pair.gltype }}/metrics/mutation_burden/{{ pair.name }}_{{ aligner }}{% endset %}
 {% set mutation_burden_temp %}{{ temp_dir }}/mutation_burden_{{ annotate_flag }}{% endset %}
 {% set mutation_burden_output %}{{ results_dir }}/{{ pair.name }}.{{ annotate_flag }}.mutation_burden.txt{% endset %}
 {% set mutation_burden_json %}{{ results_dir }}/{{ pair.name }}.{{ annotate_flag }}.mutation_burden.json{% endset %}
@@ -23,6 +23,7 @@
 {% endif %}
 
 - name: tgen_mutation_burden_{{ variant_caller }}_{{ pair.name }}_{{ aligner }}_{{ annotate_flag }}
+  tags: [{{ pair.gltype }}, metrics, mutation_burden, {{ pair.name }} ]
   input:
     - {{ input_vcf }}
     - {{ normal_bam }}
@@ -95,10 +96,11 @@
       --pipeline \
       --verbose
 
-    {# Adding two new lines to end of output file #}
-    printf "\n\n" >> ${PROJECT_ROOT}/{{ mutation_burden_output }}
-
-    {% set task %}{{ pair.tumor.rgsm }}_{{ aligner }}_{{ annotate_flag }}{% endset %}
-    {{ stats2json(pair.gltype, pair.name, task, mutation_burden_output, mutation_burden_json, "tgen_mutation_burden") }}
+    {% set task %}{{ pair.name }}_{{ aligner }}_{{ annotate_flag }}{% endset %}
+    {% if pair.tumor.aligners | length > 1 and aligner != 'bwa' %}
+    {{- stats2json(pair.gltype, pair.name, task, mutation_burden_output, mutation_burden_json, "tgen_mutation_burden", lims_upload=false) }}
+    {% else %}
+    {{- stats2json(pair.gltype, pair.name, task, mutation_burden_output, mutation_burden_json, "tgen_mutation_burden") }}
+    {% endif %}
 
 {% endmacro %}

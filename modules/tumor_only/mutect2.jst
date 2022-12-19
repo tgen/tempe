@@ -1,17 +1,21 @@
 {% from 'utilities/remove_files.jst' import remove_files with context %}
 {% from 'utilities/vcf_stats.jst' import vcf_stats with context %}
 
-{% macro mutect2_tumor_only(tumor, aligner='bwa') %}
-{% set tumor_bam %}{{ tumor.gltype }}/alignment/{{ aligner }}/{{ tumor.name }}/{{ tumor.name }}.{{ aligner }}.bam{% endset %}
-{% set temp_dir %}temp/{{ tumor.gltype }}/tumor_only_variant_calls/mutect2/{{ tumor.name }}_{{ aligner }}{% endset %}
-{% set results_dir %}{{ tumor.gltype }}/tumor_only_variant_calls/mutect2/{{ tumor.name }}{% endset %}
-{% set all_vcf %}{{ results_dir }}/{{ tumor.name }}.{{ aligner }}.mutect2.all.vcf.gz{% endset %}
-{% set pass_vcf %}{{ results_dir }}/{{ tumor.name }}.{{ aligner }}.mutect2.pass.vcf.gz{% endset %}
+{% macro mutect2_tumor_only(pair, aligner='bwa') %}
+{% do pair.callers.append('mutect2') %}
+{% set tumor_only_temp %}temp/tumor_only/control_data_files/{{ pair.normal.assayCode }}{% endset %}
+{% set normal_bam %}{{ tumor_only_temp }}/{{ pair.normal.pathToBam | basename }}{% endset %}
+{% set tumor_bam %}{{ pair.tumor.gltype }}/alignment/{{ aligner }}/{{ pair.tumor.name }}/{{ pair.tumor.name }}.{{ aligner }}.bam{% endset %}
+{% set temp_dir %}temp/{{ pair.gltype }}/tumor_only_variant_calls/mutect2/{{ pair.name }}_{{ aligner }}{% endset %}
+{% set results_dir %}{{ pair.gltype }}/tumor_only_variant_calls/mutect2/{{ pair.name }}_{{ aligner }}{% endset %}
+{% set all_vcf %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.mutect2.all.vcf.gz{% endset %}
+{% set pass_vcf %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.mutect2.pass.vcf.gz{% endset %}
 
 {% for batch in constants.tempe.calling_intervals %}
-- name: tumor_only_mutect2_{{ tumor.name }}_{{ aligner }}_{{ loop.index }}
-  tags: [{{ tumor.gltype }}, tumor_only, snp_indel_caller, gatk_mutect2, {{ tumor.name }}]
+- name: tumor_only_mutect2_{{ pair.name }}_{{ aligner }}_{{ loop.index }}
+  tags: [{{ pair.gltype }}, tumor_only, snp_indel_caller, gatk_mutect2, {{ pair.name }}]
   input:
+    - {{ normal_bam }}
     - {{ tumor_bam }}
     - {{ constants.tempe.reference_fasta }}
     - {{ constants.tempe.gnomad_genome_mutect_germlinereference }}
@@ -45,14 +49,16 @@
       might want to enable "--bam-output "{{ temp_dir }}/{{ loop.index }}.bamout.bam" \"
       but it makes a very big bam file
     #}
-
+    
     gatk Mutect2 \
       --java-options "-Xmx14G" \
       --tmp-dir {{ temp_dir }}/temp_mutect2_{{ loop.index }}/ \
       --reference {{ constants.tempe.reference_fasta }} \
       --germline-resource {{ constants.tempe.gnomad_genome_mutect_germlinereference }} \
+      --input "{{ normal_bam }}" \
+      --normal-sample "{{ pair.normal.rgsm }}" \
       --input "{{ tumor_bam }}" \
-      --tumor-sample "{{ tumor.rgsm }}" \
+      --tumor-sample "{{ pair.tumor.rgsm }}" \
       {% for interval in batch %}
       -L "{{ interval.contig }}:{{ interval.start }}-{{ interval.stop }}" \
       {% endfor %}
@@ -63,8 +69,8 @@
 {% endfor %}
 
 {% for batch in constants.tempe.calling_intervals %}
-- name: tumor_only_mutect2_GetPileupSummaries_{{ tumor.name }}_{{ aligner }}_{{ loop.index }}
-  tags: [{{ tumor.gltype }}, tumor_only, snp_indel_caller, gatk_mutect2, {{ tumor.name }}]
+- name: tumor_only_mutect2_GetPileupSummaries_{{ pair.name }}_{{ aligner }}_{{ loop.index }}
+  tags: [{{ pair.gltype }}, tumor_only, snp_indel_caller, gatk_mutect2, {{ pair.name }}]
   input:
     - {{ tumor_bam }}
     - {{ constants.tempe.reference_fasta }}
@@ -81,6 +87,7 @@
     set -o pipefail
 
     mkdir -p "{{ temp_dir }}/temp_GetPileupSummaries_tumor_{{ loop.index }}"
+    mkdir -p "{{ temp_dir }}/temp_GetPileupSummaries_normal_{{ loop.index }}"
 
     {# GetPileupSummaries this can happen at the same time as the variant calling, no need to wait #}
     {# Tumor pileups #}
@@ -95,18 +102,30 @@
       --variant {{ constants.tempe.gnomad_genome_mutect_contamination }} \
       --output {{ temp_dir }}/{{ loop.index }}.tumor-pileups.table
 
+    {# Normal pileups #}
+    gatk --java-options "-Xmx7g" GetPileupSummaries \
+      --tmp-dir {{ temp_dir }}/temp_GetPileupSummaries_normal_{{ loop.index }}/ \
+      -reference {{ constants.tempe.reference_fasta }} \
+      --input "{{ normal_bam }}" \
+      --interval-set-rule UNION \
+      {% for interval in batch %}
+      --intervals "{{ interval.contig }}:{{ interval.start }}-{{ interval.stop }}" \
+      {% endfor %}
+      --variant {{ constants.tempe.gnomad_genome_mutect_contamination }} \
+      --output {{ temp_dir }}/{{ loop.index }}.normal-pileups.table
+
 {% endfor %}
 
-- name: tumor_only_mutect2_merge_chunks_{{ tumor.name }}_{{ aligner }}
-  tags: [{{ tumor.gltype }}, tumor_only, snp_indel_caller, gatk_mutect2, {{ tumor.name }}]
+- name: tumor_only_mutect2_merge_chunks_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, tumor_only, snp_indel_caller, gatk_mutect2, {{ pair.name }}]
   reset: predecessors
   input:
     {% for b in constants.tempe.calling_intervals %}
     - {{ temp_dir }}/{{ loop.index }}.mutect2.vcf.gz
     {% endfor %}
   output:
-    - {{ temp_dir }}/{{ tumor.name }}_{{ aligner }}.mutect2.raw.vcf.gz
-    - {{ temp_dir }}/{{ tumor.name }}_{{ aligner }}.mutect2.raw.vcf.gz.tbi
+    - {{ temp_dir }}/{{ pair.name }}_{{ aligner }}.mutect2.raw.vcf.gz
+    - {{ temp_dir }}/{{ pair.name }}_{{ aligner }}.mutect2.raw.vcf.gz.tbi
   cpus: 1
   mem: 4G
   walltime: "24:00:00"
@@ -119,7 +138,7 @@
 
     bcftools concat \
       --output-type z \
-      --output "{{ temp_dir }}/{{ tumor.name }}_{{ aligner }}.mutect2.raw.vcf.gz" \
+      --output "{{ temp_dir }}/{{ pair.name }}_{{ aligner }}.mutect2.raw.vcf.gz" \
       {% for b in constants.tempe.calling_intervals %}
       {% if not loop.last %}
       "{{ temp_dir }}/{{ loop.index }}.mutect2.vcf.gz" \
@@ -128,10 +147,10 @@
       {% endif %}
       {% endfor %}
 
-    bcftools index --tbi --force "{{ temp_dir }}/{{ tumor.name }}_{{ aligner }}.mutect2.raw.vcf.gz"
+    bcftools index --tbi --force "{{ temp_dir }}/{{ pair.name }}_{{ aligner }}.mutect2.raw.vcf.gz"
 
-- name: tumor_only_mutect2_merge_stats_{{ tumor.name }}_{{ aligner }}
-  tags: [{{ tumor.gltype }},l tumor_only, snp_indel_caller, gatk_mutect2, {{ tumor.name }}]
+- name: tumor_only_mutect2_merge_stats_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }},l tumor_only, snp_indel_caller, gatk_mutect2, {{ pair.name }}]
   reset: predecessors
   input:
     {% for b in constants.tempe.calling_intervals %}
@@ -157,8 +176,8 @@
       {% endfor %}
       -O "{{ temp_dir }}/merged.stats"
 
-- name: tumor_only_mutect2_learn_readorientationmodel_{{ tumor.name }}_{{ aligner }}
-  tags: [{{ tumor.gltype }}, tumor_only, snp_indel_caller, gatk_mutect2, {{ tumor.name }}]
+- name: tumor_only_mutect2_learn_readorientationmodel_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, tumor_only, snp_indel_caller, gatk_mutect2, {{ pair.name }}]
   reset: predecessors
   input:
     {% for b in constants.tempe.calling_intervals %}
@@ -184,8 +203,8 @@
       {% endfor %}
       -O {{ temp_dir }}/artifact-priors.tar.gz
 
-- name: tumor_only_mutect2_merge_pileup_summaries_{{ tumor.name }}_{{ aligner }}
-  tags: [{{ tumor.gltype }}, tumor_only, snp_indel_caller, gatk_mutect2, {{ tumor.name }}]
+- name: tumor_only_mutect2_merge_pileup_summaries_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, tumor_only, snp_indel_caller, gatk_mutect2, {{ pair.name }}]
   reset: predecessors
   input:
     {% for b in constants.tempe.calling_intervals %}
@@ -227,8 +246,8 @@
       {% endfor %}
       -O {{ temp_dir }}/merged.normal-pileups.table.tsv
 
-- name: tumor_only_mutect2_calculate_contamination_{{ tumor.name }}_{{ aligner }}
-  tags: [{{ tumor.gltype }}, tumor_only, snp_indel_caller, gatk_mutect2, {{ tumor.name }}]
+- name: tumor_only_mutect2_calculate_contamination_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, tumor_only, snp_indel_caller, gatk_mutect2, {{ pair.name }}]
   reset: predecessors
   input:
     - {{ temp_dir }}/merged.tumor-pileups.table.tsv
@@ -255,11 +274,11 @@
       -O "{{ temp_dir }}/contamination.table" \
       --tumor-segmentation "{{ temp_dir }}/segments.table"
 
-- name: tumor_only_mutect2_filter_calls_{{ tumor.name }}_{{ aligner }}
-  tags: [{{ tumor.gltype }}, tumor_only, snp_indel_caller, gatk_mutect2, {{ tumor.name }}]
+- name: tumor_only_mutect2_filter_calls_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, tumor_only, snp_indel_caller, gatk_mutect2, {{ pair.name }}]
   reset: predecessors
   input:
-    - {{ temp_dir }}/{{ tumor.name }}_{{ aligner }}.mutect2.raw.vcf.gz
+    - {{ temp_dir }}/{{ pair.name }}_{{ aligner }}.mutect2.raw.vcf.gz
     - {{ temp_dir }}/merged.stats
     - {{ temp_dir }}/artifact-priors.tar.gz
     - {{ temp_dir }}/contamination.table
@@ -286,7 +305,7 @@
       --java-options "-Xmx7G" \
       --reference {{ constants.tempe.reference_fasta }} \
       --max-alt-allele-count 2 \
-      --variant "{{ temp_dir }}/{{ tumor.name }}_{{ aligner }}.mutect2.raw.vcf.gz" \
+      --variant "{{ temp_dir }}/{{ pair.name }}_{{ aligner }}.mutect2.raw.vcf.gz" \
       --stats "{{ temp_dir }}/merged.stats" \
       --contamination-table "{{ temp_dir }}/contamination.table" \
       --tumor-segmentation "{{ temp_dir }}/segments.table" \
@@ -294,13 +313,13 @@
       --filtering-stats "{{ temp_dir }}/filtering.stats" \
       --output "{{ all_vcf }}"
 
-- name: tumor_only_mutect2_filter_variants_{{ tumor.name }}_{{ aligner }}
-  tags: [{{ tumor.gltype }}, tumor_only, snp_indel_caller, gatk_mutect2, {{ tumor.name }}]
+- name: tumor_only_mutect2_filter_variants_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, tumor_only, snp_indel_caller, gatk_mutect2, {{ pair.name }}]
   input:
     - {{ all_vcf }}
     - {{ all_vcf }}.tbi
-    {% if tumor.gltype == 'exome' %}
-    - {{ tumor.capture_kit.extended_bed }}
+    {% if pair.tumor.gltype == 'exome' %}
+    - {{ pair.tumor.capture_kit.extended_bed }}
     {% endif %}
   output:
     - {{ pass_vcf }}
@@ -317,15 +336,15 @@
     bcftools filter \
       --output-type z \
       --include 'FILTER == "PASS"' \
-      {% if tumor.gltype == 'exome' %}
-      --targets-file "{{ tumor.capture_kit.extended_bed }}" \
+      {% if pair.tumor.gltype == 'exome' %}
+      --targets-file "{{ pair.tumor.capture_kit.extended_bed }}" \
       {% endif %}
       "{{ all_vcf }}" \
       > "{{ pass_vcf }}"
     
     bcftools index --tbi --force "{{ pass_vcf }}"
 
-    {% set task %}tumor_only_mutect2_filter_variants_{{ tumor.name }}_{{ aligner }}{% endset %}
+    {% set task %}tumor_only_mutect2_filter_variants_{{ pair.name }}_{{ aligner }}{% endset %}
     {% set directory %}{{ temp_dir }}{% endset %}
     {{- remove_files(directory,none,task) }}
     {{- vcf_stats(pass_vcf, results_dir) }}

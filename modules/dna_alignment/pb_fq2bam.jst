@@ -17,7 +17,7 @@
 {% set md_metrics_json %}{{ md_metrics }}.json{% endset %}
 
 - name: fq2bam_{{ sample.name }}_{{ aligner }}
-  tags: [{{ sample.gltype }}, alignment, dna_alignment, bwa, {{ sample.name }}]
+  tags: [{{ sample.gltype }}, dna_alignment, fq2bam, {{ sample.name }}]
   reset: predecessors
   input:
   {% for rgid, rg in sample.read_groups.items() %}
@@ -27,10 +27,15 @@
     - temp/fastqs/{{ r2fastq.basename }}
   {% endfor %}
     - {{ constants.tempe.bwa_index }}
+    {% if tasks[sample.gltype|capitalize+"_alignment_base_recalibration_gatk"]|default(false) %}
+    {% for vcf in constants.tempe.gatk_known_sites %}
+    - {{ vcf }}
+    {% endfor %}
+    {% endif %}
   output:
     - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam
     - {{ md_metrics }}
-    {% if tasks.Genome_alignment_base_recalibration_gatk | default(false) or tasks.Exome_alignment_base_recalibration_gatk | default(false) %}
+    {% if tasks[sample.gltype|capitalize+"_alignment_base_recalibration_gatk"]|default(false) %}
     - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.recal_data.table
     {% endif %}
   walltime: "24:00:00"
@@ -78,7 +83,7 @@
       {% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
       --in-fq "temp/fastqs/{{ r1fastq.basename }}" "temp/fastqs/{{ r2fastq.basename }}" "{{ read_group_line(rg, format='bwa') }}" \
     {% endfor %}
-    {% if tasks.Genome_alignment_base_recalibration_gatk | default(false) or tasks.Exome_alignment_base_recalibration_gatk | default(false) %}
+    {% if tasks[sample.gltype|capitalize+"_alignment_base_recalibration_gatk"]|default(false) %}
     --out-recal-file {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.recal_data.table \
     {% for vcf in constants.tempe.gatk_known_sites %}
     --knownSites "{{ vcf }}" \
@@ -101,13 +106,13 @@
     echo >> {{ md_metrics }}
 
 
-{% set task %}fq2bam_{{ sample.name }}_{{ aligner }}{% endset %}
-{{- stats2json(sample.gltype, sample.name, task, md_metrics, md_metrics_json, "picard_mark_duplicates_metrics", sample_name=sample.name) }}
+{% set task %}{{ sample.name }}_{{ aligner }}{% endset %}
+{{- stats2json(sample.gltype, sample.name, task, md_metrics, md_metrics_json, "picard_mark_duplicates_metrics", sample=sample, sample_name=sample.name) }}
 
-{% if tasks.Genome_alignment_base_recalibration_gatk | default(false) or tasks.Exome_alignment_base_recalibration_gatk | default(false) %}
+{% if tasks[sample.gltype|capitalize+"_alignment_base_recalibration_gatk"]|default(false) %}
 
 - name: pbrun_applybqsr_{{ sample.name }}_{{ aligner }}
-  tags: [{{ sample.gltype }}, alignment, dna_alignment, bwa, {{ sample.name }}]
+  tags: [{{ sample.gltype }}, dna_alignment, fq2bam, {{ sample.name }}]
   reset: predecessors
   input:
     - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam
@@ -118,12 +123,15 @@
     - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.bam.bai
   walltime: "24:00:00"
   queue_preset: "PARABRICKS"
+  runner_args: ['--env', 'CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES/,/_}']
   runner_preset: "PARABRICKS"
   container: {{ constants.tools.parabricks.container }}
   digest: {{ constants.tools.parabricks.digest }}
   cmd: |
     set -eu
     set -o pipefail
+    CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES/_/,}
+    gpus=${CUDA_VISIBLE_DEVICES/,/}
 
     {# Enables some wider container compatibility #}
     if ! command -v pbrun &> /dev/null
@@ -134,6 +142,7 @@
     fi
 
     $pbcmd applybqsr \
+      --num-gpus {{ '${#gpus}' }} \
       --ref "{{ constants.tempe.bwa_index }}" \
       --in-bam {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam \
       --in-recal-file {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.recal_data.table  \

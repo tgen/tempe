@@ -52,9 +52,8 @@
 {% from 'modules/somatic/main.jst' import somatic_variant_calling with context %}
 {% from 'modules/rna/main.jst' import rna_quant with context %}
 {% from 'modules/rna/main.jst' import rna_fusion_detection with context %}
-{# {% from 'modules/single_cell/main.jst' import single_cell_rna with context %}
-{% from 'modules/CHIP/main.jst' import chip_workflow with context %}
-{% from 'modules/tumor_only/main.jst' import tumor_only_variant_calling with context %} #}
+{# {% from 'modules/single_cell/main.jst' import single_cell_rna with context %} #}
+{% from 'modules/tumor_only/main.jst' import tumor_only_variant_calling with context %}
 
 {% set samples = {} %}
 {% set fastq_validation = [] %}
@@ -76,6 +75,10 @@
 
     {% if 'subGroup' not in file %}
         {% do file.update({'subGroup': 'constitutional'}) %}
+    {% endif %}
+
+    {% if 'umiType' not in file %}
+        {% do file.update({'umiType': ''}) %}
     {% endif %}
 
     {% if name not in samples %}
@@ -117,7 +120,8 @@
     {% endif %}
 
     {% if sample.gltype in 'rna' %}
-        {% if tasks.RNA_alignment_rna_alignment_STAR|default(false) %}
+        {# default to adding star as aligner until we have more than one aligner #}
+        {% if tasks.RNA_alignment_rna_alignment_STAR|default(true) %}
             {% do sample.aligners.append('star') %}
         {% endif %}
     {% endif %}
@@ -182,8 +186,5 @@
 {{- rna_fusion_detection(samples) }}
 {#
 {{- single_cell_rna(dataFiles) }}
-
-{{- chip_workflow(samples) }}
-
-{{- tumor_only_variant_calling(samples) }}
 #}
+{{- tumor_only_variant_calling(samples) }}

@@ -1,17 +1,17 @@
 {% from 'utilities/variant_filtering.jst' import filter_variants with context %}
 
-{% macro tucon(pair, input_vcf, annotate_flag) %}
+{% macro tucon(pair, input_vcf, annotate_flag, aligner) %}
 
-{% set temp_dir %}temp/{{ pair.gltype }}/metrics/tucon/{{ pair.name }}{% endset %}
-{% set results_dir %}{{ pair.gltype }}/metrics/tucon/{{ pair.name }}{% endset %}
+{% set temp_dir %}temp/{{ pair.gltype }}/metrics/tucon/{{ pair.name }}_{{ aligner }}{% endset %}
+{% set results_dir %}{{ pair.gltype }}/metrics/tucon/{{ pair.name }}_{{ aligner }}{% endset %}
 {% set tucon_output %}{{ results_dir }}/{{ pair.name }}_{{ annotate_flag }}_tucon.tsv{% endset %}
 {% set filtered_vcf %}{{ temp_dir }}/{{ pair.name }}_{{ annotate_flag }}.flt.vcf.gz{% endset %}
 
-{% set task %}tucon_{{ pair.name }}_{{ annotate_flag }}{% endset %}
+{% set task %}tucon_{{ pair.name }}_{{ annotate_flag }}_{{ aligner }}{% endset %}
 {{- filter_variants(pair, input_vcf, temp_dir, filtered_vcf, task) }}
 
-- name: tucon_{{ pair.name }}_{{ annotate_flag }}
-  tags: [tucon, {{ annotate_flag }}]
+- name: tucon_{{ pair.name }}_{{ annotate_flag }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, metrics, tucon, {{ annotate_flag }}, {{ pair.name }} ]
   input:
     - {{ filtered_vcf }}
   output:

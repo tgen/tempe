@@ -4,7 +4,6 @@
 {% from 'utilities/remove_files.jst' import remove_files with context %}
 {% from 'modules/dna_alignment/gatk_baserecalibration.jst' import baserecalibration, nobaserecalibration with context %}
 {% from 'utilities/bam_to_cram.jst' import bam_to_cram with context %}
-{% from 'utilities/read_group_line.jst' import read_group_line %}
 
 # This macro splits large fastqs into chunks prior to aligning.
 # If fastq is less than reads_per_chunk (48000000) then one chunk is made.
@@ -133,6 +132,12 @@
       {% for rgid, rg in sample.read_groups.items() %}
       {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
       {% set n_chunks = (r1fastq.numberOfReads / 2 / reads_per_chunk)|round(0, method='ceil')|int %}
+      {% if not loop.last %}
+      {% for i in range(n_chunks) %}
+      {% set chunk_suffix = '%02d' % i %}
+      {{ temp_dir }}/{{ rgid }}/{{ chunk_suffix }}.{{ aligner }}.bam \
+      {% endfor %}
+      {% else %}
       {% for i in range(n_chunks) %}
       {% set chunk_suffix = '%02d' % i %}
       {% if not loop.last %}
@@ -141,6 +146,7 @@
       {{ temp_dir }}/{{ rgid }}/{{ chunk_suffix }}.{{ aligner }}.bam
       {% endif %}
       {% endfor %}
+      {% endif %}
       {% endfor %}
 
 
@@ -200,19 +206,10 @@
       "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam"
 
 
-{% if sample.gltype == 'genome' %}
-  {# shorten to tasks.Genome_alignment_base_recalibration_gatk|default(false) #}
-  {% if tasks.Genome_alignment_base_recalibration_gatk is defined and tasks.Genome_alignment_base_recalibration_gatk %}
-    {{- baserecalibration(sample, aligner) }}
-  {% else %}
-    {{- nobaserecalibration(sample, aligner) }}
-  {% endif %}
-{% elif sample.gltype == 'exome' %}
-  {% if tasks.Exome_alignment_base_recalibration_gatk is defined and tasks.Exome_alignment_base_recalibration_gatk %}
-    {{- baserecalibration(sample, aligner) }}
-  {% else %}
-    {{- nobaserecalibration(sample, aligner) }}
-  {% endif %}
+{% if tasks[sample.gltype|capitalize+"_alignment_base_recalibration_gatk"]|default(false) %}
+  {{- baserecalibration(sample, aligner) }}
+{% else %}
+  {{- nobaserecalibration(sample, aligner) }}
 {% endif %}
 {{- bam_to_cram(sample, aligner) }}
 

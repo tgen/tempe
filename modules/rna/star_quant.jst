@@ -52,7 +52,7 @@
     - {{ star_bam_unsort }}
     - {{ star_finalcountsdir }}/{{ sample.name }}.ReadsPerGene.out.tab
     - {{ star_finalcountsdir }}/{{ sample.name }}.star.junctions
-    - {{ star_finalcountsdir }}/{{ sample.name }}_star.Log.final.out
+    - {{ results_dir }}/stats/{{ sample.name }}_star.Log.final.out
     {% if tasks.RNA_transcriptome_quantify_expression_salmon_bam or tasks.RNA_transcriptome_quantify_expression_RSEM %}
     - {{ star_bam_transcript }}
     {% elif tasks.RNA_transcriptome_quantify_expression_RSEM is not defined %}
@@ -224,7 +224,7 @@
       -o "{{ star_bam_sorted }}"
 
 
-{% set task %}markduplicates_star_gatk_{{ sample.name }}{% endset %}
+{% set task %}{{ sample.name }}_star{% endset %}
 {% set rna_md_metrics %}{{ results_dir }}/stats/{{ sample.name }}.star.bam.md_metrics{% endset %}
 {% set rna_md_metrics_json %}{{ rna_md_metrics }}.json{% endset %}
 - name: markduplicates_star_gatk_{{ sample.name }}
@@ -286,23 +286,23 @@
     samtools index -@ 10 "{{ star_bam_final }}"
 
 
-{{- stats2json(sample.gltype, sample.name, task, rna_md_metrics, rna_md_metrics_json, "picard_mark_duplicates_metrics", sample_name=sample.name) }}
+{{- stats2json(sample.gltype, sample.name, task, rna_md_metrics, rna_md_metrics_json, "picard_mark_duplicates_metrics", sample=sample, sample_name=sample.name) }}
 
 {% set task_list = [] %}
 
-{% if tasks.RNA_transcriptome_quantify_expression_HTseq|default(true) %}
+{% if tasks.RNA_transcriptome_quantify_expression_HTseq|default(false) %}
   {% set task %}htseq_{{ sample.name }}{% endset %}
   {% do task_list.append(task) %}
   {{- htseq(sample) }}
 {% endif %}
 
-{% if tasks.RNA_transcriptome_quantify_expression_subread_featureCounts|default(true) %}
+{% if tasks.RNA_transcriptome_quantify_expression_subread_featureCounts|default(false) %}
   {% set task %}featurecounts_{{ sample.name }}{% endset %}
   {% do task_list.append(task) %}
   {{- featurecounts(sample) }}
 {% endif %}
 
-{% if tasks.RNA_transcriptome_quantify_expression_RSEM|default(true) %}
+{% if tasks.RNA_transcriptome_quantify_expression_RSEM|default(false) %}
   {% set task %}rsem_calculate_expression_{{ sample.name }}{% endset %}
   {% do task_list.append(task) %}
   {{- rsem_calculate_expression(sample) }}

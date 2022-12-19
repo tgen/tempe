@@ -3,7 +3,7 @@
 {% from 'modules/qc/stats2json.jst' import stats2json with context %}
 
 {% macro bam_qc_gatk_collectrnaseqmetrics(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner='star', bam_level=true) %}
-{% if tasks[taskPrefix+"_quality_control_stats_gatk_CollectRnaSeqMetrics"]|default(true) %}
+{% if tasks[taskPrefix+"_quality_control_stats_gatk_CollectRnaSeqMetrics"]|default(false) %}
 
   {% set results_dir %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/stats{% endset %}
 
@@ -63,18 +63,18 @@
 
     {% if libraryCount == 1 %}
     if [ -f "{{ rna_metrics }}.pdf" ]; then
-      mv {{ rna_metrics }}.pdf {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.rna_metrics.pdf
+      cp {{ rna_metrics }}.pdf {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.rna_metrics.pdf
     fi
     {% endif %}
 
   {% if bam_level is sameas true %}
-    {{ stats2json(sample.gltype, sample.name, task, rna_metrics, rna_metrics_json, "picard_rna_metrics") }}
+    {{- stats2json(sample.gltype, sample.name, task, rna_metrics, rna_metrics_json, "picard_rna_metrics") }}
   {% endif %}
 {% endif %}
 {% endmacro %}
 
 {% macro bam_qc_rna_BTcell_loci(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner='star', bam_level=true) %}
-{% if tasks[taskPrefix+"_quality_control_stats_samtools_bedcov"]|default(true) %}
+{% if tasks[taskPrefix+"_quality_control_stats_samtools_bedcov"]|default(false) %}
 
   {% set results_dir %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/stats{% endset %}
 
@@ -138,9 +138,9 @@
     {% endif %}
 
   {% if libraryCount == 1 %}
-    {{ stats2json(sample.gltype, sample.name, task, sample_lb_output, json, "bt_cell_counts", sample_name=sample.name, library_name=sample_lb) }}
+    {{- stats2json(sample.gltype, sample.name, task, sample_lb_output, json, "bt_cell_counts", sample=sample, sample_name=sample.name, library_name=sample_lb) }}
   {% elif bam_level is sameas false or sample.gltype == 'singlecellrna' %}
-    {{ stats2json(sample.gltype, sample.name, task, output, json, "bt_cell_counts", sample_name=sample.name, library_name=sample_lb) }}
+    {{- stats2json(sample.gltype, sample.name, task, output, json, "bt_cell_counts", sample=sample, sample_name=sample.name, library_name=sample_lb) }}
   {% endif %}
 
 {% endif %}

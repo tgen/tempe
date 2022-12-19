@@ -3,7 +3,7 @@
 {% from 'modules/qc/stats2json.jst' import stats2json with context %}
 
 {% macro bam_qc_gatk_collecthsmetrics(sample, aligner='bwa') %}
-{% if tasks["Exome_quality_control_stats_gatk_CollectHsMetrics"]|default(true) %}
+{% if tasks["Exome_quality_control_stats_gatk_CollectHsMetrics"]|default(false) %}
 
   {% set task %}{{ sample.name }}_{{ aligner }}{% endset %}
   {% set bam %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
@@ -49,6 +49,6 @@
       --BAIT_INTERVALS {{ sample.capture_kit.baits_interval_list }}
 
 
-{{ stats2json(sample.gltype, sample.name, task, output_file, output_file_json, "picard_hs_metrics") }}
+{{- stats2json(sample.gltype, sample.name, task, output_file, output_file_json, "picard_hs_metrics", sample=sample) }}
 {% endif %}
 {% endmacro %}

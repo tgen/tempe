@@ -6,7 +6,7 @@
 {% set normal_bam %}{{ pair.normal.gltype }}/alignment/{{ aligner }}/{{ pair.normal.name }}/{{ pair.normal.name }}.{{ aligner }}.bam{% endset %}
 {% set tumor_bam %}{{ pair.tumor.gltype }}/alignment/{{ aligner }}/{{ pair.tumor.name }}/{{ pair.tumor.name }}.{{ aligner }}.bam{% endset %}
 {% set temp_dir %}temp/{{ pair.gltype }}/somatic_variant_calls/mutect2/{{ pair.name }}_{{ aligner }}{% endset %}
-{% set results_dir %}{{ pair.gltype }}/somatic_variant_calls/mutect2/{{ pair.name }}{% endset %}
+{% set results_dir %}{{ pair.gltype }}/somatic_variant_calls/mutect2/{{ pair.name }}_{{ aligner }}{% endset %}
 {% set all_vcf %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.mutect2.all.vcf.gz{% endset %}
 {% set pass_vcf %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.mutect2.pass.vcf.gz{% endset %}
 
@@ -149,7 +149,7 @@
     bcftools index --tbi --force "{{ temp_dir }}/{{ pair.name }}_{{ aligner }}.mutect2.raw.vcf.gz"
 
 - name: mutect2_merge_stats_{{ pair.name }}_{{ aligner }}
-  tags: [{{ pair.gltype }},l somatic, snp_indel_caller, gatk_mutect2, {{ pair.name }}]
+  tags: [{{ pair.gltype }}, somatic, snp_indel_caller, gatk_mutect2, {{ pair.name }}]
   reset: predecessors
   input:
     {% for b in constants.tempe.calling_intervals %}

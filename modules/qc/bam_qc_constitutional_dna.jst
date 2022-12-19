@@ -3,7 +3,7 @@
 {% from 'modules/qc/stats2json.jst' import stats2json with context %}
 
 {% macro bam_qc_verifybamid2(sample, libraryCount, sample_lb, taskPrefix='Genome', aligner='bwa', bam_level=true) %}
-{% if tasks[taskPrefix+"_quality_control_constitutional_contamination_check_VerifyBamID"]|default(true) %}
+{% if tasks[taskPrefix+"_quality_control_constitutional_contamination_check_VerifyBamID"]|default(false) %}
 
   {% set results_dir %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/stats{% endset %}
 
@@ -70,9 +70,9 @@
     {% endif %}
 
   {% if libraryCount == 1 %}
-    {{ stats2json(sample.gltype, sample.name, task, sample_lb_output, json, "verifybamid", sample_name=sample.name, library_name=sample_lb) }}
+    {{- stats2json(sample.gltype, sample.name, task, sample_lb_output, json, "verifybamid", sample=sample, sample_name=sample.name, library_name=sample_lb) }}
   {% elif bam_level is sameas false %}
-    {{ stats2json(sample.gltype, sample.name, task, output, json, "verifybamid", sample_name=sample.name, library_name=sample_lb) }}
+    {{- stats2json(sample.gltype, sample.name, task, output, json, "verifybamid", sample=sample, sample_name=sample.name, library_name=sample_lb) }}
   {% endif %}
 
 - name: verifybamid2_plot_{{ task }}
@@ -128,7 +128,7 @@
 
 
 {% macro sex_check(sample, libraryCount, sample_lb, taskPrefix='Genome', aligner='bwa', bam_level=true) %}
-{% if tasks[taskPrefix+"_quality_control_constitutional_sex_check_freebayes"]|default(true) %}
+{% if tasks[taskPrefix+"_quality_control_constitutional_sex_check_freebayes"]|default(false) %}
 
   {% set results_dir %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/stats{% endset %}
 
@@ -406,9 +406,9 @@
     {% endif %}
 
   {% if libraryCount == 1 %}
-    {{ stats2json(sample.gltype, sample.name, task, sample_lb_output, json, "sex_check", sample_name=sample.name, library_name=sample_lb) }}
+    {{- stats2json(sample.gltype, sample.name, task, sample_lb_output, json, "sex_check", sample=sample, sample_name=sample.name, library_name=sample_lb) }}
   {% elif bam_level is sameas false %}
-    {{ stats2json(sample.gltype, sample.name, task, output, json, "sex_check", sample_name=sample.name, library_name=sample_lb) }}
+    {{- stats2json(sample.gltype, sample.name, task, output, json, "sex_check", sample=sample, sample_name=sample.name, library_name=sample_lb) }}
   {% endif %}
 
 {% endif %}

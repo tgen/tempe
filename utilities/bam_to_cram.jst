@@ -11,8 +11,6 @@
     - {{ bam_path }}
     {% if sample.gltype == 'rna' or sample.gltype == 'singlecellrna' %}
     - {{ constants.tempe.star_fasta }}
-    {% elif sample.gltype == 'chip' %}
-    - {{ constants.tempe.chip_fasta }}
     {% else %}
     - {{ constants.tempe.reference_fasta }}
     {% endif %}
@@ -34,11 +32,10 @@
       -@ 8 \
       {% if sample.gltype == 'rna' or sample.gltype == 'singlecellrna' %}
       --reference "{{ constants.tempe.star_fasta }}" \
-      {% elif sample.gltype == 'chip' %}
-      --reference "{{ constants.tempe.chip_fasta }}" \
       {% else %}
       --reference "{{ constants.tempe.reference_fasta }}" \
       {% endif %}
+      --no-PG \
       -o "{{ cram_path }}" \
       "{{ bam_path }}"
 

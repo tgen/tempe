@@ -1,6 +1,6 @@
 {%- from 'modules/metrics/mutation_burden.jst' import mutation_burden with context %}
 {%- from 'modules/metrics/msisensor_pro.jst' import msisensor_pro with context %}
-{# {%- from 'modules/metrics/sigprofiler.jst' import sigprofiler with context %} #}
+{%- from 'modules/metrics/sigprofiler.jst' import sigprofiler with context %}
 {%- from 'modules/metrics/tucon.jst' import tucon with context %}
 
 {%- macro collect_somatic_metrics(pair, normal_bam, tumor_bam, results_dir, taskPrefix, aligner, variant_caller) %}
@@ -29,11 +29,11 @@
     {% set flags.bcftools = true %}
   {% endif %}
 
-  {% if tasks[taskPrefix+"_somatic_annotate_vcfs_snpEff_ann"]|default(true) %}
+  {% if tasks[taskPrefix+"_somatic_annotate_vcfs_snpEff_ann"]|default(false) %}
     {% set flags.snpeff = true %}
   {% endif %}
 
-  {% if tasks[taskPrefix+"_somatic_annotate_vcfs_vep"]|default(true) %}
+  {% if tasks[taskPrefix+"_somatic_annotate_vcfs_vep"]|default(false) %}
     {% set flags.vep = true %}
   {% endif %}
 {% else %}
@@ -53,36 +53,36 @@
   {% set final_vcf_prefix %}{{ vcf_prefix }}{% endset %}
 {% endif %}
 {% if flags.vep %}
-  {% if tasks[taskPrefix+"_somatic_sample_metric_tgen_mutation_burden"]|default(true) %}
+  {% if tasks[taskPrefix+"_somatic_sample_metric_tgen_mutation_burden"]|default(false) %}
     {% set final_vcf %}{{ final_vcf_prefix }}.vep.pick.vcf.gz{% endset %}
     {{- mutation_burden(pair, normal_bam, tumor_bam, final_vcf, variant_caller, aligner, 'vep') }}
   {% endif %}
-  {% if tasks[taskPrefix+"_somatic_sample_metric_tucon"]|default(true) %}
-    {% if tasks[taskPrefix+"_somatic_annotate_vcfs_bcftools_topmed"]|default(true) %}
+  {% if tasks[taskPrefix+"_somatic_sample_metric_tucon"]|default(false) %}
+    {% if tasks[taskPrefix+"_somatic_annotate_vcfs_bcftools_topmed"]|default(false) %}
     {% set final_vcf %}{{ final_vcf_prefix }}.vep.full.vcf.gz{% endset %}
-    {{- tucon(pair, final_vcf, 'vep') }}
+    {{- tucon(pair, final_vcf, 'vep', aligner) }}
     {% endif %}
   {% endif %}
 {% endif %}
 {% if flags.snpeff %}
-  {% if tasks[taskPrefix+"_somatic_sample_metric_tgen_mutation_burden"]|default(true) %}
+  {% if tasks[taskPrefix+"_somatic_sample_metric_tgen_mutation_burden"]|default(false) %}
     {% set final_vcf %}{{ final_vcf_prefix }}.snpeff.can.vcf.gz{% endset %}
     {{- mutation_burden(pair, normal_bam, tumor_bam, final_vcf, variant_caller, aligner, 'snpeff') }}
   {% endif %}
-  {% if tasks[taskPrefix+"_somatic_sample_metric_tucon"]|default(true) %}
-    {% if tasks[taskPrefix+"_somatic_annotate_vcfs_bcftools_topmed"]|default(true) %}
+  {% if tasks[taskPrefix+"_somatic_sample_metric_tucon"]|default(false) %}
+    {% if tasks[taskPrefix+"_somatic_annotate_vcfs_bcftools_topmed"]|default(false) %}
     {% set final_vcf %}{{ final_vcf_prefix }}.snpeff.full.vcf.gz{% endset %}
-    {{- tucon(pair, final_vcf, 'snpeff') }}
+    {{- tucon(pair, final_vcf, 'snpeff', aligner) }}
     {% endif %}
   {% endif %}
 {% endif %}
 
-{% if tasks[taskPrefix+"_somatic_sample_metric_msisensor_pro"]|default(true) %}
+{% if tasks[taskPrefix+"_somatic_sample_metric_msisensor_pro"]|default(false) %}
   {{- msisensor_pro(pair, normal_bam, tumor_bam, aligner) }}
 {% endif %}
 
-{% if tasks[taskPrefix+"_somatic_sample_metric_sigprofiler"]|default(true) %}
-  {# {{- sigprofiler(pair, vcf_prefix, variant_caller, aligner) }} #}
+{% if tasks[taskPrefix+"_somatic_sample_metric_sigprofiler"]|default(false) %}
+  {{- sigprofiler(pair, vcf_prefix, variant_caller, aligner) }}
 {% endif %}
 
 {% endmacro %}

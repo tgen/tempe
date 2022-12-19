@@ -6,7 +6,7 @@
 
 {%- set bam %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
 {%- set temp_dir %}temp/{{ sample.gltype }}/constitutional_variant_calls/haplotypecaller/{{ sample.name }}_{{ aligner }}{% endset %}
-{%- set results_dir %}{{ sample.gltype }}/constitutional_variant_calls/haplotypecaller/{{ sample.name }}{% endset %}
+{%- set results_dir %}{{ sample.gltype }}/constitutional_variant_calls/haplotypecaller/{{ sample.name }}_{{ aligner }}{% endset %}
 {%- set all_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.hc.all.vcf.gz{% endset %}
 {%- set pass_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.hc.pass.vcf.gz{% endset %}
 {%- set gvcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.hc.g.vcf.gz{% endset %}

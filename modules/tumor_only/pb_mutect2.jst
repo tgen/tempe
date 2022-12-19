@@ -5,7 +5,7 @@
 {% set all_vcf %}{{ results_dir }}/{{ tumor.name }}.{{ aligner }}.mutect2.all.vcf.gz{% endset %}
 {% set pass_vcf %}{{ results_dir }}/{{ tumor.name }}.{{ aligner }}.mutect2.pass.vcf.gz{% endset %}
 
-- name: pb_mutect2_tumor_only_{{ tumor.name }}_{{ aligner }}
+- name: tumor_only_pb_mutect2_tumor_only_{{ tumor.name }}_{{ aligner }}
   tags: [{{ tumor.gltype }}, tumor_only, snp_indel_caller, gatk_mutect2, {{ tumor.name }}]
   input:
     - {{ tumor_bam }}
@@ -13,7 +13,7 @@
   output:
     - {{ all_vcf }}
   walltime: "24:00:00"
-  queue_args: ['-p', 'gpu', '--exclusive', '--profile=ltask', '--acctg-freq=task=1']
+  queue_args: ['-p', 'gpu', '--exclusive']
   queue_preset: "DEFAULT"
   container: {{ constants.tools.parabricks.container }}
   runner_args: ['-B', '/packages/parabricks-v3.7.0_V100/:/INSTALL/']
@@ -29,7 +29,7 @@
       --out-vcf {{ all_vcf }}
 
 
-- name: pb_mutect2_tumor_only_filter_variants_{{ tumor.name }}_{{ aligner }}
+- name: tumor_only_pb_mutect2_tumor_only_filter_variants_{{ tumor.name }}_{{ aligner }}
   tags: [{{ tumor.gltype }}, tumor_only, snp_indel_caller, gatk_mutect2, {{ tumor.name }}]
   input:
     - {{ all_vcf }}

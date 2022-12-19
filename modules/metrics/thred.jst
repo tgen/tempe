@@ -1,10 +1,10 @@
-{% macro thred(sample_or_pair, input_seg) %}
+{% macro thred(sample_or_pair, input_seg, aligner) %}
 
-{% set results_dir %}{{ sample_or_pair.gltype }}/metrics/thred/{{ sample_or_pair.name }}{% endset %}
-{% set temp_dir %}temp/{{ sample_or_pair.gltype }}/metrics/thred/{{ sample_or_pair.name }}{% endset %}
+{% set temp_dir %}temp/{{ sample_or_pair.gltype }}/metrics/thred/{{ sample_or_pair.name }}_{{ aligner }}{% endset %}
+{% set results_dir %}{{ sample_or_pair.gltype }}/metrics/thred/{{ sample_or_pair.name }}_{{ aligner }}{% endset %}
 
-- name: thred_{{ sample_or_pair.name }}
-  tags: [{{ sample_or_pair.gltype }}, HRD, {{ sample_or_pair.name }}]
+- name: thred_{{ sample_or_pair.name }}_{{ aligner }}
+  tags: [{{ sample_or_pair.gltype }}, metrics, HRD, {{ sample_or_pair.name }}]
   input:
     - {{ input_seg }}
     - {{ constants.tempe.centromere }}

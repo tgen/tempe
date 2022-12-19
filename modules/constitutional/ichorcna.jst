@@ -3,10 +3,10 @@
 
 {% macro ichorcna(sample, aligner='bwa', taskPrefix='Genome') %}
 {% set bam %}{{ sample.gltype}}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
-{% set results_dir %}{{ sample.gltype }}/copy_number_analysis/ichorCNA/{{ sample.name }}{% endset %}
+{% set temp_dir %}temp/{{ sample.gltype }}/copy_number_analysis/ichorCNA/{{ sample.name }}_{{ aligner }}/{{ sample.name }}.{{ aligner }}.ichor_rundir{% endset %}
+{% set results_dir %}{{ sample.gltype }}/copy_number_analysis/ichorCNA/{{ sample.name }}_{{ aligner }}{% endset %}
 {% set wig %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.wig{% endset %}
 {% set ichor_json %}{{ results_dir }}/{{ sample.name}}.{{ aligner }}.ichorCNA.json{% endset %}
-{% set temp_dir %}temp/{{ sample.gltype }}/copy_number_analysis/ichorCNA/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.ichor_rundir{% endset %}
 
 {% set control = {} %}
 {% if controlDataFiles is defined %}
@@ -15,7 +15,14 @@
   {% endif %}
 {% endif %}
 
-- name: hmmcopy_make_wig_{{ aligner }}_{{ sample.name }}
+{% if control.rgsm is defined %}
+    {% set name %}{{ control.rgsm }}_{{ control.assayCode }}{% endset %}
+{% else %}
+    {% set name %}{{ study }}_{{ control.assayCode }}{% endset %}
+{% endif %}
+{% do control.update({'name': name}) %}
+
+- name: hmmcopy_make_wig_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype}}, constitutional, cna_caller, ichor, {{ sample.name }}]
   input: 
     - {{ bam }}
@@ -43,10 +50,10 @@
       > "{{ wig }}"
 
 
-- name: ichor_cna_{{ aligner }}_{{ sample.name }}
+- name: ichor_cna_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype}}, constitutional, cna_caller, ichor, {{ sample.name }}]
   {% if control.ichorPon is defined %}
-  reset: prepare_tumor_only_{{ study }}_{{ control.assayCode }}
+  reset: prepare_tumor_only_{{ control.name }}
   {% endif %}
   input:
     - {{ wig }}
@@ -143,7 +150,7 @@
     {% for contig in constants.tempe.calling_contigs %}
     {# Stopping at chrX #}
     {% if loop.index < 24 %}
-    mv {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA/{{ sample.name }}.{{ aligner }}.ichorCNA_CNA_chr{{ contig.contig }}.pdf {{ results_dir }}/
+    mv {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA/{{ sample.name }}.{{ aligner }}.ichorCNA_CNA_chr{{ contig.contig }}.pdf {{ results_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA_CNA_{{ contig.contig }}.pdf
     {% endif %}
     {% endfor %}
     mv "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA/{{ sample.name }}.{{ aligner }}.ichorCNA_genomeWide_all_sols.pdf" "{{ results_dir }}/"
@@ -151,9 +158,11 @@
     mv "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA/{{ sample.name }}.{{ aligner }}.ichorCNA_tpdf.pdf" "{{ results_dir }}/"
 
     {# Remove the remaining files #}
-    {% set task %}ichor_cna_{{ aligner }}_{{ sample.name }}{% endset %}
+    {% set task %}ichor_cna_{{ sample.name }}_{{ aligner }}{% endset %}
     {% set directory %}{{ temp_dir }}{% endset %}
     {{- remove_files(directory,none,task) }}
+
+    {% set task %}{{ sample.name }}_{{ aligner }}{% endset %}
     {{- stats2lims(sample.gltype, sample.name, task, ichor_json, "ichor_cna") }}
 
 {% endmacro %}
