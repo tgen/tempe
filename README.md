@@ -139,7 +139,7 @@ MMRF_1499
 ## Required Software
 
 All tools are available as OCI images [here](https://github.com/orgs/tgen/packages)
-_Last Updated Sept 29th, 2022_  
+_Last Updated Dec 20th, 2022_  
 
 | Tool | Version Implemented |
 | :---: | :---: |
@@ -149,7 +149,8 @@ _Last Updated Sept 29th, 2022_
 | [deepvariant-cpu](https://github.com/google/deepvariant/releases) | [1.4.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fdeepvariant) |
 | [deepvariant-gpu](https://github.com/google/deepvariant/releases) | [1.4.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fdeepvariant) |
 | [expansion_hunter](https://github.com/Illumina/ExpansionHunter/releases) | [4.0.2](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fexpansion_hunter) |
-| [freebayes](https://github.com/ekg/freebayes/releases) | [1.3.1](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Ffreebayes) |
+| [fgbio](https://github.com/fulcrumgenomics/fgbio/releases) | [2.0.2](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Ffgbio) |
+| [freebayes](https://github.com/ekg/freebayes/releases) | [1.3.6](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Ffreebayes) |
 | [gatk](https://github.com/broadinstitute/gatk//releases) | [4.1.8.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fgatk) |
 | [hmmcopyutils](https://github.com/shahcompbio/hmmcopy_utils) | [1.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fhmmcopy-utils) |
 | [htslib](https://github.com/samtools/htslib/releases) | [1.16](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fhtslib) |
@@ -164,14 +165,15 @@ _Last Updated Sept 29th, 2022_
 | [R](https://www.r-project.org/) | [3.6.1](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fr-with_modules) |
 | [thred](https://github.com/tgen/tHReD) | [1.1.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fthred) |
 | [salmon](https://github.com/COMBINE-lab/salmon/releases) | [1.9.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fsalmon) |
+| [sigprofiler](https://github.com/AlexandrovLab/SigProfilerAssignment/releases) | [0.0.21](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fsigprofiler) |
 | [samtools](https://github.com/samtools/samtools/releases) | [1.16.1](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fsamtools) |
 | [snpSniffer](https://github.com/tgen/snpSniffer/releases) | [7.0.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fsnpsniffer) |
 | [star-fusion](https://github.com/STAR-Fusion/STAR-Fusion/releases) | [1.11.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fstar_fusion) |
 | [strelka](https://github.com/Illumina/strelka/releases) | [2.9.10](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fstrelka) |
 | [subread](https://sourceforge.net/projects/subread/) | [2.0.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fsubread) |
-| [tgen_mutation_burden](https://github.com/tgen/tgen_mutation_burden/releases) | [1.2.3](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fmutation-burden) |
+| [tgen_mutation_burden](https://github.com/tgen/tgen_mutation_burden/releases) | [1.2.4](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fmutation-burden) |
 | [vardictJava](https://github.com/AstraZeneca-NGS/VarDictJava/releases) | [1.7.9](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fvardict) |
-| [vcfmerger2](https://github.com/tgen/vcfMerger2/releases) | [0.9.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fvcfmerger2) |
+| [vcfmerger2](https://github.com/tgen/vcfMerger2/releases) | [0.9.3](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fvcfmerger2) |
 | [vep](https://github.com/Ensembl/ensembl-vep/releases) | [107.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fensembl-vep) |
 | [verifybamid2](https://github.com/Griffan/VerifyBamID/releases) | [2.0.1](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fverify-bam-id2) |
 
