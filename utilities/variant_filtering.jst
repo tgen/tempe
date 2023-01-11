@@ -94,7 +94,7 @@
   {% set output_type = 'z' %}
 {% endif %}
 
-- name: variant_filtering_{{ task }}
+- name: variant_filtering_{{ pair.name }}_{{ task }}
   tags: [{{ pair.gltype }}, somatic, variant_filter, {{ pair.name }}]
   input: {{ input_vcf }}
   output: {{ output_vcf }}
