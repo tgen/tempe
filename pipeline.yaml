@@ -95,7 +95,7 @@ constants:
       digest: 37e2122779da2b840817a509b84e43f627a77e310e4b6d2814abde5459c2e246
     sigprofiler:
       container: ghcr.io/tgen/jetstream_containers/sigprofiler:0.0.21
-      digest: 36f0ef1529efb77212654bb6ec3d359facff2d7a0302edcbf64dafc4895a923b
+      digest: e23822b423d46434fbc8a43008ec579c636b32b45c31a95b16b0180cc13e7734
     snpeff:
       container: ghcr.io/tgen/jetstream_containers/snpeff:4_3t
       digest: bd1aa0314843e414388330f6fe69bc442459c18de7999e9c91afaeef2c05a02d
