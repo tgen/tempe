@@ -197,8 +197,10 @@
     if (( NUM_FUSIONS == 0 )); then
         echo "Zero fusions found, skipping FusionInspector"
     else
+        PROJECT_ROOT=$PWD
+        cd {{ temp_dir }}
         FusionInspector \
-          --fusions {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.abridged.coding_effect.tsv \
+          --fusions ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.abridged.coding_effect.tsv \
           --out_prefix {{ sample.name }}_finspector \
           --min_junction_reads 1 \
           --min_novel_junction_support 3 \
@@ -206,30 +208,30 @@
           --max_mate_dist 100000 \
           --vis \
           --max_promiscuity 10 \
-          --output_dir {{ temp_dir }} \
+          --output_dir FusionInspector-inspect \
           --genome_lib_dir {{ constants.tempe.starfusion_index }} \
           --CPU 2 \
           --only_fusion_reads \
           --fusion_contigs_only \
-          --left_fq {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_evidence_reads_1.fq \
-          --right_fq {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_evidence_reads_2.fq \
+          --left_fq ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_star_fusion.fusion_evidence_reads_1.fq \
+          --right_fq ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_star_fusion.fusion_evidence_reads_2.fq \
           --no_FFPM \
           --include_Trinity \
           --annotate \
           --examine_coding_effect
 
         {# Moving fusion inspector files to results dir #}
-        mv {{ temp_dir }}/{{ sample.name }}_finspector.bed {{ results_dir }}/
-        mv {{ temp_dir }}/{{ sample.name }}_finspector.fa {{ results_dir }}/
-        mv {{ temp_dir }}/{{ sample.name }}_finspector.fusion_inspector_web.html {{ results_dir }}/
-        mv {{ temp_dir }}/{{ sample.name }}_finspector.fusion_inspector_web.json {{ results_dir }}/
-        mv {{ temp_dir }}/{{ sample.name }}_finspector.junction_reads.bam {{ results_dir }}/
-        mv {{ temp_dir }}/{{ sample.name }}_finspector.junction_reads.bam.bai {{ results_dir }}/
-        mv {{ temp_dir }}/{{ sample.name }}_finspector.spanning_reads.bam {{ results_dir }}/
-        mv {{ temp_dir }}/{{ sample.name }}_finspector.spanning_reads.bam.bai {{ results_dir }}/
-        mv {{ temp_dir }}/{{ sample.name }}_finspector.gmap_trinity_GG.fusions.gff3.bed.sorted.bed.gz {{ results_dir }}/
-        mv {{ temp_dir }}/{{ sample.name }}_finspector.gmap_trinity_GG.fusions.gff3.bed.sorted.bed.gz.tbi {{ results_dir }}/
-        mv {{ temp_dir }}/fi_workdir/trinity_GG/Trinity-GG.fasta {{ results_dir }}/{{ sample.name }}_Trinity-GG.fasta
+        mv FusionInspector-inspect/finspector.bed ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_finspector.bed
+        mv FusionInspector-inspect/finspector.fa ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_finspector.fa
+        mv FusionInspector-inspect/finspector.fusion_inspector_web.html ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_finspector.fusion_inspector_web.html
+        mv FusionInspector-inspect/finspector.fusion_inspector_web.json ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_finspector.fusion_inspector_web.json
+        mv FusionInspector-inspect/finspector.junction_reads.bam ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_finspector.junction_reads.bam
+        mv FusionInspector-inspect/finspector.junction_reads.bam.bai ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_finspector.junction_reads.bam.bai
+        mv FusionInspector-inspect/finspector.spanning_reads.bam ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_finspector.spanning_reads.bam
+        mv FusionInspector-inspect/finspector.spanning_reads.bam.bai ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_finspector.spanning_reads.bam.bai
+        mv FusionInspector-inspect/finspector.gmap_trinity_GG.fusions.gff3.bed.sorted.bed.gz ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_finspector.gmap_trinity_GG.fusions.gff3.bed.sorted.bed.gz
+        mv FusionInspector-inspect/finspector.gmap_trinity_GG.fusions.gff3.bed.sorted.bed.gz.tbi ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_finspector.gmap_trinity_GG.fusions.gff3.bed.sorted.bed.gz.tbi
+        mv FusionInspector-inspect/fi_workdir/trinity_GG/Trinity-GG.fasta ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_Trinity-GG.fasta
     fi
 
 {% if tasks.RNA_transcriptome_fusion_caller_Keep_STAR_Fusion_BAM|default(false) %}
