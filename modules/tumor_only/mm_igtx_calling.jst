@@ -87,7 +87,7 @@
 {% set results_dir %}{{ tumor.gltype }}/tumor_only_structural_calls/mm_igtx_gammit/{{ tumor.name }}_{{ aligner }}{% endset %}
 
 - name: discordant_loci_extraction_{{ tumor.name }}
-  tags: [assembly,]
+  tags: [{{ tumor.gltype }}, structural_caller, gammit, {{ tumor.name }}]
   input: 
     - {{ tumor_bam }}
     - {{ constants.tempe.reference_fasta }}
@@ -147,15 +147,12 @@
 
 
 - name: trinity_assembly_{{ tumor.name }}
-  tags: [assembly,]
+  tags: [{{ tumor.gltype }}, structural_caller, gammit, {{ tumor.name }}]
   input: 
     - {{ results_dir }}/{{ tumor.name }}_list_of_fastqs.txt
     - {{ results_dir }}/{{ tumor.name }}_fastqs.tar.gz
   output:
     - {{ results_dir }}/{{ tumor.name }}_Trinity_All_Clusters_sorted.bam
-    - {{ results_dir }}/{{ tumor.name }}_ContigResults.txt
-    - {{ results_dir }}/{{ tumor.name }}_FilteredContigResults.txt
-    - {{ results_dir }}/{{ tumor.name }}_DEX_IgTx_GA_Summary.txt
   walltime: "24:00:00"
   cpus: 4
   mem: 10G
@@ -166,8 +163,6 @@
   cmd: |
     set -eu
     set -o pipefail
-
-    trin_path=$(dirname `which Trinity`)
 
     {# Build a list of fastqs to iterate through #}
     fqr1arr=()
@@ -193,7 +188,7 @@
       {# Pulling the needed fastqs out of the tar.gz #}
       tar -xzf {{ results_dir }}/{{ tumor.name }}_fastqs.tar.gz ${leftfq}
       tar -xzf {{ results_dir }}/{{ tumor.name }}_fastqs.tar.gz ${rightfq}
-      Trinity \
+      /usr/local/src/trinityrnaseq-Trinity-v2.8.5/Trinity \
         --seqType fq \
         --left $leftfq \
         --right $rightfq \
@@ -209,11 +204,11 @@
         rm ${leftfq} ${rightfq}
         unset error
       else
-        ${trin_path}/util/TrinityStats.pl {{ temp_dir }}/{{ tumor.name }}_${chrRegion}_${cluster}/trinity/Trinity.fasta
+        /usr/local/src/trinityrnaseq-Trinity-v2.8.5/util/TrinityStats.pl {{ temp_dir }}/{{ tumor.name }}_${chrRegion}_${cluster}/trinity/Trinity.fasta
 
         sed -i "s/^>/>{{ tumor.name }}_${chrRegion}_${cluster}:/g" {{ temp_dir }}/{{ tumor.name }}_${chrRegion}_${cluster}/trinity/Trinity.fasta
 
-        bwa mem \
+        bwa-mem2 mem \
           -t 4 \
           -Y \
           -K 100000000 \
@@ -231,8 +226,8 @@
 
         mkdir -p {{ results_dir }}/{{ tumor.name }}_${chrRegion}_${cluster}
         mv {{ temp_dir }}/{{ tumor.name }}_${chrRegion}_${cluster}/trinity/Trinity.fasta {{ results_dir }}/{{ tumor.name }}_${chrRegion}_${cluster}/Trinity.fasta
-        bwa index {{ results_dir }}/{{ tumor.name }}_${chrRegion}_${cluster}/Trinity.fasta
-        bwa mem \
+        bwa-mem2 index {{ results_dir }}/{{ tumor.name }}_${chrRegion}_${cluster}/Trinity.fasta
+        bwa-mem2 mem \
           -t 4 \
           -Y \
           -K 100000000 \
@@ -262,10 +257,31 @@
         ${assemBam[*]}
 
       samtools index -@ 4 {{ results_dir }}/{{ tumor.name }}_Trinity_All_Clusters_sorted.bam
+    fi
 
-      TAB=$'\t'
-      PAIROSCOPE_BED={{ temp_dir }}/igtx_gene_regions.bed
-      cat <<EOF > ${IGTX_GENE_BED}
+
+- name: process_assembled_bam_{{ tumor.name }}
+  tags: [{{ tumor.gltype }}, structural_caller, gammit, {{ tumor.name }}]
+  input:
+    - {{ results_dir }}/{{ tumor.name }}_Trinity_All_Clusters_sorted.bam
+  output:
+    - {{ results_dir }}/{{ tumor.name }}_FilteredContigResults.txt
+    - {{ results_dir }}/{{ tumor.name }}_DEX_IgTx_GA_Summary.txt
+    - {{ results_dir }}/{{ tumor.name }}_ContigResults.txt
+  walltime: "24:00:00"
+  cpus: 4
+  mem: 10G
+  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.python3.container }}
+  digest: {{ constants.tools.python3.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    TAB=$'\t'
+    PAIROSCOPE_BED={{ temp_dir }}/igtx_gene_regions.bed
+    cat <<EOF > ${PAIROSCOPE_BED}
     {% for region in constants.tempe.igtx_regions %}
     {{ region.contig }}${TAB}{{ region.start }}${TAB}{{ region.stop }}
     {% endfor %}
@@ -273,7 +289,9 @@
     {{ region.contig }}${TAB}{{ region.start }}${TAB}{{ region.stop }}
     {% endfor %}
     EOF
-
+    
+    if [ -f {{ results_dir }}/{{ tumor.name }}_Trinity_All_Clusters_sorted.bam ]
+    then 
       python3 ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.process_assembled_bam }} \
         --input_bam {{ results_dir }}/{{ tumor.name }}_Trinity_All_Clusters_sorted.bam \
         --fastq_dir {{ results_dir }} \
