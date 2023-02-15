@@ -52,9 +52,10 @@
         {% set pair_name = tumor.name %}
         {% do pairs.append({'name': pair_name, 'gltype': tumor.gltype, 'normal': normal, 'tumor': tumor}) %}
 
+        {% set name %}{{ normal.name }}{% endset %}
         {% if name not in pairedNormSamples %}
             {% do pairedNormSamples.update({name: {}}) %}
-            {% do pairedNormSamples[name].update(file) %}
+            {% do pairedNormSamples[name].update(normal) %}
         {% endif %}
     {% endfor %}
 {% endfor %}

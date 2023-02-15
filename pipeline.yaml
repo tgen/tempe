@@ -78,7 +78,7 @@ constants:
     python3:
       container: ghcr.io/tgen/jetstream_containers/python:3.7.2
       digest: 8adbd3e0a1fdb0659c434eb13e6ef100d3e37dd41e44813b3ac60ff4ce9a2884
-    python3-with-modules:
+    python3_with_modules:
       container: /home/tgenref/containers/python_3.7.2-with-modules.sif
       digest: notarealdigest
     parabricks:
@@ -90,12 +90,18 @@ constants:
     thred:
       container: ghcr.io/tgen/jetstream_containers/thred:1.1.0
       digest: a63fb6915eac8ba936674724d3a205d53994e8214cade190f7551a91cbadafa3
+    trinity_bwa_samtools:
+      container: /home/tgenref/containers/trinity-bwa-samtools_2.8.5.sif
+      digest: notarealdigest
     salmon:
       container: ghcr.io/tgen/jetstream_containers/salmon:1.9.0
       digest: 69ffd89cb8714e5dc337b11aad6c54833a03f25c3180c2b93f072831bc3b92c7
     samtools:
       container: ghcr.io/tgen/jetstream_containers/samtools:1.16.1
       digest: 37e2122779da2b840817a509b84e43f627a77e310e4b6d2814abde5459c2e246
+    samtools_with_python:
+      container: /home/tgenref/containers/samtools_with_python_1.16.1_3.7.2.sif
+      digest: notarealdigest
     sigprofiler:
       container: ghcr.io/tgen/jetstream_containers/sigprofiler:0.0.21
       digest: 36f0ef1529efb77212654bb6ec3d359facff2d7a0302edcbf64dafc4895a923b
@@ -221,6 +227,18 @@ constants:
       - {"contig": "chr12", "start": 3690834, "stop": 4690834, "name": "CCND2"}
       - {"contig": "chr16", "start": 78096103, "stop": 79950000, "name": "MAF"}
       - {"contig": "chr20", "start": 39671358, "stop": 40971360, "name": "MAFB"}
+    igtx_loci_and_gene_regions:
+      - {"contig": "chr2", "start": 88750483, "stop": 90261139, "name": "IgK" }
+      - {"contig": "chr4", "start": 1798273, "stop": 1998273, "name": "NSD2"}
+      - {"contig": "chr6", "start": 41632262, "stop": 42332262, "name": "CCND3"}
+      - {"contig": "chr8", "start": 124987758, "stop": 129487754, "name": "MYC"}
+      - {"contig": "chr8", "start": 142918584, "stop": 143925832, "name": "MAFA"}
+      - {"contig": "chr11", "start": 68732532, "stop": 69685232, "name": "CCND1"}
+      - {"contig": "chr12", "start": 3690834, "stop": 4690834, "name": "CCND2"}
+      - {"contig": "chr14", "start": 105533663, "stop": 106881350, "name": "IgH" }
+      - {"contig": "chr16", "start": 78096103, "stop": 79950000, "name": "MAF"}
+      - {"contig": "chr20", "start": 39671358, "stop": 40971360, "name": "MAFB"}
+      - {"contig": "chr22", "start": 21995603, "stop": 23057822, "name": "IgL" }
     ribo_locations: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/Homo_sapiens.GRCh38.103.ucsc.ribo.interval_list
     gatk_cnv_primary_contigs_female: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/gatk_cnv/Homo_sapiens.GRCh38.primary.contigs.female.interval_list
     gatk_cnv_primary_contigs_male: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/gatk_cnv/Homo_sapiens.GRCh38.primary.contigs.male.interval_list
