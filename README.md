@@ -139,7 +139,7 @@ MMRF_1499
 ## Required Software
 
 All tools are available as OCI images [here](https://github.com/orgs/tgen/packages)
-_Last Updated Dec 20th, 2022_  
+_Last Updated March 8th, 2023_  
 
 | Tool | Version Implemented |
 | :---: | :---: |
@@ -173,7 +173,7 @@ _Last Updated Dec 20th, 2022_
 | [subread](https://sourceforge.net/projects/subread/) | [2.0.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fsubread) |
 | [tgen_mutation_burden](https://github.com/tgen/tgen_mutation_burden/releases) | [1.2.4](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fmutation-burden) |
 | [vardictJava](https://github.com/AstraZeneca-NGS/VarDictJava/releases) | [1.7.9](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fvardict) |
-| [vcfmerger2](https://github.com/tgen/vcfMerger2/releases) | [0.9.3](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fvcfmerger2) |
+| [vcfmerger2](https://github.com/tgen/vcfMerger2/releases) | [0.9.4](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fvcfmerger2) |
 | [vep](https://github.com/Ensembl/ensembl-vep/releases) | [107.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fensembl-vep) |
 | [verifybamid2](https://github.com/Griffan/VerifyBamID/releases) | [2.0.1](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fverify-bam-id2) |
 
