@@ -189,7 +189,7 @@
       {# Pulling the needed fastqs out of the tar.gz #}
       tar -xzf {{ results_dir }}/{{ tumor.name }}_fastqs.tar.gz ${leftfq}
       tar -xzf {{ results_dir }}/{{ tumor.name }}_fastqs.tar.gz ${rightfq}
-      /usr/local/src/trinityrnaseq-Trinity-v2.8.5/Trinity \
+      Trinity \
         --seqType fq \
         --left $leftfq \
         --right $rightfq \
@@ -205,7 +205,7 @@
         rm ${leftfq} ${rightfq}
         unset error
       else
-        /usr/local/src/trinityrnaseq-Trinity-v2.8.5/util/TrinityStats.pl {{ temp_dir }}/{{ tumor.name }}_${chrRegion}_${cluster}/trinity/Trinity.fasta
+        /usr/local/src/trinityrnaseq/util/TrinityStats.pl {{ temp_dir }}/{{ tumor.name }}_${chrRegion}_${cluster}/trinity/Trinity.fasta
 
         sed -i "s/^>/>{{ tumor.name }}_${chrRegion}_${cluster}:/g" {{ temp_dir }}/{{ tumor.name }}_${chrRegion}_${cluster}/trinity/Trinity.fasta
 

@@ -91,7 +91,7 @@ constants:
       container: ghcr.io/tgen/jetstream_containers/thred:1.1.0
       digest: a63fb6915eac8ba936674724d3a205d53994e8214cade190f7551a91cbadafa3
     trinity_bwa_samtools:
-      container: /home/tgenref/containers/trinity-bwa-samtools_2.8.5.sif
+      container: /home/tgenref/containers/trinity_with_bwa_2.8.6.sif
       digest: notarealdigest
     salmon:
       container: ghcr.io/tgen/jetstream_containers/salmon:1.9.0
