@@ -104,7 +104,7 @@ constants:
       digest: notarealdigest
     sigprofiler:
       container: ghcr.io/tgen/jetstream_containers/sigprofiler:0.0.21
-      digest: 36f0ef1529efb77212654bb6ec3d359facff2d7a0302edcbf64dafc4895a923b
+      digest: e23822b423d46434fbc8a43008ec579c636b32b45c31a95b16b0180cc13e7734
     snpeff:
       container: ghcr.io/tgen/jetstream_containers/snpeff:4_3t
       digest: bd1aa0314843e414388330f6fe69bc442459c18de7999e9c91afaeef2c05a02d
@@ -127,8 +127,8 @@ constants:
       container: ghcr.io/tgen/jetstream_containers/vardict:1.7.9
       digest: 0f7e273e1c7f7f74c285b9d1e04fd484f5fc1fa767bb9a0b7a077ae5da21eabc
     vcfmerger:
-      container: ghcr.io/tgen/jetstream_containers/vcfmerger2:0.9.3
-      digest: 2b1727deba0e206b192a44115ed9e5d7a961e9d23e093687409d4f2f8a2fbeb6
+      container: ghcr.io/tgen/jetstream_containers/vcfmerger2:0.9.4
+      digest: 54b068b9dde256e0617379bc772268ff291f570fef68d495a540a7d49b2f155a
     vep:
       container: ghcr.io/tgen/jetstream_containers/ensembl-vep:release_107.0
       digest: 2762c6efff95ecac45bcb1dfccdb7c139e2cc4700b855b68632dcdf45d9c7712
