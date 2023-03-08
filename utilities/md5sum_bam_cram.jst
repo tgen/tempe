@@ -14,11 +14,11 @@
     - {{ file_path }}/{{ sample.name }}.{{ aligner }}.bam.bai
   output:
     {% if cram|default(true) %}
-    - {{ sample.name }}.{{ aligner }}.cram.md5
-    - {{ sample.name }}.{{ aligner }}.cram.crai.md5
+    - {{ file_path }}/{{ sample.name }}.{{ aligner }}.cram.md5
+    - {{ file_path }}/{{ sample.name }}.{{ aligner }}.cram.crai.md5
     {% endif %}
-    - {{ sample.name }}.{{ aligner }}.bam.md5
-    - {{ sample.name }}.{{ aligner }}.bam.bai.md5
+    - {{ file_path }}/{{ sample.name }}.{{ aligner }}.bam.md5
+    - {{ file_path }}/{{ sample.name }}.{{ aligner }}.bam.bai.md5
   walltime: "1:00:00"
   cpus: 1
   mem: 2G
