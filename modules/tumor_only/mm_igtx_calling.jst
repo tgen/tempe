@@ -205,7 +205,7 @@
         rm ${leftfq} ${rightfq}
         unset error
       else
-        /usr/local/src/trinityrnaseq/util/TrinityStats.pl {{ temp_dir }}/{{ tumor.name }}_${chrRegion}_${cluster}/trinity/Trinity.fasta
+        /usr/local/bin/trinityrnaseq/util/TrinityStats.pl {{ temp_dir }}/{{ tumor.name }}_${chrRegion}_${cluster}/trinity/Trinity.fasta
 
         sed -i "s/^>/>{{ tumor.name }}_${chrRegion}_${cluster}:/g" {{ temp_dir }}/{{ tumor.name }}_${chrRegion}_${cluster}/trinity/Trinity.fasta
 
