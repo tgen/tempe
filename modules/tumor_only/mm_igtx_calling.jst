@@ -30,10 +30,7 @@
     # Run pairoscope process
     pairoscope -q 0 -m 1000000 -H 1400 -W 1024 -u 2000 -l 200 \
       -o {{ results_dir }}/{{ tumor.name }}.{{ aligner }}_pairoscope_igtx.png \
-      {% for region in constants.tempe.igtx_regions %}
-      {{ tumor_bam }} {{ region.contig }} {{ region.start }} {{ region.stop }} \
-      {% endfor %}
-      {% for region in constants.tempe.igtx_gene_regions %}
+      {% for region in constants.tempe.igtx_loci_and_gene_regions %}
       {{ tumor_bam }} {{ region.contig }} {{ region.start }} {{ region.stop }} \
       {% endfor %}
       2> {{ temp_dir }}/{{ tumor.name }}.{{ aligner }}_pairoscope_igtx_discordantReads.txt
@@ -59,8 +56,8 @@
   walltime: "4:00:00"
   runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   queue_preset: "DEFAULT"
-  container: {{ constants.tools.python3.container }}
-  digest: {{ constants.tools.python3.digest }}
+  container: {{ constants.tools.python3_with_modules.container }}
+  digest: {{ constants.tools.python3_with_modules.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -87,13 +84,15 @@
 {% set results_dir %}{{ tumor.gltype }}/tumor_only_structural_calls/mm_igtx_gammit/{{ tumor.name }}_{{ aligner }}{% endset %}
 
 - name: discordant_loci_extraction_{{ tumor.name }}
-  tags: [assembly,]
+  tags: [{{ tumor.gltype }}, structural_caller, gammit, {{ tumor.name }}]
   input: 
     - {{ tumor_bam }}
     - {{ constants.tempe.reference_fasta }}
   output: 
     - {{ results_dir }}/{{ tumor.name }}_list_of_fastqs.txt
     - {{ results_dir }}/{{ tumor.name }}_fastqs.tar.gz
+    - {{ temp_dir }}/igtx_gene_regions.bed
+    - {{ temp_dir }}/igtx_regions.bed
   walltime: "12:00:00"
   cpus: 4
   mem: 8G
@@ -147,27 +146,24 @@
 
 
 - name: trinity_assembly_{{ tumor.name }}
-  tags: [assembly,]
+  tags: [{{ tumor.gltype }}, structural_caller, gammit, {{ tumor.name }}]
   input: 
     - {{ results_dir }}/{{ tumor.name }}_list_of_fastqs.txt
     - {{ results_dir }}/{{ tumor.name }}_fastqs.tar.gz
+    - {{ constants.tempe.bwa_mem2_index }}
   output:
     - {{ results_dir }}/{{ tumor.name }}_Trinity_All_Clusters_sorted.bam
-    - {{ results_dir }}/{{ tumor.name }}_ContigResults.txt
-    - {{ results_dir }}/{{ tumor.name }}_FilteredContigResults.txt
-    - {{ results_dir }}/{{ tumor.name }}_DEX_IgTx_GA_Summary.txt
+    - {{ temp_dir }}/{{ tumor.name }}_assembled_fastqs.tar.gz
   walltime: "24:00:00"
   cpus: 4
   mem: 10G
   runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   queue_preset: "DEFAULT"
-  container: {{ constants.tools.star_fusion.container }}
-  digest: {{ constants.tools.star_fusion.digest }}
+  container: {{ constants.tools.trinity_bwa_samtools.container }}
+  digest: {{ constants.tools.trinity_bwa_samtools.digest }}
   cmd: |
     set -eu
     set -o pipefail
-
-    trin_path=$(dirname `which Trinity`)
 
     {# Build a list of fastqs to iterate through #}
     fqr1arr=()
@@ -209,16 +205,16 @@
         rm ${leftfq} ${rightfq}
         unset error
       else
-        ${trin_path}/util/TrinityStats.pl {{ temp_dir }}/{{ tumor.name }}_${chrRegion}_${cluster}/trinity/Trinity.fasta
+        /usr/local/bin/trinityrnaseq/util/TrinityStats.pl {{ temp_dir }}/{{ tumor.name }}_${chrRegion}_${cluster}/trinity/Trinity.fasta
 
         sed -i "s/^>/>{{ tumor.name }}_${chrRegion}_${cluster}:/g" {{ temp_dir }}/{{ tumor.name }}_${chrRegion}_${cluster}/trinity/Trinity.fasta
 
-        bwa mem \
+        bwa-mem2 mem \
           -t 4 \
           -Y \
           -K 100000000 \
           -o {{ temp_dir }}/{{ tumor.name }}_${chrRegion}_${cluster}/trinity/trinbwafile.sam \
-          {{ constants.tempe.bwa_index }} \
+          {{ constants.tempe.bwa_mem2_index }} \
           {{ temp_dir }}/{{ tumor.name }}_${chrRegion}_${cluster}/trinity/Trinity.fasta
 
         samtools view \
@@ -231,8 +227,8 @@
 
         mkdir -p {{ results_dir }}/{{ tumor.name }}_${chrRegion}_${cluster}
         mv {{ temp_dir }}/{{ tumor.name }}_${chrRegion}_${cluster}/trinity/Trinity.fasta {{ results_dir }}/{{ tumor.name }}_${chrRegion}_${cluster}/Trinity.fasta
-        bwa index {{ results_dir }}/{{ tumor.name }}_${chrRegion}_${cluster}/Trinity.fasta
-        bwa mem \
+        bwa-mem2 index {{ results_dir }}/{{ tumor.name }}_${chrRegion}_${cluster}/Trinity.fasta
+        bwa-mem2 mem \
           -t 4 \
           -Y \
           -K 100000000 \
@@ -245,7 +241,7 @@
         samtools index {{ results_dir }}/{{ tumor.name }}_${chrRegion}_${cluster}/{{ tumor.name }}_${chrRegion}_${cluster}_ReadstoContigs.bam
 
         assemBam+=("{{ temp_dir }}/{{ tumor.name }}_${chrRegion}_${cluster}/trinity/{{ tumor.name }}_${chrRegion}_${cluster}_sorted.bam")
-        rm ${leftfq} ${rightfq}
+        mv ${leftfq} ${rightfq} {{ temp_dir }}/
       fi
       i=$(expr $i + 1)
     done
@@ -263,20 +259,48 @@
 
       samtools index -@ 4 {{ results_dir }}/{{ tumor.name }}_Trinity_All_Clusters_sorted.bam
 
-      TAB=$'\t'
-      PAIROSCOPE_BED={{ temp_dir }}/igtx_gene_regions.bed
-      cat <<EOF > ${IGTX_GENE_BED}
-    {% for region in constants.tempe.igtx_regions %}
+      tar -czf {{ temp_dir }}/{{ tumor.name }}_assembled_fastqs.tar.gz {{ temp_dir }}/*.fastq.gz
+    fi
+
+
+- name: process_assembled_bam_{{ tumor.name }}
+  tags: [{{ tumor.gltype }}, structural_caller, gammit, {{ tumor.name }}]
+  input:
+    - {{ results_dir }}/{{ tumor.name }}_Trinity_All_Clusters_sorted.bam
+    - {{ temp_dir }}/{{ tumor.name }}_assembled_fastqs.tar.gz
+  output:
+    - {{ results_dir }}/{{ tumor.name }}_FilteredContigResults.txt
+    - {{ results_dir }}/{{ tumor.name }}_DEX_IgTx_GA_Summary.txt
+    - {{ results_dir }}/{{ tumor.name }}_ContigResults.txt
+  walltime: "24:00:00"
+  cpus: 4
+  mem: 10G
+  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.samtools_with_python.container }}
+  digest: {{ constants.tools.samtools_with_python.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    TAB=$'\t'
+    PAIROSCOPE_BED={{ temp_dir }}/igtx_gene_regions.bed
+    cat <<EOF > ${PAIROSCOPE_BED}
+    {% for region in constants.tempe.igtx_gene_regions %}
     {{ region.contig }}${TAB}{{ region.start }}${TAB}{{ region.stop }}
     {% endfor %}
-    {% for region in constants.tempe.igtx_gene_regions %}
+    {% for region in constants.tempe.igtx_regions %}
     {{ region.contig }}${TAB}{{ region.start }}${TAB}{{ region.stop }}
     {% endfor %}
     EOF
 
+    tar -xzf {{ temp_dir }}/{{ tumor.name }}_assembled_fastqs.tar.gz
+    
+    if [ -f {{ results_dir }}/{{ tumor.name }}_Trinity_All_Clusters_sorted.bam ]
+    then 
       python3 ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.process_assembled_bam }} \
         --input_bam {{ results_dir }}/{{ tumor.name }}_Trinity_All_Clusters_sorted.bam \
-        --fastq_dir {{ results_dir }} \
+        --fastq_dir {{ temp_dir }} \
         --contig 125 \
         --reads 3 \
         --window 25 \
@@ -406,36 +430,24 @@
     mv "{{ temp_dir }}/results/variants/somaticSV.vcf.gz.tbi" "{{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.somaticSV.vcf.gz.tbi"
 
 
-- name: mm_igtx_manta_flag_{{ pair.name }}_{{ aligner }}
+- name: mm_igtx_manta_bcftools_filter_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, tumor_only, manta, flag, {{ pair.name }}]
-  reset: prepare_tumor_only_{{ pair.normal.name }}
   input:
     - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.somaticSV.vcf.gz
     - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.somaticSV.vcf.gz.tbi
-    - {{ tumor_bam }}
-    - {{ normal_bam }}
-    - {{ summary_samtools_stats }}
   output:
     - {{ temp_dir }}/results/variants/somaticSV.pass.vcf.gz
     - {{ temp_dir }}/results/variants/somaticSV.pass.vcf.gz.tbi
-    - {{ temp_dir }}/results/variants/somaticSV.pass.flag.vcf.gz
-    - {{ temp_dir }}/results/variants/somaticSV.pass.flag.vcf.gz.tbi
-    - {{ results_dir }}/{{ pair.name }}.{{ aligner }}_mantaTxCalls.txt
   cpus: 4
   mem: 4G
   walltime: "12:00:00"
   runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   queue_preset: "DEFAULT"
-  container: {{ constants.tools.manta_tgen.container }}
-  digest: {{ constants.tools.manta_tgen.digest }}
+  container: {{ constants.tools.bcftools.container }}
+  digest: {{ constants.tools.bcftools.digest }}
   cmd: |
     set -eu
     set -o pipefail
-
-    module load {{ constants.tools.bcftools.module }}
-    module load {{ constants.tools.python_3_7_2.module }}
-    module load {{ constants.tools.bedtools.module }}
-    module load {{ constants.tools.transparser.module }}
 
     {# Ensuring that the output dir exists for bcftools filter #}
     mkdir -p {{ temp_dir }}/results/variants
@@ -443,6 +455,31 @@
     {# filtering somatic vcf by PASS #}
     bcftools filter -i 'FILTER == "PASS"' -O z -o {{ temp_dir }}/results/variants/somaticSV.pass.vcf.gz {{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.somaticSV.vcf.gz
     bcftools index --threads 4 --tbi --force {{ temp_dir }}/results/variants/somaticSV.pass.vcf.gz
+
+
+- name: mm_igtx_manta_flag_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, tumor_only, manta, flag, {{ pair.name }}]
+  reset: 
+    - prepare_tumor_only_{{ pair.normal.name }}
+    - mm_igtx_manta_bcftools_filter_{{ pair.name }}_{{ aligner }}
+  input:
+    - {{ temp_dir }}/results/variants/somaticSV.pass.vcf.gz
+    - {{ temp_dir }}/results/variants/somaticSV.pass.vcf.gz.tbi
+    - {{ tumor_bam }}
+    - {{ normal_bam }}
+    - {{ summary_samtools_stats }}
+  output:
+    - {{ temp_dir }}/results/variants/somaticSV.pass.flag.vcf
+  cpus: 4
+  mem: 4G
+  walltime: "12:00:00"
+  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.python3.container }}
+  digest: {{ constants.tools.python3.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
 
     {# Capturing the insert_size and its standard deviation from summary samtools stats file #}
     INSERT_SIZE=$(cat {{ summary_samtools_stats }} | tail -n 1 | cut -f9 )
@@ -464,6 +501,26 @@
       --minmapq 0 \
       --output {{ temp_dir }}/results/variants/somaticSV.pass.flag.vcf \
       --logfile {{ temp_dir }}/results/variants/log_prepare_sv_vcf.txt
+
+
+- name: mm_igtx_manta_transparser_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, tumor_only, manta, transparser, {{ pair.name }}]
+  reset: prepare_tumor_only_{{ pair.normal.name }}
+  input:
+    - {{ temp_dir }}/results/variants/somaticSV.pass.flag.vcf
+  output:
+    - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.somaticSV.pass.vcf.gz
+    - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.somaticSV.pass.vcf.gz.tbi
+    - {{ results_dir }}/{{ pair.name }}.{{ aligner }}_mantaTxCalls.txt
+  cpus: 4
+  mem: 4G
+  walltime: "12:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.transparser.container }}
+  digest: {{ constants.tools.transparser.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
 
     bcftools filter \
       -i "TRA==1 && ( PR[1:1]>=5 || SR[1:1]>=5 || (PR[1:1]+SR[1:1])>=5 ) && (RCDIS1[1:0]>3 && RCDIS2[1:0]>3 )" \
@@ -488,7 +545,7 @@
     {% endfor %}
     EOF
 
-    bash transParser.sh \
+    transParser.sh \
       --bed-genes ${IGTX_GENE_BED} \
       --bed-igs ${IGTX_BED} \
       --vcf {{ temp_dir }}/results/variants/translocations.pass.flag.vcf.gz \
@@ -500,52 +557,11 @@
       --min-reads 5
 
     {# compress vcf to vcf.gz #}
-    bcftools view --threads 4 -O z -o {{ temp_dir }}/results/variants/somaticSV.pass.flag.vcf.gz {{ temp_dir }}/results/variants/somaticSV.pass.flag.vcf
-    bcftools index --threads 4 --tbi --force {{ temp_dir }}/results/variants/somaticSV.pass.flag.vcf.gz
-
-
-- name: mm_igtx_manta_annotate_{{ pair.name }}_{{ aligner }}
-  tags: [{{ pair.gltype }}, tumor_only, manta, flag, gene, annotation, {{ pair.name }}]
-  reset: predecessors
-  input:
-    - {{ temp_dir }}/results/variants/somaticSV.pass.flag.vcf.gz
-    - {{ temp_dir }}/results/variants/somaticSV.pass.flag.vcf.gz.tbi
-  output:
-    - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.somaticSV.pass.vcf.gz
-    - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.somaticSV.pass.vcf.gz.tbi
-  cpus: 4
-  mem: 16G
-  walltime: "12:00:00"
-  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
-  queue_preset: "DEFAULT"
-  container: {{ constants.tools.manta_tgen.container }}
-  digest: {{ constants.tools.manta_tgen.digest }}
-  cmd: |
-    set -eu
-    set -o pipefail
-
-    module load {{ constants.tools.bcftools.module }}
-    module load {{ constants.tools.python_3_7_2.module }}
-    module load {{ constants.tools.bedtools.module }}
-
-    mkdir -p {{ temp_dir }}/pybedtools/ || true
-
-    python ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.manta_gene_annotation_parallel }} \
-      -a {{ constants.tempe.delly_annotation }} \
-      -i {{ temp_dir }}/results/variants/somaticSV.pass.flag.vcf.gz \
-      -o {{ temp_dir }}/results/variants/somaticSV.pass.flag.anno.vcf \
-      --threads 4 \
-      --tempdir {{ temp_dir }}/pybedtools/
-
-    bcftools view --threads 4 -O z -o {{ temp_dir }}/results/variants/somaticSV.pass.flag.anno.vcf.gz {{ temp_dir }}/results/variants/somaticSV.pass.flag.anno.vcf
-    bcftools index --threads 4 --tbi --force {{ temp_dir }}/results/variants/somaticSV.pass.flag.anno.vcf.gz
-
-    {# Save all the vcf in the sample's dir results #}
-    mv "{{ temp_dir }}/results/variants/somaticSV.pass.flag.anno.vcf.gz" "{{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.somaticSV.pass.vcf.gz"
-    mv "{{ temp_dir }}/results/variants/somaticSV.pass.flag.anno.vcf.gz.tbi" "{{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.somaticSV.pass.vcf.gz.tbi"
+    bcftools view --threads 4 -O z -o {{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.somaticSV.pass.vcf.gz {{ temp_dir }}/results/variants/somaticSV.pass.flag.vcf
+    bcftools index --threads 4 --tbi --force {{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.somaticSV.pass.vcf.gz
 
     {# Remove the remaining files #}
-    {% set task %}tumor_only_mm_igtx_manta_annotate_{{ pair.name }}_{{ aligner }}{% endset %}
+    {% set task %}mm_igtx_manta_transparser_{{ pair.name }}_{{ aligner }}{% endset %}
     {% set directory %}{{ temp_dir }}{% endset %}
     {{- remove_files(directory,none,task) }}
 
@@ -562,11 +578,11 @@
 {% endif %}
 
 {% set results_dir %}{{ sample.gltype }}/tumor_only_structural_calls/mm_igtx_summary/{{ sample.name }}_{{ aligner }}{% endset %}
-{% set gammit_path %}{{ sample.gltype }}/tumor_only_structural_calls/mm_igtx_gammit/{{ sample.name }}/{{ sample.name }}_DEX_IgTx_GA_Summary.txt{% endset %}
-{% set pairoscope_path %}{{ sample.gltype }}/tumor_only_structural_calls/mm_igtx_pairoscope/{{ sample.name }}/{{ sample.name }}.{{ aligner }}_pairoscope_igtx_calls.txt{% endset %}
+{% set gammit_path %}{{ sample.gltype }}/tumor_only_structural_calls/mm_igtx_gammit/{{ sample.name }}_{{ aligner }}/{{ sample.name }}_DEX_IgTx_GA_Summary.txt{% endset %}
+{% set pairoscope_path %}{{ sample.gltype }}/tumor_only_structural_calls/mm_igtx_pairoscope/{{ sample.name }}_{{ aligner }}/{{ sample.name }}.{{ aligner }}_pairoscope_igtx_calls.txt{% endset %}
 
 {% if control.pathToBam is defined %}
-  {% set manta_path %}{{ sample.gltype }}/tumor_only_structural_calls/mm_igtx_manta/{{ sample.name }}/{{ sample.name }}.{{ aligner }}_mantaTxCalls.txt{% endset %}
+  {% set manta_path %}{{ sample.gltype }}/tumor_only_structural_calls/mm_igtx_manta/{{ sample.name }}_{{ aligner }}/{{ sample.name }}.{{ aligner }}_mantaTxCalls.txt{% endset %}
 {% endif %}
 
 - name: summarize_mm_igtx_{{ sample.name }}
@@ -582,6 +598,7 @@
   cpus: 2
   mem: 4G
   queue_preset: "DEFAULT"
+  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   container: {{ constants.tools.R.container }}
   digest: {{ constants.tools.R.digest }}
   cmd: |
