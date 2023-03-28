@@ -6,8 +6,8 @@ __pipeline__:
 constants:
   tools:
     base:
-      container: ghcr.io/tgen/jetstream_containers/rocky8_with_epel:2022.04.19
-      digest: 8a1414a5780d23062df9b568dd174017d4f4661dd4d8fa931a1eebd59fc0f923
+      container: debian:bullseye-20230208-slim
+      digest: 9b42b2e7eddd84eaddb67b45567cdc0e03ec826bf252352f300147cfb8ce5a6d
     bcftools:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/bcftools:1.16-v1
       digest: 5dea48268d4162f5421b7a1ef713a7631d04ae7a1d2b391b9566864db9bd2440
@@ -76,8 +76,8 @@ constants:
       container: /home/tgenref/containers/pairoscope_0.4.2.sif
       digest: notarealdigest
     python3:
-      container: ghcr.io/tgen/jetstream_containers/python:3.7.2
-      digest: 8adbd3e0a1fdb0659c434eb13e6ef100d3e37dd41e44813b3ac60ff4ce9a2884
+      container: python:3.7.2-slim
+      digest: f46a51a4d2555165b5958770bffedc42735ad47f93bce8c8266793aad549f866
     python3_with_modules:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/python:3.7.2-v1-with_modules
       digest: fced6c90728dbb6bafe8ea9fef119648ab877c0df3dd4ccced56272c53294622
