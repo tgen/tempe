@@ -203,13 +203,13 @@ constants:
       TETK2:
         umi_files: /home/tgenref/assay_files/twist_umi_adaptor_system/known_umi_sequences.txt
         umi_tag: RX
-        max_mismatch: 1
+        max_mismatches: 1
         min_distance: 2
         read_structure: "5M2S+T 5M2S+T"
       unknown:
         umi_files: /home/tgenref/assay_files/twist_umi_adaptor_system/known_umi_sequences.txt
         umi_tag: RX
-        max_mismatch: 1
+        max_mismatches: 1
         min_distance: 2
         read_structure: "5M2S+T 5M2S+T"
     gatk_known_sites:

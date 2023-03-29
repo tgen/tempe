@@ -21,7 +21,7 @@
     {% for fastq in [r1fastq, r2fastq] %}
     - temp/fastqs/{{ fastq.basename }}
     {% endfor %}
-    - {{ umi_options.known_umis }}
+    - {{ umi_options.umi_files }}
   output: 
     - {{ temp_dir }}/{{ rgid }}/{{ sample.rgid }}_UMI_uBAM.bam
     - {{ results_dir }}/stats/{{ sample.rgsm }}_UMIcorr_{{ aligner }}.txt
@@ -63,7 +63,7 @@
         --max-mismatches {{ umi_options.max_mismatches }} \
         --min-distance {{ umi_options.min_distance }} \
         --umi-tag {{ umi_options.umi_tag }} \
-        --umi-files {{ umi_options.known_umis }} \
+        --umi-files {{ umi_options.umi_files }} \
         --dont-store-original-umis \
         --metrics {{ results_dir }}/stats/{{ sample.rgsm }}_UMIcorr_{{ aligner }}.txt
 
