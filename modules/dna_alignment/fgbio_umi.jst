@@ -8,6 +8,7 @@
 
 {% set temp_dir %}temp/{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}{% endset %}
 {% set results_dir %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}{% endset %}
+{% set umi_options = constants.tempe.umi_options[sample.assayCode] | default(constants.tempe.umi_options.unknown) %}
 
 {% for rgid, rg in sample.read_groups.items() %}
 {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
@@ -20,6 +21,7 @@
     {% for fastq in [r1fastq, r2fastq] %}
     - temp/fastqs/{{ fastq.basename }}
     {% endfor %}
+    - {{ umi_options.known_umis }}
   output: 
     - {{ temp_dir }}/{{ rgid }}/{{ sample.rgid }}_UMI_uBAM.bam
     - {{ results_dir }}/stats/{{ sample.rgsm }}_UMIcorr_{{ aligner }}.txt
@@ -33,20 +35,9 @@
     set -eu
     set -o pipefail
 
-    {% if r1fastq.fileType == "fasterq" %}
-      export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
-      module load {{ constants.tools.petagene.module }}
-
-    {% endif %}
-    {#
-      This comment is here for protect render spacing, do not remove.
-    #}
     rm -r {{ temp_dir }}/{{ rgid }} || true
     mkdir -p {{ temp_dir }}/{{ rgid }}
     mkdir -p {{ results_dir }}/stats
-
-    {# TODO - Change this to not be hardcoded #}
-    KNOWN_UMI=/home/tgenref/assay_files/twist_umi_adaptor_system/known_umi_sequences.txt
 
     {# Extract UMI from reads and create uBAM (Step 1 - One step with fgbio)
     ## Need read structure to be dynamic by UMI kit and reads performed #}
@@ -54,8 +45,8 @@
       --compression 0 \
       FastqToBam \
         --input {% for fastq in [r1fastq, r2fastq] %}temp/fastqs/{{ fastq.basename }} {% endfor %} \
-        --read-structure 5M2S+T 5M2S+T \
-        --umi-tag RX \
+        --read-structure {{ umi_options.read_structure }} \
+        --umi-tag {{ umi_options.umi_tag }} \
         --sample {{ sample.rgsm }} \
         --library {{ sample.rglb }} \
         --read-group-id {{ sample.rgid }} \
@@ -69,10 +60,10 @@
         CorrectUmis \
         --input /dev/stdin \
         --output {{ temp_dir }}/{{ rgid }}/{{ sample.rgid }}_UMI_uBAM.bam \
-        --max-mismatches 1 \
-        --min-distance 2 \
-        --umi-tag RX \
-        --umi-files ${KNOWN_UMI} \
+        --max-mismatches {{ umi_options.max_mismatches }} \
+        --min-distance {{ umi_options.min_distance }} \
+        --umi-tag {{ umi_options.umi_tag }} \
+        --umi-files {{ umi_options.known_umis }} \
         --dont-store-original-umis \
         --metrics {{ results_dir }}/stats/{{ sample.rgsm }}_UMIcorr_{{ aligner }}.txt
 

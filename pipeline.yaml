@@ -199,6 +199,19 @@ constants:
         chemistry_name: auto
         umi_lenth: 10
         cell_barcode_whitelist_file: /packages/easy-build/software/CellRanger/6.0.0/lib/python/cellranger/barcodes/737K-august-2016.txt
+    umi_options:
+      TETK2:
+        umi_files: /home/tgenref/assay_files/twist_umi_adaptor_system/known_umi_sequences.txt
+        umi_tag: RX
+        max_mismatch: 1
+        min_distance: 2
+        read_structure: "5M2S+T 5M2S+T"
+      unknown:
+        umi_files: /home/tgenref/assay_files/twist_umi_adaptor_system/known_umi_sequences.txt
+        umi_tag: RX
+        max_mismatch: 1
+        min_distance: 2
+        read_structure: "5M2S+T 5M2S+T"
     gatk_known_sites:
       - /home/tgenref/homo_sapiens/grch38_hg38/public_databases/broad_resource_bundle/Homo_sapiens_assembly38.dbsnp138.vcf
       - /home/tgenref/homo_sapiens/grch38_hg38/public_databases/broad_resource_bundle/Homo_sapiens_assembly38.known_indels.vcf.gz
