@@ -9,14 +9,14 @@ constants:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/debian:bullseye-20230208
       digest: b8f30ec0fb3f1c1ab0de63703b438f8476296df3097af5b52917ec7ce8417863
     bcftools:
-      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/bcftools:1.16-v1
-      digest: 5dea48268d4162f5421b7a1ef713a7631d04ae7a1d2b391b9566864db9bd2440
+      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/bcftools:1.17-v1
+      digest: 43b1203213d365827b54a41fe2fdb263839297c381ef9abf7cdba8a042efffee
     bedtools:
       container: ghcr.io/tgen/jetstream_containers/bedtools:2.29.0
       digest: 625382642b4149e19c85399d8bc6db05e35ce906ac60c253a5da0cc2eb66dd8f
     bwa_mem2_samtools:
-      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/bwa_mem2_samtools:2.2.1-v1
-      digest: 2dfa1e5725132befa6643531ac7931ea09c15cde25a827502b3a1c33c9307b44
+      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/bwa_mem2_samtools:2.2.1-1.17-v1
+      digest: 15c7394b32a7b5f25ad54fe4501ca3232544cf24945e54670013857877d6524c
     deepvariant_cpu:
       container: ghcr.io/tgen/jetstream_containers/deepvariant:1.4.0-CPU
       digest: 070ca3f6feeeab93c3fb70ad926fa26f87789c10557f99ce19d8c16a0b31f7c4
@@ -45,8 +45,8 @@ constants:
       container: ghcr.io/tgen/jetstream_containers/hmmcopy-utils:v1
       digest: 643fc7efd5f576c1ecc5982bbed474f669efec01efecd233f8832139fc720ce0
     htslib:
-      container: ghcr.io/tgen/jetstream_containers/htslib:1.16
-      digest: 5cc3f4717e42bdfc43183a13fa21327cf5c684c7bb5ec230a97894575e65da95
+      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/htslib/1.17-v1/
+      digest: b8dbec4e4bc301ce4bb643aa1d782acb1446381ac5cc2370b85370ab6736ed78
     ichorcna:
       container: ghcr.io/tgen/jetstream_containers/ichorcna:v1
       digest: f9dfa90080208af3ed8bcc75a2f7b728994566abd371490b7a9cf1a080e7cf97
@@ -77,10 +77,10 @@ constants:
       digest: notarealdigest
     python3:
       container: python:3.7.2-slim
-      digest: f46a51a4d2555165b5958770bffedc42735ad47f93bce8c8266793aad549f866
+      digest: 78320634b63efb52f591a7d69d5a50076ce76e7b72c4b45c1e4ddad90c39870a
     python3_with_modules:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/python:3.7.2-v1-with_modules
-      digest: fced6c90728dbb6bafe8ea9fef119648ab877c0df3dd4ccced56272c53294622
+      digest: 2211f02c31b32ea9d152cb90556557c43d3d3aa4e6a84fee00091e8ac4f805d8
     parabricks:
       container: ghcr.io/tgen/jetstream_containers/clara-parabricks:4.0.0-1
       digest: 2a37e7a13669148bb922b1b675fb5ee32178e18b6813f9e3a9bc99436b59d03d
@@ -124,8 +124,8 @@ constants:
       container: /home/tgenref/containers/transparser_1.0.1.sif
       digest: notarealdigest
     vardict:
-      container: ghcr.io/tgen/jetstream_containers/vardict:1.7.9
-      digest: 0f7e273e1c7f7f74c285b9d1e04fd484f5fc1fa767bb9a0b7a077ae5da21eabc
+      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/vardict:1.7.0-v1
+      digest: 9c37489ad63a52fb5b6edde78ad67b2f14d47fc76377aa526387dd73c9a9e49b
     vcfmerger:
       container: ghcr.io/tgen/jetstream_containers/vcfmerger2:0.9.4
       digest: 54b068b9dde256e0617379bc772268ff291f570fef68d495a540a7d49b2f155a
