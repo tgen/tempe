@@ -45,7 +45,7 @@ constants:
       container: ghcr.io/tgen/jetstream_containers/hmmcopy-utils:v1
       digest: 643fc7efd5f576c1ecc5982bbed474f669efec01efecd233f8832139fc720ce0
     htslib:
-      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/htslib/1.17-v1/
+      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/htslib:1.17-v1
       digest: b8dbec4e4bc301ce4bb643aa1d782acb1446381ac5cc2370b85370ab6736ed78
     ichorcna:
       container: ghcr.io/tgen/jetstream_containers/ichorcna:v1
