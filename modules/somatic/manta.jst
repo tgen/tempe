@@ -139,8 +139,8 @@
   walltime: "12:00:00"
   queue_preset: "DEFAULT"
   runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
-  container: {{ constants.tools.python3.container }}
-  digest: {{ constants.tools.python3.digest }}
+  container: {{ constants.tools.python3_with_modules.container }}
+  digest: {{ constants.tools.python3_with_modules.digest }}
   cmd: |
     set -eu
     set -o pipefail
