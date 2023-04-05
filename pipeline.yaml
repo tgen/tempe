@@ -124,8 +124,8 @@ constants:
       container: /home/tgenref/containers/transparser_1.0.1.sif
       digest: notarealdigest
     vardict:
-      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/vardict:1.7.0-v1
-      digest: 9c37489ad63a52fb5b6edde78ad67b2f14d47fc76377aa526387dd73c9a9e49b
+      container: quay.io/biocontainers/vardict-java:1.7.0--0
+      digest: c9ed2254dc3b0b215fa30e1344990d798439fea47cfa7b2c22e089e1290b926b
     vcfmerger:
       container: ghcr.io/tgen/jetstream_containers/vcfmerger2:0.9.4
       digest: 54b068b9dde256e0617379bc772268ff291f570fef68d495a540a7d49b2f155a
