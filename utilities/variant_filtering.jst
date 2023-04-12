@@ -70,6 +70,49 @@
     bcftools index --threads 4 --tbi --force {{ output_vcf }}
     bcftools index --threads 4 --force {{ output_vcf }}
 
+{% set output_vcf %}{{ final_vcf_prefix }}.flt_v2.vcf.gz{% endset %}
+{% set threshold = "0.10" %}
+{# Ratios are capped in a range of 0-1, with 1 indicating an AC value of 0 #}
+{% set TOPMED_CNT_RATIO %}(INFO/COSMIC_CNT/(INFO/COSMIC_CNT + INFO/TOPMED_AC)>={{ threshold }}){% endset %}
+{% set TOPMED_NC_CNT_RATIO %}(INFO/COSMIC_NC_CNT/(INFO/COSMIC_NC_CNT + INFO/TOPMED_AC)>={{ threshold }}){% endset %}
+{% set GNOMAD_GENOME_CNT_RATIO %}(INFO/COSMIC_CNT/(INFO/COSMIC_CNT + INFO/GNOMAD_GENOME_AC)>={{ threshold }}){% endset %}
+{% set GNOMAD_GENOME_NC_CNT_RATIO %}(INFO/COSMIC_NC_CNT/(INFO/COSMIC_NC_CNT + INFO/GNOMAD_GENOME_AC)>={{ threshold }}){% endset %}
+{% set GNOMAD_EXOME_CNT_RATIO %}(INFO/COSMIC_CNT/(INFO/COSMIC_CNT + INFO/GNOMAD_EXOME_AC)>={{ threshold }}){% endset %}
+{% set GNOMAD_EXOME_NC_CNT_RATIO %}(INFO/COSMIC_NC_CNT/(INFO/COSMIC_NC_CNT + INFO/GNOMAD_EXOME_AC)>={{ threshold }}){% endset %}
+{% set INCLUDE_NON_DB %}(INFO/TOPMED==0 & INFO/GNOMAD_GENOME=0 & INFO/GNOMAD_EXOME=0){% endset %}
+{% set INCLUDE_FROM_RATIO %}({{ TOPMED_CNT_RATIO }} | {{ TOPMED_NC_CNT_RATIO }} | {{ GNOMAD_GENOME_CNT_RATIO }} | {{ GNOMAD_GENOME_NC_CNT_RATIO }} | {{ GNOMAD_EXOME_CNT_RATIO }} | {{ GNOMAD_EXOME_NC_CNT_RATIO }}){% endset%}
+
+- name: tumor_only_variant_filtering_v2_{{ pair.name }}_{{ variant_caller }}
+  tags: [{{ pair.gltype }}, tumor_only, variant_filter, {{ variant_caller }}, {{ pair.name }}]
+  {% if temp_dir in input_vcf %}
+  reset: predecessors
+  {% endif %}
+  input: {{ input_vcf }}
+  output: {{ output_vcf }}
+  cpus: 4
+  mem: 8G
+  walltime: "4:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.bcftools.container }}
+  digest: {{ constants.tools.bcftools.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    mkdir -p {{ temp_dir }}
+
+    {# Goal of the following filters - output likely somatic variants, e.g. remove germline variants
+      INCLUDE_NON_DB = Includes variants found in COSMIC, but not found in GNOMAD or TOPMED
+      INCLUDE_FROM_RATIO = Includes variants that meet the threshold for COSMIC_CNT/AC, indicating likely somatic
+    #}
+    bcftools view \
+      --threads 4 \
+      --include '{{ INCLUDE_NON_DB }} | {{ INCLUDE_FROM_RATIO }}' \
+      --output-file {{ output_vcf }} --output-type z \
+      {{ input_vcf }}.gz
+
+    bcftools index --threads 4 --tbi --force {{ output_vcf }}
+
 {% endmacro %}
 
 {% macro filter_variants(pair, input_vcf, output_dir, output_vcf, task) %}
