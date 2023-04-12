@@ -170,7 +170,7 @@
             The minimum number of split reads for SV.  Default: 1.  Change to 0 if you want SV called from discordant pairs only.
          -b  Path to the *.bed file which is used to generate contigs in the header
     #}
-    JAVA_OPTS="-Xmx26g" VarDict \
+    JAVA_OPTS="-Xmx26g" vardict-java \
       -th 4 \
       -b "{{ bam }}" \
       -N "{{ sample.rgsm }}" \
