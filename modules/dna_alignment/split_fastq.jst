@@ -1,5 +1,5 @@
-# This macro splits large fastqs into chunks prior to aligning.
-# If fastq is less than reads_per_chunk (48000000) then one chunk is made.
+{# This macro splits large fastqs into chunks prior to aligning. #}
+{# If fastq is less than reads_per_chunk (48000000) then one chunk is made. #}
 {% macro split_fastqs(sample, reads_per_chunk) %}
 
 {% set temp_dir %}temp/fastqs/{{ sample.name }}{% endset %}
@@ -33,14 +33,6 @@
     set -eu
     set -o pipefail
 
-    {% if fastq.fileType == "fasterq" %}
-      export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
-      module load {{ constants.tools.petagene.module }}
-
-    {% endif %}
-    {#
-      This comment is here for protect render spacing, do not remove.
-    #}
     rm -r "{{ temp_dir }}/{{ rgid }}/{{ fastq.basename }}/" || true
     mkdir -p "{{ temp_dir }}/{{ rgid }}/{{ fastq.basename }}/"
 
