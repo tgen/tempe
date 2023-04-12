@@ -12,15 +12,14 @@
 {% if controlDataFiles is defined %}
   {% if controlDataFiles|selectattr('assayCode', 'eq', sample.assayCode)|first is defined %}
     {% do control.update(controlDataFiles|selectattr('assayCode', 'eq', sample.assayCode)|first) %}
+    {% if control.rgsm is defined %}
+        {% set name %}{{ control.rgsm }}_{{ control.assayCode }}{% endset %}
+    {% else %}
+        {% set name %}{{ study }}_{{ control.assayCode }}{% endset %}
+    {% endif %}
+    {% do control.update({'name': name}) %}
   {% endif %}
 {% endif %}
-
-{% if control.rgsm is defined %}
-    {% set name %}{{ control.rgsm }}_{{ control.assayCode }}{% endset %}
-{% else %}
-    {% set name %}{{ study }}_{{ control.assayCode }}{% endset %}
-{% endif %}
-{% do control.update({'name': name}) %}
 
 - name: hmmcopy_make_wig_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype}}, constitutional, cna_caller, ichor, {{ sample.name }}]
