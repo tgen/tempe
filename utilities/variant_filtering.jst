@@ -109,7 +109,7 @@
       --threads 4 \
       --include '{{ INCLUDE_NON_DB }} | {{ INCLUDE_FROM_RATIO }}' \
       --output-file {{ output_vcf }} --output-type z \
-      {{ input_vcf }}.gz
+      {{ input_vcf }}
 
     bcftools index --threads 4 --tbi --force {{ output_vcf }}
 
