@@ -293,11 +293,11 @@
     {{ region.contig }}${TAB}{{ region.start }}${TAB}{{ region.stop }}
     {% endfor %}
     EOF
-
-    tar -xzf {{ temp_dir }}/{{ tumor.name }}_assembled_fastqs.tar.gz
     
     if [ -f {{ results_dir }}/{{ tumor.name }}_Trinity_All_Clusters_sorted.bam ]
-    then 
+    then
+      tar -xzf {{ temp_dir }}/{{ tumor.name }}_assembled_fastqs.tar.gz
+
       python3 ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.process_assembled_bam }} \
         --input_bam {{ results_dir }}/{{ tumor.name }}_Trinity_All_Clusters_sorted.bam \
         --fastq_dir {{ temp_dir }} \
