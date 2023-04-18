@@ -111,7 +111,7 @@
     {% do sample.update({'aligners': []}) %}
 
     {% if sample.gltype in ['genome', 'exome'] %}
-        {% if tasks[sample.gltype|capitalize+"_alignment_dna_alignment_bwa"]|default(false) %}
+        {% if tasks[sample.gltype|capitalize+"_alignment_dna_alignment_bwa"]|default(true) %}
             {% do sample.aligners.append('bwa') %}
         {% endif %}
         {% if tasks[sample.gltype|capitalize+"_alignment_dna_alignment_parabricks"]|default(false) %}
