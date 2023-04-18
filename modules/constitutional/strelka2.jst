@@ -2,14 +2,14 @@
 {% from 'utilities/remove_files.jst' import remove_files with context %}
 {% from 'utilities/vcf_stats.jst' import vcf_stats with context %}
 
-{%- macro strelka2_constitutional(sample, aligner='bwa', taskPrefix='Genome') %}
+{% macro strelka2_constitutional(sample, aligner='bwa', taskPrefix='Genome') %}
 
-{%- set bam %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
-{%- set indel_candidates %}{{ sample.gltype }}/constitutional_structural_calls/manta/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.manta.candidateSmallIndels.vcf.gz{% endset %}
-{%- set temp_dir %}temp/{{ sample.gltype }}/constitutional_variant_calls/strelka2/{{ sample.name }}_{{ aligner }}{% endset %}
-{%- set results_dir %}{{ sample.gltype }}/constitutional_variant_calls/strelka2/{{ sample.name }}_{{ aligner }}{% endset %}
-{%- set all_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.strelka2.all.vcf.gz{% endset %}
-{%- set pass_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.strelka2.pass.vcf.gz{% endset %}
+{% set bam %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
+{% set indel_candidates %}{{ sample.gltype }}/constitutional_structural_calls/manta/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.manta.candidateSmallIndels.vcf.gz{% endset %}
+{% set temp_dir %}temp/{{ sample.gltype }}/constitutional_variant_calls/strelka2/{{ sample.name }}_{{ aligner }}{% endset %}
+{% set results_dir %}{{ sample.gltype }}/constitutional_variant_calls/strelka2/{{ sample.name }}_{{ aligner }}{% endset %}
+{% set all_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.strelka2.all.vcf.gz{% endset %}
+{% set pass_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.strelka2.pass.vcf.gz{% endset %}
 
 - name: strelka2_build_call_regions_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, strelka2, {{ sample.name }}]

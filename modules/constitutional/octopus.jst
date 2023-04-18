@@ -2,12 +2,12 @@
 {% from 'utilities/remove_files.jst' import remove_files with context %}
 {% from 'utilities/vcf_stats.jst' import vcf_stats with context %}
 
-{%- macro octopus_constitutional(sample, aligner='bwa', taskPrefix='Genome') %}
-{%- set bam %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
-{%- set temp_dir %}temp/{{ sample.gltype }}/constitutional_variant_calls/octopus/{{ sample.name }}_{{ aligner }}{% endset %}
-{%- set results_dir %}{{ sample.gltype }}/constitutional_variant_calls/octopus/{{ sample.name }}_{{ aligner }}{% endset %}
-{%- set all_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.octopus.all.vcf.gz{% endset %}
-{%- set pass_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.octopus.pass.vcf.gz{% endset %}
+{% macro octopus_constitutional(sample, aligner='bwa', taskPrefix='Genome') %}
+{% set bam %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
+{% set temp_dir %}temp/{{ sample.gltype }}/constitutional_variant_calls/octopus/{{ sample.name }}_{{ aligner }}{% endset %}
+{% set results_dir %}{{ sample.gltype }}/constitutional_variant_calls/octopus/{{ sample.name }}_{{ aligner }}{% endset %}
+{% set all_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.octopus.all.vcf.gz{% endset %}
+{% set pass_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.octopus.pass.vcf.gz{% endset %}
 
 {% for batch in constants.tempe.primary_contig_calling_intervals %}
 

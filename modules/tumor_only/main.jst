@@ -78,7 +78,7 @@
 
     {% for aligner in tumor.aligners %}
 
-        {%- if tasks[taskPrefix+"_tumor_only_snp_indel_caller_deepvariant"]|default(false) %}
+        {% if tasks[taskPrefix+"_tumor_only_snp_indel_caller_deepvariant"]|default(false) %}
             {{- deepvariant_tumor_only(tumor, aligner, taskPrefix=taskPrefix) }}
         {% endif %}
 
