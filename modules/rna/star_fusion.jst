@@ -4,8 +4,8 @@
 
 {% macro star_fusion(sample) %}
 
-{% set temp_dir %}temp/{{ sample.gltype }}/fusions/starfusion/{{ sample.name }}{% endset %}
-{% set results_dir %}{{ sample.gltype }}/fusions/starfusion/{{ sample.name }}{% endset %}
+{%- set temp_dir %}temp/{{ sample.gltype }}/fusions/starfusion/{{ sample.name }}{% endset %}
+{%- set results_dir %}{{ sample.gltype }}/fusions/starfusion/{{ sample.name }}{% endset %}
 
 {# Here we build up lists of all the fastq files for this sample #}
 {% set r1fqlist = [] %}

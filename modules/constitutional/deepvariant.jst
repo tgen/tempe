@@ -1,15 +1,15 @@
 {% from 'modules/annotation/main.jst' import annotate_vcfs with context %}
 {% from 'utilities/vcf_stats.jst' import vcf_stats with context %}
 
-{% macro deepvariant(sample, aligner='bwa', taskPrefix='Genome') %}
+{%- macro deepvariant(sample, aligner='bwa', taskPrefix='Genome') %}
 
-{% set bam %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
-{% set temp_dir %}temp/{{ sample.gltype }}/constitutional_variant_calls/deepvariant/{{ sample.name }}_{{ aligner }}{% endset %}
-{% set results_dir %}{{ sample.gltype }}/constitutional_variant_calls/deepvariant/{{ sample.name }}_{{ aligner }}{% endset %}
-{% set all_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.deepvariant.all.vcf.gz{% endset %}
-{% set pass_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.deepvariant.pass.vcf.gz{% endset %}
+{%- set bam %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
+{%- set temp_dir %}temp/{{ sample.gltype }}/constitutional_variant_calls/deepvariant/{{ sample.name }}_{{ aligner }}{% endset %}
+{%- set results_dir %}{{ sample.gltype }}/constitutional_variant_calls/deepvariant/{{ sample.name }}_{{ aligner }}{% endset %}
+{%- set all_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.deepvariant.all.vcf.gz{% endset %}
+{%- set pass_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.deepvariant.pass.vcf.gz{% endset %}
 
-{% set nshards=40 %}
+{%- set nshards=40 %}
 {% for i in range(nshards) %}
 
 {% set iteration = ('00000' + i|string)|reverse|truncate(5, True, '', 0)|reverse %}
