@@ -1,26 +1,18 @@
-{%- from 'modules/annotation/snpeff.jst' import snpeff with context %}
-{%- from 'modules/annotation/bcftools_annotate.jst' import bcftools_annotate with context %}
-{%- from 'modules/annotation/vep.jst' import vep with context %}
-{%- from 'utilities/variant_filtering.jst' import tumor_only_variant_filter with context %}
+{% from 'modules/annotation/bcftools_annotate.jst' import bcftools_annotate with context %}
+{% from 'modules/annotation/snpeff.jst' import snpeff with context %}
+{% from 'modules/annotation/vep.jst' import vep with context %}
+{% from 'utilities/variant_filtering.jst' import tumor_only_variant_filter with context %}
 
-{%- macro annotate_vcfs(sample_or_pair, temp_dir, results_dir, input_vcf, taskPrefix, aligner, variant_caller, analysis_type, task_type) %}
+{% macro annotate_vcfs(sample_or_pair, temp_dir, results_dir, input_vcf, taskPrefix, aligner, variant_caller, analysis_type) %}
 
-{% if variant_caller == 'merged' %}
-  {%- set output_vcf %}{{ results_dir }}/{{ sample_or_pair.name }}.{{ aligner }}.{{ variant_caller }}.db.vcf.gz{% endset %}
-  {%- set temp_vcf %}{{ temp_dir }}/{{ sample_or_pair.name }}.{{ aligner }}.{{ variant_caller }}.db.vcf.gz{% endset %}
-  {%- set final_vcf_prefix %}{{ results_dir }}/{{ sample_or_pair.name }}.{{ aligner }}.{{ variant_caller }}{% endset %}
-{% else %}
-  {%- set output_vcf %}{{ results_dir }}/{{ sample_or_pair.name }}.{{ aligner }}.{{ variant_caller }}.pass.db.vcf.gz{% endset %}
-  {%- set temp_vcf %}{{ temp_dir }}/{{ sample_or_pair.name }}.{{ aligner }}.{{ variant_caller }}.pass.db.vcf.gz{% endset %}
-  {%- set final_vcf_prefix %}{{ results_dir }}/{{ sample_or_pair.name }}.{{ aligner }}.{{ variant_caller }}.pass{% endset %}
-{% endif %}
+{# This should correctly strip example.vcf.gz and example.vcf down to example #}
+{% set vcf_prefix %}{{ input_vcf | removesuffix(".gz") | removesuffix(".vcf") }}{% endset %}
 
-{%- set annotate_task_prefix = taskPrefix+'_'+analysis_type+'_annotate_vcfs_bcftools_' %}
-{%- set bcftools_task %}bcftools_annotate_{{ variant_caller }}_{{ sample_or_pair.name }}_{{ aligner }}{% endset %}
+{% set annotate_task_prefix = taskPrefix+'_'+analysis_type+'_annotate_vcfs_bcftools_' %}
 
-{%- set flags = namespace({ 'bcftools': none, 'snpeff': none, 'vep': none }) %}
+{% set flags = namespace({ 'bcftools': none, 'snpeff': none, 'vep': none }) %}
 
-{%- if tasks %}
+{% if tasks %}
   {% for annotate_task in tasks %}
     {% if annotate_task_prefix in annotate_task and tasks[annotate_task] %}
       {% set flags.bcftools = true %}
@@ -48,43 +40,44 @@
   {% set flags.vep = true %}
 {% endif %}
 
-{%- if flags.bcftools is sameas true %}
+{% if flags.bcftools is sameas true %}
 
-  {{- bcftools_annotate(sample_or_pair, temp_dir, input_vcf, taskPrefix, variant_caller, analysis_type, output_vcf, temp_vcf, aligner, flags.snpeff, flags.vep, task_type ) }}
+  {% set bcftools_output %}{{ vcf_prefix }}.db.vcf.gz{% endset %}
+  {{- bcftools_annotate(sample_or_pair, temp_dir, input_vcf, taskPrefix, variant_caller, analysis_type, bcftools_output, aligner) }}
 
-  {%- if 'tumor_only' in analysis_type %}
-    {% if flags.snpeff or flags.vep %}
-      {{- tumor_only_variant_filter(sample_or_pair, temp_vcf, final_vcf_prefix+'.db', temp_dir, variant_caller) }}
-    {% else %}
-      {{- tumor_only_variant_filter(sample_or_pair, output_vcf, final_vcf_prefix+'.db', temp_dir, variant_caller) }}
+  {% set snpeff_output %}{{ vcf_prefix }}.db.snpeff.can.vcf.gz{% endset %}
+  {% if flags.snpeff %}
+    {{- snpeff(sample_or_pair, results_dir, bcftools_output, variant_caller, vcf_prefix+'.db', aligner, analysis_type) }}
+  {% endif %}
+
+  {% set vep_output %}{{ vcf_prefix }}.db.vep.pick.vcf.gz{% endset %}
+  {% if flags.vep %}
+    {{- vep(sample_or_pair, results_dir, bcftools_output, variant_caller, vcf_prefix+'.db', aligner, analysis_type) }}
+  {% endif %}
+
+  {# tumor_only variant filtering only works if we annotated with bcftools #}
+  {% if 'tumor_only' in analysis_type %}
+    {% if flags.snpeff %}
+      {{- tumor_only_variant_filter(sample_or_pair, snpeff_output, temp_dir, variant_caller, 'snpeff') }}
     {% endif %}
-
-    {%- if flags.snpeff %}
-      {{- snpeff(sample_or_pair, results_dir, final_vcf_prefix+'.db.flt.vcf.gz', variant_caller, final_vcf_prefix+'.db.flt', aligner, task_type, analysis_type) }}
+    {% if flags.vep %}
+      {{- tumor_only_variant_filter(sample_or_pair, vep_output, temp_dir, variant_caller, 'vep') }}
     {% endif %}
-
-    {%- if flags.vep %}
-      {{- vep(sample_or_pair, results_dir, final_vcf_prefix+'.db.flt.vcf.gz', variant_caller, final_vcf_prefix+'.db.flt', aligner, task_type, analysis_type) }}
-    {% endif %}
-  {% else %}
-    {%- if flags.snpeff %}
-      {{- snpeff(sample_or_pair, results_dir, temp_vcf, variant_caller, final_vcf_prefix+'.db', aligner, task_type, analysis_type) }}
-    {% endif %}
-
-    {%- if flags.vep %}
-      {{- vep(sample_or_pair, results_dir, temp_vcf, variant_caller, final_vcf_prefix+'.db', aligner, task_type, analysis_type) }}
+    {% if not flags.snpeff or flags.vep %}
+      {{- tumor_only_variant_filter(sample_or_pair, bcftools_output, temp_dir, variant_caller, 'bcftools') }}
     {% endif %}
   {% endif %}
 
 {% else %}
 
-  {%- if flags.snpeff %}
-    {{- snpeff(sample_or_pair, results_dir, input_vcf, variant_caller, final_vcf_prefix, aligner, task_type, analysis_type) }}
+  {% if flags.snpeff %}
+    {{- snpeff(sample_or_pair, results_dir, input_vcf, variant_caller, vcf_prefix, aligner, analysis_type) }}
   {% endif %}
 
-  {%- if flags.vep %}
-    {{- vep(sample_or_pair, results_dir, input_vcf, variant_caller, final_vcf_prefix, aligner, task_type, analysis_type) }}
+  {% if flags.vep %}
+    {{- vep(sample_or_pair, results_dir, input_vcf, variant_caller, vcf_prefix, aligner, analysis_type) }}
   {% endif %}
 
 {% endif %}
+
 {% endmacro %}

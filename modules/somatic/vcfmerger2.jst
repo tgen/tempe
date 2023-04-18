@@ -150,7 +150,7 @@
 {% else %}
   {{- add_rna_header_to_vcf(merged_vcf_gz, output_vcf, pair, aligner , temp_dir)  }}
 {% endif %}
-  {{- annotate_vcfs(pair, temp_dir, results_dir, output_vcf, taskPrefix, aligner, 'merged', 'somatic', 'snp_indel_caller') }}
+  {{- annotate_vcfs(pair, temp_dir, results_dir, output_vcf, taskPrefix, aligner, 'merged', 'somatic') }}
   {{- vcf_stats(output_vcf, results_dir) }}
   {{- collect_somatic_metrics(pair, normal_bam, tumor_bam, results_dir, taskPrefix, aligner, 'merged') }}
 {% endmacro %}

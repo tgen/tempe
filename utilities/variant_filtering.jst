@@ -1,20 +1,22 @@
 
-{% macro tumor_only_variant_filter(pair, input_vcf, final_vcf_prefix, temp_dir, variant_caller) %}
+{% macro tumor_only_variant_filter(pair, input_vcf, temp_dir, variant_caller, origin) %}
 
-{% set output_vcf %}{{ final_vcf_prefix }}.flt.vcf.gz{% endset %}
-{% set temp_vcf_prefix %}{{ temp_dir }}/{{ final_vcf_prefix | basename }}{% endset %}
+{% set vcf_prefix %}{{ input_vcf | removesuffix(".gz") | removesuffix(".vcf") }}{% endset %}
+
+{% set output_vcf %}{{ vcf_prefix }}.flt.vcf.gz{% endset %}
+{% set temp_vcf_prefix %}{{ temp_dir }}/{{ vcf_prefix | basename }}{% endset %}
 {% set DB_member %}(INFO/GNOMAD_EXOME=1 | INFO/GNOMAD_GENOME=1 | INFO/TOPMED=1){% endset %}
 {% set DB_exclude %}(INFO/TOPMED_AC>5 | INFO/GNOMAD_GENOME_AC>5 | INFO/GNOMAD_EXOME_AC>5){% endset %}
 {% set COSMIC_filter %}(INFO/COSMIC_CNT>=1 | INFO/COSMIC_NC_CNT>=1){% endset %}
-{% if variant_caller == 'merged' and pair.callers is defined %}
+{% if variant_caller == 'merged' and pair.callers is defined and pair.callers | length > 1 %}
   {% if pair.callers | length > 3 %}
-    {% set CC_filter %}INFO/CC>=3{% endset %}
+    {% set CC_filter %}INFO/CC>={{ pair.callers | length - 2 }}{% endset %}
   {% else %}
     {% set CC_filter %}INFO/CC>={{ pair.callers | length - 1 }}{% endset %}
   {% endif %}
 {% endif %}
 
-- name: tumor_only_variant_filtering_{{ pair.name }}_{{ variant_caller }}
+- name: tumor_only_variant_filtering_{{ pair.name }}_{{ variant_caller }}_{{ origin }}
   tags: [{{ pair.gltype }}, tumor_only, variant_filter, {{ variant_caller }}, {{ pair.name }}]
   {% if temp_dir in input_vcf %}
   reset: predecessors
@@ -45,7 +47,7 @@
         --exclude "{{ DB_exclude }}" \
         --output-file {{ temp_vcf_prefix }}.filtered_db.vcf.gz --output-type z -
 
-    bcftools index --force {{ temp_vcf_prefix}}.filtered_db.vcf.gz
+    bcftools index --force {{ temp_vcf_prefix }}.filtered_db.vcf.gz
 
     {# Creating a vcf of variants that do not exist in gnomad/topmed #}
     bcftools view \
@@ -57,20 +59,20 @@
         --exclude "{{ DB_member }}" \
         --output-file {{ temp_vcf_prefix }}.not_in_db.vcf.gz --output-type z -
 
-    bcftools index --force {{ temp_vcf_prefix}}.not_in_db.vcf.gz
+    bcftools index --force {{ temp_vcf_prefix }}.not_in_db.vcf.gz
 
     {# Merging the vcf containing filtered variants annotated by gnomad/topmed and those that did not exist in the db #}
     bcftools concat \
       --allow-overlaps \
-      {{ temp_vcf_prefix}}.filtered_db.vcf.gz \
-      {{ temp_vcf_prefix}}.not_in_db.vcf.gz |\
+      {{ temp_vcf_prefix }}.filtered_db.vcf.gz \
+      {{ temp_vcf_prefix }}.not_in_db.vcf.gz |\
     bcftools sort \
       --output-file {{ output_vcf }} --output-type z -
 
     bcftools index --threads 4 --tbi --force {{ output_vcf }}
     bcftools index --threads 4 --force {{ output_vcf }}
 
-{% set output_vcf %}{{ final_vcf_prefix }}.flt_v2.vcf.gz{% endset %}
+{% set output_vcf %}{{ vcf_prefix }}.flt_v2.vcf.gz{% endset %}
 {% set threshold = "0.10" %}
 {# Ratios are capped in a range of 0-1, with 1 indicating an AC value of 0 #}
 {% set TOPMED_CNT_RATIO %}(INFO/COSMIC_CNT/(INFO/COSMIC_CNT + INFO/TOPMED_AC)>={{ threshold }}){% endset %}
@@ -82,7 +84,7 @@
 {% set INCLUDE_NON_DB %}(INFO/TOPMED==0 & INFO/GNOMAD_GENOME=0 & INFO/GNOMAD_EXOME=0){% endset %}
 {% set INCLUDE_FROM_RATIO %}({{ TOPMED_CNT_RATIO }} | {{ TOPMED_NC_CNT_RATIO }} | {{ GNOMAD_GENOME_CNT_RATIO }} | {{ GNOMAD_GENOME_NC_CNT_RATIO }} | {{ GNOMAD_EXOME_CNT_RATIO }} | {{ GNOMAD_EXOME_NC_CNT_RATIO }}){% endset%}
 
-- name: tumor_only_variant_filtering_v2_{{ pair.name }}_{{ variant_caller }}
+- name: tumor_only_variant_filtering_v2_{{ pair.name }}_{{ variant_caller }}_{{ origin }}
   tags: [{{ pair.gltype }}, tumor_only, variant_filter, {{ variant_caller }}, {{ pair.name }}]
   {% if temp_dir in input_vcf %}
   reset: predecessors
@@ -107,7 +109,11 @@
     #}
     bcftools view \
       --threads 4 \
+      {% if variant_caller == 'merged' %}
+      --include '{{ CC_filter }} & ({{ INCLUDE_NON_DB }} | {{ INCLUDE_FROM_RATIO }})' \
+      {% else %}
       --include '{{ INCLUDE_NON_DB }} | {{ INCLUDE_FROM_RATIO }}' \
+      {% endif %}
       --output-file {{ output_vcf }} --output-type z \
       {{ input_vcf }}
 
@@ -162,7 +168,7 @@
       {{ input_vcf }}
 
     {# No need to index vcf if it isn't compressed #}
-    {%- if output_type != 'v' %}
+    {% if output_type != 'v' %}
     bcftools index --force {{ output_vcf }}
     {% endif %}
 
