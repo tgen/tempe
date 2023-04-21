@@ -7,7 +7,7 @@
 
 # This macro splits large fastqs into chunks prior to aligning.
 # If fastq is less than reads_per_chunk (48000000) then one chunk is made.
-{% macro bwa_mem2_samtools(sample, reads_per_chunk, opt_dup_distance, aligner, nomultidup=false, nosupdup=false) %}
+{% macro bwa_mem2_samtools(sample, reads_per_chunk, opt_dup_distance, aligner) %}
 
 {% set temp_dir %}temp/{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}{% endset %}
 {% set results_dir %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}{% endset %}
@@ -190,17 +190,13 @@
      2>      Stats are output to stderr which is redirected to ".{{ aligner }}.bam.markdup.txt"
     #}
     samtools markdup \
-      {% if nomultidup %}
-      --no-multi-dup \
-      {% endif %}
+      --use-read-groups \
+      --json \
       -d {{ opt_dup_distance }} \
-      {% if not nosupdup %}
       -S \
-      {% endif %}
-      -f "{{ results_dir }}/stats/{{ sample.name }}.{{ aligner }}.bam.samtools.markdup.txt" \
+      -f "{{ results_dir }}/stats/{{ sample.name }}.{{ aligner }}.bam.samtools.markdup.json" \
       --threads 20 \
       --write-index \
-      -u \
       -T "{{ temp_dir }}/markdup_temp/{{ sample.name }}" \
       "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.bam" \
       "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam"
