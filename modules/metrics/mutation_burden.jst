@@ -16,11 +16,7 @@
   {% endif %}
 {% endif %}
 
-{% if annotate_flag == 'snpeff' %}
-  {% set canonical_cds_intervals %}{{ constants.tempe.snpeff_canonical_cds_intervals }}{% endset %}
-{% else %}
-  {% set canonical_cds_intervals %}{{ constants.tempe.vep_canonical_cds_intervals }}{% endset %}
-{% endif %}
+{% set canonical_cds_intervals %}{{ constants.tempe.vep_canonical_cds_intervals }}{% endset %}
 
 - name: tgen_mutation_burden_{{ variant_caller }}_{{ pair.name }}_{{ aligner }}_{{ annotate_flag }}
   tags: [{{ pair.gltype }}, metrics, mutation_burden, {{ pair.name }} ]
@@ -52,11 +48,7 @@
 
     {% set ns_list = [] %}
     {% for effect in constants.tempe.ns_effects %}
-      {% if annotate_flag == 'snpeff' %}
-        {% set ns_effect %}INFO/ANN ~ "{{ effect }}"{% endset %}
-      {% else %}
-        {% set ns_effect %}INFO/CSQ ~ "{{ effect }}"{% endset %}
-      {% endif %}
+      {% set ns_effect %}INFO/CSQ ~ "{{ effect }}"{% endset %}
       {% do ns_list.append(ns_effect) %}
     {% endfor %}
 

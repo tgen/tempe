@@ -336,10 +336,6 @@
     {% set annotated_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.vardict.pass.db.vep.pick.vcf.gz{% endset %}
     {% set filtered_annot_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.vardict.pass.db.vep.pick.chip.vcf.gz{% endset %}
     {{- filter_chip_variants(sample, aligner, 'vep', annotated_vcf, filtered_annot_vcf) }}
-  {% elif tasks[taskPrefix+"_constitutional_annotate_vcfs_snpEff_ann"]|default(false) %}
-    {% set annotated_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.vardict.pass.db.snpeff.can.vcf.gz{% endset %}
-    {% set filtered_annot_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.vardict.pass.db.snpeff.can.chip.vcf.gz{% endset %}
-    {{- filter_chip_variants(sample, aligner, 'snpeff', annotated_vcf, filtered_annot_vcf) }}
   {% else %}
     {% set annotated_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.vardict.pass.db.vcf.gz{% endset %}
     {% set filtered_annot_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.vardict.pass.db.chip.vcf.gz{% endset %}

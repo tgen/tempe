@@ -105,9 +105,6 @@ constants:
     sigprofiler:
       container: ghcr.io/tgen/jetstream_containers/sigprofiler:0.0.21
       digest: e23822b423d46434fbc8a43008ec579c636b32b45c31a95b16b0180cc13e7734
-    snpeff:
-      container: ghcr.io/tgen/jetstream_containers/snpeff:4_3t
-      digest: bd1aa0314843e414388330f6fe69bc442459c18de7999e9c91afaeef2c05a02d
     snpsniffer:
       container: ghcr.io/tgen/jetstream_containers/snpsniffer:7.0.0
       digest: cafd6b4b27614bf7a5460dd9812bdf5bf7bdc8c8971f1f0fa6d0b9e7b8a6dc9a
@@ -287,10 +284,6 @@ constants:
         featurecounts: "2"
         tophat: "-fr-firststrand"
         collectrnaseqmetrics: "SECOND_READ_TRANSCRIPTION_STRAND"
-    snpeff_config: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/tool_resources/snpEff_v4_3t/snpEff.config
-    snpeff_data: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/tool_resources/snpEff_v4_3t/data
-    snpeff_db: grch38.103
-    snpeff_canonical_cds_intervals: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/Homo_sapiens.GRCh38.103.ucsc.flt_canonical_snpeff.cds_padded.bed
     snpSniffer_sites: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/snpSniffer/positions_387_hg38_ucsc.txt
     snpSniffer_database: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/snpSniffer/databaseV5_hg38_ucsc.ini
     vep_data: /home/tgenref/homo_sapiens/grch38_hg38/tool_specific_resources/vep/v103/
