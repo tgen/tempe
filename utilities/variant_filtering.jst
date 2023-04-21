@@ -2,9 +2,9 @@
 {% macro tumor_only_variant_filter(pair, input_vcf, temp_dir, variant_caller, origin) %}
 
 {% if input_vcf.endswith('.vcf') %}
-  {% set vcf_prefix = input_vcf.split('.')[:-1] %}
+  {% set vcf_prefix = input_vcf.split('.')[:-1]|join('.') %}
 {% elif input_vcf.endswith('.vcf.gz') %}
-  {% set vcf_prefix = input_vcf.split('.')[:-2] %}
+  {% set vcf_prefix = input_vcf.split('.')[:-2]|join('.') %}
 {% else %}
   {{ raise('{} does not appear to be a vcf!'.format(input_vcf)) }}
 {% endif %}

@@ -5,9 +5,9 @@
 {% macro annotate_vcfs(sample_or_pair, temp_dir, results_dir, input_vcf, taskPrefix, aligner, variant_caller, analysis_type) %}
 
 {% if input_vcf.endswith('.vcf') %}
-  {% set vcf_prefix = input_vcf.split('.')[:-1] %}
+  {% set vcf_prefix = input_vcf.split('.')[:-1]|join('.') %}
 {% elif input_vcf.endswith('.vcf.gz') %}
-  {% set vcf_prefix = input_vcf.split('.')[:-2] %}
+  {% set vcf_prefix = input_vcf.split('.')[:-2]|join('.') %}
 {% else %}
   {{ raise('{} does not appear to be a vcf!'.format(input_vcf)) }}
 {% endif %}
