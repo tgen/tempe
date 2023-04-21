@@ -144,6 +144,7 @@
       --threads 4 \
       --annotations "{{ constants.tempe.clinvar }}" \
       --mark-sites CLINVAR \
+      --columns CLNDN,CLNDNINCL,CLNDISDB,CLNDISDBINCL,CLNHGVS,CLNREVSTAT,CLNSIG,CLNSIGCONF,CLNSIGINCL,CLNVC,CLNVCSO,CLNVI,CLNORIGIN:=ORIGIN \
       --output-type b \
       --output "{{ temp_dir }}/tempout.bcf" \
       "{{ output_bcf }}"
