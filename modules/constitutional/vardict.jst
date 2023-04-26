@@ -36,7 +36,7 @@
     # to the VarDict memory usage spiking very high on larger intervals.
     #}
     TAB=$'\t'
-    cat <<EOF | bedtools makewindows -w 20000 -s 19850 -b /dev/stdin > "{{ temp_dir }}/{{ loop.index }}.bed"
+    cat <<EOF | bedtools makewindows -w 20000 -s 19850 -b - > "{{ temp_dir }}/{{ loop.index }}.bed"
     {% for interval in batch %}
     {{ interval.contig }}${TAB}{{ interval.start - 1 }}${TAB}{{ interval.stop }}
     {% endfor %}
