@@ -25,6 +25,7 @@
     - {{ temp_dir }}/{{ rgid }}/{{ fastq.basename }}/{{ chunk_suffix }}
     {% endfor %}
   cpus: 1
+  mem: 2G
   walltime: "4:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.samtools.container }}
@@ -41,7 +42,7 @@
         --numeric-suffixes \
         --suffix-length 2 \
         --lines {{ n_lines }} \
-        --filter='gzip > $FILE' \
+        --filter='gzip -1 > $FILE' \
         - \
         "{{ temp_dir }}/{{ rgid }}/{{ fastq.basename }}/"
 
