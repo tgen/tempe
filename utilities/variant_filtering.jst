@@ -25,9 +25,9 @@
   {% set COSMIC_Ratio_Threshold = "0.10" %}
 {% else %}
   {% if COSMIC_Ratio_Threshold is not number %}
-    {{ raise('{} is not a number'.format(COSMIC_Ratio_Threshold)) }}
+    {{ raise('The supplied COSMIC_Ratio_Threshold: {} is not a number'.format(COSMIC_Ratio_Threshold)) }}
   {% elif COSMIC_Ratio_Threshold < 0 or COSMIC_Ratio_Threshold > 1 %}
-    {{ raise('{} is outside of the expected range of 0..1'.format(COSMIC_Ratio_Threshold)) }}
+    {{ raise('The supplied COSMIC_Ratio_Threshold: {} is outside of the expected range of 0..1'.format(COSMIC_Ratio_Threshold)) }}
   {% endif %}
 {% endif %}
 
