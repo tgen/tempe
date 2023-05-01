@@ -10,87 +10,38 @@
 {% endif %}
 
 {% set output_vcf %}{{ vcf_prefix }}.flt.vcf.gz{% endset %}
-{% set temp_vcf_prefix %}{{ temp_dir }}/{{ vcf_prefix | basename }}{% endset %}
-{% set DB_member %}(INFO/GNOMAD_EXOME=1 | INFO/GNOMAD_GENOME=1 | INFO/TOPMED=1){% endset %}
-{% set DB_exclude %}(INFO/TOPMED_AC>5 | INFO/GNOMAD_GENOME_AC>5 | INFO/GNOMAD_EXOME_AC>5){% endset %}
-{% set COSMIC_filter %}(INFO/COSMIC_CNT>=1 | INFO/COSMIC_NC_CNT>=1){% endset %}
-{% if variant_caller == 'merged' and pair.callers is defined and pair.callers | length > 1 %}
-  {% if pair.callers | length > 3 %}
-    {% set CC_filter %}INFO/CC>={{ pair.callers | length - 2 }}{% endset %}
-  {% else %}
-    {% set CC_filter %}INFO/CC>={{ pair.callers | length - 1 }}{% endset %}
+{# Checking if CC_filter is already defined, in preparation for allowing user defined filters #}
+{% if CC_filter is not defined %}
+  {% if variant_caller == 'merged' and pair.callers is defined and pair.callers|length > 1 %}
+    {% if pair.callers | length > 3 %}
+      {% set CC_filter %}INFO/CC>={{ pair.callers | length - 2 }}{% endset %}
+    {% else %}
+      {% set CC_filter %}INFO/CC>={{ pair.callers | length - 1 }}{% endset %}
+    {% endif %}
   {% endif %}
 {% endif %}
 
-- name: tumor_only_variant_filtering_{{ pair.name }}_{{ variant_caller }}_{{ origin }}
-  tags: [{{ pair.gltype }}, tumor_only, variant_filter, {{ variant_caller }}, {{ pair.name }}]
-  {% if temp_dir in input_vcf %}
-  reset: predecessors
+{% if COSMIC_Ratio_Threshold is not defined %}
+  {% set COSMIC_Ratio_Threshold = "0.10" %}
+{% else %}
+  {% if COSMIC_Ratio_Threshold is not number %}
+    {{ raise('{} is not a number'.format(COSMIC_Ratio_Threshold)) }}
+  {% elif COSMIC_Ratio_Threshold < 0 or COSMIC_Ratio_Threshold > 1 %}
+    {{ raise('{} is outside of the expected range of 0..1'.format(COSMIC_Ratio_Threshold)) }}
   {% endif %}
-  input: {{ input_vcf }}
-  output: {{ output_vcf }}
-  cpus: 1
-  mem: 4G
-  walltime: "4:00:00"
-  queue_preset: "DEFAULT"
-  container: {{ constants.tools.bcftools.container }}
-  digest: {{ constants.tools.bcftools.digest }}
-  cmd: |
-    set -eu
-    set -o pipefail
+{% endif %}
 
-    mkdir -p {{ temp_dir }}
-
-    {# We need to do tiered filtering since we can't use -i and -e at the same time #}
-    bcftools view \
-      {% if variant_caller == 'merged' %}
-      --include "{{ CC_filter }} & {{ DB_member }} & {{ COSMIC_filter }}" \
-      {% else %}
-      --include "{{ DB_member }} & {{ COSMIC_filter }}" \
-      {% endif %}
-      {{ input_vcf }} |\
-      bcftools view \
-        --exclude "{{ DB_exclude }}" \
-        --output-file {{ temp_vcf_prefix }}.filtered_db.vcf.gz --output-type z -
-
-    bcftools index --force {{ temp_vcf_prefix }}.filtered_db.vcf.gz
-
-    {# Creating a vcf of variants that do not exist in gnomad/topmed #}
-    bcftools view \
-      {% if variant_caller == 'merged' %}
-      --include "{{ CC_filter }}" \
-      {% endif %}
-      {{ input_vcf }} |\
-      bcftools view \
-        --exclude "{{ DB_member }}" \
-        --output-file {{ temp_vcf_prefix }}.not_in_db.vcf.gz --output-type z -
-
-    bcftools index --force {{ temp_vcf_prefix }}.not_in_db.vcf.gz
-
-    {# Merging the vcf containing filtered variants annotated by gnomad/topmed and those that did not exist in the db #}
-    bcftools concat \
-      --allow-overlaps \
-      {{ temp_vcf_prefix }}.filtered_db.vcf.gz \
-      {{ temp_vcf_prefix }}.not_in_db.vcf.gz |\
-    bcftools sort \
-      --output-file {{ output_vcf }} --output-type z -
-
-    bcftools index --threads 4 --tbi --force {{ output_vcf }}
-    bcftools index --threads 4 --force {{ output_vcf }}
-
-{% set output_vcf %}{{ vcf_prefix }}.flt_v2.vcf.gz{% endset %}
-{% set threshold = "0.10" %}
 {# Ratios are capped in a range of 0-1, with 1 indicating an AC value of 0 #}
-{% set TOPMED_CNT_RATIO %}(INFO/COSMIC_CNT/(INFO/COSMIC_CNT + INFO/TOPMED_AC)>={{ threshold }}){% endset %}
-{% set TOPMED_NC_CNT_RATIO %}(INFO/COSMIC_NC_CNT/(INFO/COSMIC_NC_CNT + INFO/TOPMED_AC)>={{ threshold }}){% endset %}
-{% set GNOMAD_GENOME_CNT_RATIO %}(INFO/COSMIC_CNT/(INFO/COSMIC_CNT + INFO/GNOMAD_GENOME_AC)>={{ threshold }}){% endset %}
-{% set GNOMAD_GENOME_NC_CNT_RATIO %}(INFO/COSMIC_NC_CNT/(INFO/COSMIC_NC_CNT + INFO/GNOMAD_GENOME_AC)>={{ threshold }}){% endset %}
-{% set GNOMAD_EXOME_CNT_RATIO %}(INFO/COSMIC_CNT/(INFO/COSMIC_CNT + INFO/GNOMAD_EXOME_AC)>={{ threshold }}){% endset %}
-{% set GNOMAD_EXOME_NC_CNT_RATIO %}(INFO/COSMIC_NC_CNT/(INFO/COSMIC_NC_CNT + INFO/GNOMAD_EXOME_AC)>={{ threshold }}){% endset %}
+{% set TOPMED_CNT_RATIO %}(INFO/COSMIC_CNT/(INFO/COSMIC_CNT + INFO/TOPMED_AC)>={{ COSMIC_Ratio_Threshold }}){% endset %}
+{% set TOPMED_NC_CNT_RATIO %}(INFO/COSMIC_NC_CNT/(INFO/COSMIC_NC_CNT + INFO/TOPMED_AC)>={{ COSMIC_Ratio_Threshold }}){% endset %}
+{% set GNOMAD_GENOME_CNT_RATIO %}(INFO/COSMIC_CNT/(INFO/COSMIC_CNT + INFO/GNOMAD_GENOME_AC)>={{ COSMIC_Ratio_Threshold }}){% endset %}
+{% set GNOMAD_GENOME_NC_CNT_RATIO %}(INFO/COSMIC_NC_CNT/(INFO/COSMIC_NC_CNT + INFO/GNOMAD_GENOME_AC)>={{ COSMIC_Ratio_Threshold }}){% endset %}
+{% set GNOMAD_EXOME_CNT_RATIO %}(INFO/COSMIC_CNT/(INFO/COSMIC_CNT + INFO/GNOMAD_EXOME_AC)>={{ COSMIC_Ratio_Threshold }}){% endset %}
+{% set GNOMAD_EXOME_NC_CNT_RATIO %}(INFO/COSMIC_NC_CNT/(INFO/COSMIC_NC_CNT + INFO/GNOMAD_EXOME_AC)>={{ COSMIC_Ratio_Threshold }}){% endset %}
 {% set INCLUDE_NON_DB %}(INFO/TOPMED==0 & INFO/GNOMAD_GENOME=0 & INFO/GNOMAD_EXOME=0){% endset %}
 {% set INCLUDE_FROM_RATIO %}({{ TOPMED_CNT_RATIO }} | {{ TOPMED_NC_CNT_RATIO }} | {{ GNOMAD_GENOME_CNT_RATIO }} | {{ GNOMAD_GENOME_NC_CNT_RATIO }} | {{ GNOMAD_EXOME_CNT_RATIO }} | {{ GNOMAD_EXOME_NC_CNT_RATIO }}){% endset%}
 
-- name: tumor_only_variant_filtering_v2_{{ pair.name }}_{{ variant_caller }}_{{ origin }}
+- name: tumor_only_variant_filtering_{{ pair.name }}_{{ variant_caller }}_{{ origin }}
   tags: [{{ pair.gltype }}, tumor_only, variant_filter, {{ variant_caller }}, {{ pair.name }}]
   {% if temp_dir in input_vcf %}
   reset: predecessors
