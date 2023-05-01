@@ -156,7 +156,7 @@
     - {{ temp_dir }}/{{ tumor.name }}_assembled_fastqs.tar.gz
   walltime: "24:00:00"
   cpus: 4
-  mem: 10G
+  mem: 48G
   runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   queue_preset: "DEFAULT"
   container: {{ constants.tools.trinity_bwa_samtools.container }}
