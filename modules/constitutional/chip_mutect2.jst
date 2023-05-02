@@ -334,7 +334,7 @@
 
     bcftools annotate \
         --output-type z \
-        -a /scratch/fmadrid/CHIP/resources/known_chip_snv.vcf.gz \
+        -a {{ constants.tempe.known_chip_snv }} \
         -c INFO \
         --output {{ temp_dir }}/temp.vcf.gz \
         {{ annotated_vcf }}
@@ -389,7 +389,7 @@
     bcftools index --tbi --force {{ filtered_annot_vcf }}
 
     bcftools view \
-        -R /scratch/fmadrid/STAMINA_tempe/chip_genes.bed \
+        -R {{ constants.tempe.chip_genes_list }} \
         --output {{ final_vcf }} \
         {{ filtered_annot_vcf }}
     
