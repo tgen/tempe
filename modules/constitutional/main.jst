@@ -9,6 +9,7 @@
 {% from 'modules/constitutional/ichorcna.jst' import ichorcna with context %}
 {% from 'modules/constitutional/gatk_cnv.jst' import gatk_cnv_constitutional with context %}
 {% from 'modules/constitutional/expansion_hunter.jst' import expansion_hunter with context %}
+{% from 'modules/constitutional/chip_mutect2.jst' import chip_mutect2 with context %}
 
 # Constitutional tools generally operate on a single DNA samples and should not run
 # on "tumor" samples with the exception of ichor that can be run on tumor or constitutional.
@@ -45,6 +46,12 @@
 
     {% if sample.gltype in 'exome' %}
         {% set taskPrefix = 'Exome' %}
+        
+        {%- if sample.subGroup|lower != 'tumor' %}
+            {%- if tasks[taskPrefix+"_constitutional_snp_indel_caller_mutect2"]|default(true) %}
+                {{- chip_mutect2(sample, aligner, taskPrefix=taskPrefix) }}
+            {% endif %}
+        {% endif %}
     {% elif sample.gltype in 'genome' %}
         {% set taskPrefix = 'Genome' %}
 
