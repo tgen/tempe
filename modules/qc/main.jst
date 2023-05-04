@@ -70,11 +70,6 @@
       {{- bam_qc_gatk_convertsequencingarrtifacttooxog(sample, taskPrefix=taskPrefix, aligner=aligner) }}
     {% endif %}
 
-    {# Tasks performed on dna bams #}
-    {% if sample.gltype not in ['rna', 'singlecellrna'] and sample.umiType is defined and sample.umiType == "" and 'bwa' in aligner | default(false) %}
-      {{- bam_qc_samtools_markdup(sample, sample_lb, taskPrefix=taskPrefix, aligner=aligner) }}
-    {% endif %}
-
     {# Tasks performed on all bams #}
     {{- bam_qc_samtools_stats(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner) }}
     {{- bam_qc_samtools_flagstat(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner) }}
@@ -101,6 +96,11 @@
         {% if sample.subGroup|lower == 'constitutional' and ( sample.gltype|lower == 'genome' or sample.gltype|lower == 'exome' )  %}
           {{- bam_qc_verifybamid2(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner, bam_level=false) }}
           {{- sex_check(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner, bam_level=false) }}
+        {% endif %}
+
+        {# Tasks performed on dna bams #}
+        {% if sample.gltype not in ['rna', 'singlecellrna'] and sample.umiType is defined and sample.umiType == "" and 'bwa' in aligner | default(false) %}
+          {{- bam_qc_samtools_markdup(sample, sample_lb, taskPrefix=taskPrefix, aligner=aligner) }}
         {% endif %}
 
         {# Tasks performed on all bams #}

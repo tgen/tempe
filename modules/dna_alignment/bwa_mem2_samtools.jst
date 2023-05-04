@@ -95,19 +95,21 @@
 {% endfor %}
 {% endfor %}
 
-- name: chunked_samtools_merge_rg_bams_{{ sample.name }}_{{ aligner }}
+
+{% for rglb, rg in sample.read_groups.values() | groupby('rglb') %}
+- name: chunked_samtools_merge_rgid_bams_{{ sample.name }}_{{ rglb }}_{{ aligner }}
   tags: [{{ sample.gltype }}, alignment, dna_alignment, bwa, {{ sample.name }}]
   reset: predecessors
   input: 
-  {% for rgid, rg in sample.read_groups.items() %}
-    {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
+  {% for rgid in rg %}
+    {% set r1fastq = rgid.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
     {% set n_chunks = (r1fastq.numberOfReads / 2 / reads_per_chunk)|round(0, method='ceil')|int %}
     {% for i in range(n_chunks) %}
     {% set chunk_suffix = '%02d' % i %}
-    - {{ temp_dir }}/{{ rgid }}/{{ chunk_suffix }}.{{ aligner }}.bam
+    - {{ temp_dir }}/{{ rgid.rgid }}/{{ chunk_suffix }}.{{ aligner }}.bam
     {% endfor %}
   {% endfor %}
-  output: {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.bam
+  output: {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.bam
   walltime: "24:00:00"
   cpus: 16
   mem: 8G
@@ -128,37 +130,40 @@
       -c \
       -f \
       -u \
-      "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.bam" \
-      {% for rgid, rg in sample.read_groups.items() %}
-      {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
+      {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.bam \
+      {% for rgid in rg %}
+      {% set r1fastq = rgid.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
       {% set n_chunks = (r1fastq.numberOfReads / 2 / reads_per_chunk)|round(0, method='ceil')|int %}
       {% if not loop.last %}
       {% for i in range(n_chunks) %}
       {% set chunk_suffix = '%02d' % i %}
-      {{ temp_dir }}/{{ rgid }}/{{ chunk_suffix }}.{{ aligner }}.bam \
+      {{ temp_dir }}/{{ rgid.rgid }}/{{ chunk_suffix }}.{{ aligner }}.bam \
       {% endfor %}
       {% else %}
       {% for i in range(n_chunks) %}
       {% set chunk_suffix = '%02d' % i %}
       {% if not loop.last %}
-      {{ temp_dir }}/{{ rgid }}/{{ chunk_suffix }}.{{ aligner }}.bam \
+      {{ temp_dir }}/{{ rgid.rgid }}/{{ chunk_suffix }}.{{ aligner }}.bam \
       {% else %}
-      {{ temp_dir }}/{{ rgid }}/{{ chunk_suffix }}.{{ aligner }}.bam
+      {{ temp_dir }}/{{ rgid.rgid }}/{{ chunk_suffix }}.{{ aligner }}.bam
       {% endif %}
       {% endfor %}
       {% endif %}
       {% endfor %}
 
 
-
-- name: samtools_markdup_{{ sample.name }}_{{ aligner }}
+- name: samtools_markdup_{{ sample.name }}_{{ rglb }}_{{ aligner }}
   tags: [{{ sample.gltype }}, alignment, mark_duplicates, samtools, {{ sample.name }}]
   reset: predecessors
   methods: Duplicate reads for {{ sample.name }} were marked with samtools markdup.
-  input: {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.bam
+  input: {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.bam
   output:
+    {% if sample.read_groups.values() | groupby('rglb') | length == 1 %}
     - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam
-    - {{ results_dir }}/stats/{{ sample.name }}.{{ aligner }}.bam.samtools.markdup.txt
+    {% else %}
+    - {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.md.bam
+    {% endif %}
+    - {{ results_dir }}/stats/{{ sample.name }}_{{ rglb }}.{{ aligner }}.bam.samtools.markdup.txt
   walltime: "96:00:00"
   cpus: 20
   mem: 20G
@@ -174,8 +179,8 @@
     # that will cause errors with samtools markdup. Here, we purge any
     # existing temp files before making the directory again.
     #}
-    rm -r "{{ temp_dir }}/markdup_temp/" || true
-    mkdir -p "{{ temp_dir }}/markdup_temp/"
+    rm -r "{{ temp_dir }}/markdup_temp/{{ sample.name }}_{{ rglb }}" || true
+    mkdir -p "{{ temp_dir }}/markdup_temp/{{ sample.name }}_{{ rglb }}"
     mkdir -p "{{ results_dir }}/stats/"
 
     {#
@@ -190,17 +195,63 @@
      2>      Stats are output to stderr which is redirected to ".{{ aligner }}.bam.markdup.txt"
     #}
     samtools markdup \
+      {% if sample.pcrCycles is defined and sample.pcrCycles == 0 %}
       --use-read-groups \
-      --json \
+      {% endif %}
       -d {{ opt_dup_distance }} \
       -S \
-      -f "{{ results_dir }}/stats/{{ sample.name }}.{{ aligner }}.bam.samtools.markdup.json" \
+      -f {{ results_dir }}/stats/{{ sample.name }}_{{ rglb }}.{{ aligner }}.bam.samtools.markdup.txt \
       --threads 20 \
       --write-index \
-      -T "{{ temp_dir }}/markdup_temp/{{ sample.name }}" \
-      "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.bam" \
-      "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam"
+      -T {{ temp_dir }}/markdup_temp/{{ sample.name }}_{{ rglb }} \
+      {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.bam \
+      {% if sample.read_groups.values() | groupby('rglb') | length == 1 %}
+      {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam
+      {% else %}
+      {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.md.bam
+      {% endif %}
 
+{% endfor %}
+
+{% if sample.read_groups.values() | groupby('rglb') | length > 1 %}
+- name: chunked_samtools_merge_rglb_bams_{{ sample.name }}_{{ aligner }}
+  tags: [{{ sample.gltype }}, alignment, dna_alignment, bwa, {{ sample.name }}]
+  reset: predecessors
+  input: 
+  {% for rglb, rg in sample.read_groups.values() | groupby('rglb') %}
+    - {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.md.bam
+  {% endfor %}
+  output: {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam
+  walltime: "24:00:00"
+  cpus: 16
+  mem: 8G
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.bwa_mem2_samtools.container }}
+  digest: {{ constants.tools.bwa_mem2_samtools.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    {# No long options available for the following:
+      -c           Combine @RG headers with colliding IDs [alter IDs to be distinct]
+      -f           Overwrite the output BAM if exist
+      -l INT       Compression level, from 0 to 9 [-1]
+    #}
+    samtools merge \
+      --threads 16 \
+      -c \
+      -f \
+      -u \
+      {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam \
+      {% for rglb, rg in sample.read_groups.values() | groupby('rglb') %}
+      {% if not loop.last %}
+      {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.md.bam \
+      {% else %}
+      {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.md.bam
+      {% endif %}
+      {% endfor %}
+
+{% endif %}
 
 {% if tasks[sample.gltype|capitalize+"_alignment_base_recalibration_gatk"]|default(false) %}
   {{- baserecalibration(sample, aligner) }}
