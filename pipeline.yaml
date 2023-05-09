@@ -85,8 +85,8 @@ constants:
       container: ghcr.io/tgen/jetstream_containers/clara-parabricks:4.0.0-1
       digest: 2a37e7a13669148bb922b1b675fb5ee32178e18b6813f9e3a9bc99436b59d03d
     R:
-      container: ghcr.io/tgen/jetstream_containers/r-with_modules:3.6.1
-      digest: 29de4cc4274d3f1df096c3cc4899ef063c3ff074ca229779bb2e1ae491a9af9c
+      container: /home/bturner/containers/images/r_4.1.2_tempe_slim_fixed_deps.sif
+      digest: notarealdigest
     thred:
       container: ghcr.io/tgen/jetstream_containers/thred:1.1.0
       digest: a63fb6915eac8ba936674724d3a205d53994e8214cade190f7551a91cbadafa3

@@ -907,6 +907,6 @@ if (!is.null(opt$samtoolsDuplicatesFile)) {
 
   print("Summarizing Samtools markdups Statistics:")
   # Call Coverage Summary
-  markdup_summary(dup_file, opt$bam, opt$sample, opt$library, opt$readgroup)
+  markdup_summary(opt$samtoolsDuplicatesFile, opt$bam, opt$sample, opt$library, opt$readgroup)
 }
 
