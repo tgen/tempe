@@ -254,6 +254,9 @@ constants:
     gatk_cnv_primary_contigs_male: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/gatk_cnv/Homo_sapiens.GRCh38.primary.contigs.male.interval_list
     encode_denylist: /home/tgenref/homo_sapiens/grch38_hg38/public_databases/ncbi/Encode_deny_list_with_ncbi_centromere.merged.bed
     centromere: /home/tgenref/homo_sapiens/grch38_hg38/public_databases/ncbi/Modeled_regions_for_GRCh38_centromere_blacklist_merged.bed
+    somatic_GRCh38_1000g_pon: /home/tgenref/homo_sapiens/grch38_hg38/public_databases/1000G/1000g_pon.hg38.vcf.gz
+    known_chip_snv: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/CHIP/known_chip_snv.vcf.gz
+    chip_genes_list: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/CHIP/chip_genes.bed
     mappability_track: /home/tgenref/homo_sapiens/grch38_hg38/public_databases/bismap/k100.umap.no_header.bed
     rsem_index: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/tool_resources/rsem_1.3.3/hg38_tempe
     salmon_index: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/tool_resources/salmon_1.2.1-gompi-2019a/salmon_puff_75merPlus
