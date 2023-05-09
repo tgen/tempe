@@ -40,7 +40,7 @@
     - {{ results_dir }}/{{ sample.name }}.genes.sf
     - {{ results_dir }}/{{ sample.name }}.counts.json
   cpus: 10
-  mem: 20G
+  mem: 32G
   walltime: "24:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.salmon.container }}

@@ -1,4 +1,3 @@
-# This alignment command prefix is shared by all modules using bwa
 {% from 'utilities/read_group_line.jst' import read_group_line with context %}
 {% from 'utilities/remove_files.jst' import remove_files with context %}
 {% from 'modules/dna_alignment/gatk_baserecalibration.jst' import baserecalibration, nobaserecalibration with context %}
@@ -120,7 +119,7 @@
   output:
     - {{ temp_dir }}/{{ sample.rgsm }}_UMI_{{ aligner }}.bam
   cpus: 10
-  mem: 32G
+  mem: 60G
   walltime: "4:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.fgbio.container }}
