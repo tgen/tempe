@@ -3,6 +3,7 @@
 # Currently supports any sample.
 
 {% from 'modules/qc/stats2json.jst' import stats2json with context %}
+{% from 'modules/qc/stats2lims.jst' import stats2lims with context %}
 
 {% macro bam_qc_samtools_stats(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner, bam_level=true) %}
 {% if tasks[taskPrefix+"_quality_control_stats_samtools_stats"]|default(false) %}
