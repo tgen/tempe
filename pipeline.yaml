@@ -30,8 +30,8 @@ constants:
       container: /home/tgenref/containers/dle_0.1.5.sif
       digest: notarealdigest
     expansion_hunter:
-      container: ghcr.io/tgen/jetstream_containers/expansion_hunter:4.0.2
-      digest: 8dca35f2f5d05f92b2b0973486ea0bf2852d99aff690d5aa56ca8d13e9a36d6e
+      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/expansion_hunter:4.0.2-v1
+      digest: b7353a253d0e94d4b6d6d8eda45ca80320742e25e2aac74c9f1a5d82a1e107c0
     fgbio:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/fgbio:2.0.2-v1
       digest: ba908141e58e5ae0621f0a4af2109f12608686db238d3846cd10d6209290bc85
@@ -42,8 +42,8 @@ constants:
       container: ghcr.io/tgen/jetstream_containers/freebayes:1.3.6
       digest: 41a5d2e71a9a5c4f9b034eebe18e1d6f93024c81e33e66f47d3fa0d3543cd6ae
     gatk:
-      container: ghcr.io/tgen/jetstream_containers/gatk:4.1.8.0
-      digest: 1a9dac3e0720f7fe6b597d2a6f8308939b6e2ad8cd0869b4a6ab57b73c13ba50
+      container: broadinstitute/gatk:4.1.8.0
+      digest: 18146e79d06787483310e5de666502090a480e10ac0fad06a36a5e7a5c9bb1dc
     hmmcopy_utils:
       container: ghcr.io/tgen/jetstream_containers/hmmcopy-utils:v1
       digest: 643fc7efd5f576c1ecc5982bbed474f669efec01efecd233f8832139fc720ce0
@@ -55,11 +55,11 @@ constants:
       digest: f9dfa90080208af3ed8bcc75a2f7b728994566abd371490b7a9cf1a080e7cf97
       launcher: required_scripts/runIchorCNA_47ce8db.R
     lancet:
-      container: ghcr.io/tgen/jetstream_containers/lancet:1.1.x
-      digest: 2091a22ef2dd90abcf49924051775a2291d9c68b6efcf8a7ad68c6ff3d240685
+      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/lancet:1.1.x-v1
+      digest: 6d43c6574a7932f7811285cd7b6dabd2d42fe4ce6ae1c68c0923993049e54375
     manta:
-      container: ghcr.io/tgen/jetstream_containers/manta:1.6.0
-      digest: 726c3f8a09f2729559320584fa6a2869929e4677e7b08bc8efe93f0724d3d9c9
+      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/manta:1.6.0-v1
+      digest: 84608fdac662d6bd4ffe7f22568dfb8dc23a0e96c9e4f47c64bde85123606b82
     manta_tgen:
       container: /home/tgenref/containers/manta_v1.6.0-tgen.sif
       digest: notarealdigest
@@ -88,8 +88,8 @@ constants:
       container: ghcr.io/tgen/jetstream_containers/clara-parabricks:4.0.0-1
       digest: 2a37e7a13669148bb922b1b675fb5ee32178e18b6813f9e3a9bc99436b59d03d
     R:
-      container: /home/bturner/containers/images/r_4.1.2_tempe_slim_fixed_deps.sif
-      digest: notarealdigest
+      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/r_with_modules:4.1.2
+      digest: c0148ac13e2f61ef375ebc5c53d5bd15a6d44505cd204dabb1dcf72258487556
     thred:
       container: ghcr.io/tgen/jetstream_containers/thred:1.1.0
       digest: a63fb6915eac8ba936674724d3a205d53994e8214cade190f7551a91cbadafa3
