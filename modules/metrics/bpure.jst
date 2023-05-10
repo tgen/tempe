@@ -1,0 +1,40 @@
+{% macro bpure_(sample, input_seg, seg_resolution, aligner='bwa') %}
+{% set sample_bam %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
+{% set temp_dir %}temp/{{ sample.gltype }}/metrics/b_pure/{{ sample.name }}_{{ aligner }}{% endset %}
+{% set results_dir %}{{ sample.gltype }}/metrics/b_pure/{{ sample.name }}_{{ aligner }}{% endset %}
+
+- name: bpure_{{ variant_caller }}_{{ sample.name }}_{{ aligner }}
+  tags: [{{ sample.gltype }}, b_cell_purity, {{ sample.name }}]
+  input:
+    - {{ sample_bam }}
+    - {{ input_seg }}
+  output:
+    - {{ results_dir }}/{{ sample.name }}_{{ seg_resolution }}_res_b_cell_purity.tsv
+    - {{ results_dir }}/{{ sample.name }}_{{ seg_resolution }}_res_b_cell_purity.json
+  cpus: 2
+  mem: 8G
+  walltime: "24:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.bpure.container }}
+  digest: {{ constants.tools.bpure.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    {# Should already exist #}
+    mkdir -p {{ temp_dir }}
+    mkdir -p {{ results_dir }}
+
+    b_pure_testing.py \
+        --bam-file {{ sample_bam }} \
+        --seg-file {{ input_seg }} \
+        --seg-resolution {{ seg_resolution }} \ 
+        --reference-file {{ constants.tempe.reference_fasta }} \
+        --region-file {{ constants.tempe.dj_window }} \
+        --temp-dir {{ temp_dir }} \
+        --out-dir {{ results_dir }} \
+        --sample-name {{ sample.name }} \
+        --lib {{ libraries_list }} \
+        --json-out True \
+
+{% endmacro %}

@@ -262,6 +262,7 @@ constants:
     known_chip_snv: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/CHIP/known_chip_snv.vcf.gz
     chip_genes_list: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/CHIP/chip_genes.bed
     mappability_track: /home/tgenref/homo_sapiens/grch38_hg38/public_databases/bismap/k100.umap.no_header.bed
+    dj_window: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/bpure/dj_region_1kb_windowed.bed
     rsem_index: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/tool_resources/rsem_1.3.3/hg38_tempe
     salmon_index: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/tool_resources/salmon_1.2.1-gompi-2019a/salmon_puff_75merPlus
     sex_check_targets: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/tgen_gender_check/chrx_common_dbSNPv152_snv_exons.bed
