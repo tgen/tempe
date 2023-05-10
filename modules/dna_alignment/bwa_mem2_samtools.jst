@@ -198,6 +198,7 @@
       {% if sample.pcrCycles is defined and sample.pcrCycles == 0 %}
       --use-read-groups \
       {% endif %}
+      --json \
       -d {{ opt_dup_distance }} \
       -S \
       -f {{ results_dir }}/stats/{{ sample.name }}_{{ rglb }}.{{ aligner }}.bam.samtools.markdup.txt \
