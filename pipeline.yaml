@@ -51,8 +51,8 @@ constants:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/htslib:1.17-v1
       digest: b8dbec4e4bc301ce4bb643aa1d782acb1446381ac5cc2370b85370ab6736ed78
     ichorcna:
-      container: ghcr.io/tgen/jetstream_containers/ichorcna:v1
-      digest: f9dfa90080208af3ed8bcc75a2f7b728994566abd371490b7a9cf1a080e7cf97
+      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/r_with_modules:4.1.2
+      digest: c0148ac13e2f61ef375ebc5c53d5bd15a6d44505cd204dabb1dcf72258487556
       launcher: required_scripts/runIchorCNA_47ce8db.R
     lancet:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/lancet:1.1.x-v1
