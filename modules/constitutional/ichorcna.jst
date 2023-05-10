@@ -165,7 +165,7 @@
 {% set task %}{{ sample.name }}_{{ aligner }}{% endset %}
 {{- stats2lims(sample.gltype, sample.name, task, ichor_json, "ichor_cna") }}
 
-{% set input_seg %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA.cna.seg{% endset %}
+{% set input_seg %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA.seg{% endset %}
 {{- cnvear(sample, input_seg, 'ICHOR', aligner) }}
 
 {% endmacro %}
