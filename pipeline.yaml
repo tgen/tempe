@@ -97,8 +97,8 @@ constants:
       container: /home/tgenref/containers/trinity_with_bwa_2.8.6.sif
       digest: notarealdigest
     salmon:
-      container: ghcr.io/tgen/jetstream_containers/salmon:1.9.0
-      digest: 69ffd89cb8714e5dc337b11aad6c54833a03f25c3180c2b93f072831bc3b92c7
+      container: combinelab/salmon:1.9.0
+      digest: 9c6fdc2e99967684fcc913d5ab5e9323169a7ec51da8f0068cb2cc0a94c84796
     samtools:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/samtools:1.17
       digest: 4794a210ff49596d1c255299ccf8d852a0a60d26143e4fa48199993c2d78177d
