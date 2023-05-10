@@ -119,6 +119,9 @@
   input:
     - {{ all_vcf }}
     - {{ all_vcf }}.tbi
+    {% for resource in constants.tempe.gatk_cnn_resources %}
+    - {{ resource }}
+    {% endfor %}
   output:
     - {{ temp_dir }}/{{ sample.name }}.hc.fvt.vcf.gz
   walltime: "24:00:00"
