@@ -1,0 +1,42 @@
+{% macro cnvear(sample_or_pair, input_seg, input_tool, aligner='bwa') %}
+
+{% if input_seg.endswith('.seg') %}
+  {% set seg_prefix = input_seg.split('.')[:-1]|join('.') %}
+{% else %}
+  {{ raise('{} does not appear to be a seg!'.format(input_seg)) }}
+{% endif %}
+
+{% set output_dir %}{{ input_seg | dirname }}{% endset %}
+{% set cnvear_output %}{{ seg_prefix | basename }}.cnvear.tsv{% endset %}
+
+- name: cnvear_{{ input_tool }}_{{ sample_or_pair.name }}_{{ aligner }}
+  tags: [{{ sample_or_pair.gltype }}, cnvear, {{ sample_or_pair.name }}]
+  input:
+    - {{ input_seg }}
+    - {{ constants.tempe.fish_probe_locations }}
+  output:
+    - {{ output_dir }}/{{ cnvear_output }}
+  cpus: 1
+  mem: 16G
+  walltime: "24:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.cnvear.container }}
+  digest: {{ constants.tools.cnvear.digest }}
+  cmd: |
+    
+    cnvear.py \
+      --file-probes {{ constants.tempe.fish_probe_locations }}  \
+      --file-segments {{ input_seg }} \
+      --input-copy-number-space 'LOG2' \
+      --output-copy-number-space 'LOG2' \
+      --threshold_high_gain_call 1.32 \
+      --threshold_gain_call 0.16 \
+      --threshold_heterozygous_loss_call -0.16 \
+      --threshold_homozygous_loss_call -1.32 \
+      --seg-tool {{ input_tool }} \
+      --samplename {{ sample_or_pair.name }} \
+      --dir-out {{ output_dir }} \
+      --outfilename {{ cnvear_output }} \
+      --gender {{ config_sex }}
+
+{% endmacro %}

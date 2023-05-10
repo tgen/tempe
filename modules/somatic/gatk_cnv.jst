@@ -1,4 +1,5 @@
 {% from 'utilities/remove_files.jst' import remove_files with context %}
+{% from 'utilities/cnvear.jst' import cnvear with context %}
 {% from 'modules/metrics/thred.jst' import thred with context %}
 # The macros found in this template are used to generate the gatk4 somatic cnv workflow.
 
@@ -792,11 +793,13 @@
     {# using cp instead of move because singularity mounts things weird #}
     cp -r {{ temp_dir }}/results/* {{ results_dir }}/
 
-    {% set final_seg %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.re_centered.cr.igv.seg{% endset %}
-    {{- thred(pair, final_seg, aligner)}}
+{% set final_seg %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.re_centered.cr.igv.seg{% endset %}
+{{- thred(pair, final_seg, aligner)}}
 
-    {% set task %}gatk_call_cnv_step4_plot_cnv_{{ pair.name }}_{{ aligner }}{% endset %}
-    {% set directory %}{{ temp_dir }}{% endset %}
-    {{- remove_files(directory,none,task) }}
+{% set task %}gatk_call_cnv_step4_plot_cnv_{{ pair.name }}_{{ aligner }}{% endset %}
+{% set directory %}{{ temp_dir }}{% endset %}
+{{- remove_files(directory,none,task) }}
+
+{{- cnvear(pair, final_seg, 'GATK', aligner) }}
 
 {% endmacro %}

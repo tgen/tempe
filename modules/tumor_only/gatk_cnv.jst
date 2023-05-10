@@ -1,4 +1,5 @@
 {% from 'utilities/remove_files.jst' import remove_files with context %}
+{% from 'utilities/cnvear.jst' import cnvear with context %}
 
 {% macro gatk_cnv_tumor_only(pair, aligner='bwa') %}
 {% set tumor_only_temp %}temp/tumor_only/control_data_files/{{ pair.normal.assayCode }}{% endset %}
@@ -346,8 +347,11 @@
     {# using cp instead of move because singularity mounts things weird #}
     cp -r {{ temp_dir }}/results/* {{ results_dir }}/
 
-    {% set task %}tumor_only_gatk_call_cnv_step2_plot_cnv_{{ pair.tumor.name }}_{{ aligner }}{% endset %}
-    {% set directory %}{{ temp_dir }}{% endset %}
-    {{- remove_files(directory,none,task) }}
+{% set task %}tumor_only_gatk_call_cnv_step2_plot_cnv_{{ pair.tumor.name }}_{{ aligner }}{% endset %}
+{% set directory %}{{ temp_dir }}{% endset %}
+{{- remove_files(directory,none,task) }}
+
+{% set input_seg %}{{ results_dir }}/{{ pair.tumor.name }}.{{ aligner }}.re_centered.cr.igv.seg{% endset %}
+{{- cnvear(pair, input_seg, 'GATK', aligner) }}
 
 {% endmacro %}

@@ -17,6 +17,9 @@ constants:
     bwa_mem2_samtools:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/bwa_mem2_samtools:2.2.1-1.17-v1
       digest: 15c7394b32a7b5f25ad54fe4501ca3232544cf24945e54670013857877d6524c
+    cnvear:
+      container: /home/tgenref/containers/cnvear_v0.1.7-beta.sif
+      digest: notarealdigest
     deepvariant_cpu:
       container: google/deepvariant:1.4.0
       digest: 83ce0d6bbe3695bcbaa348b73c48737bdbfaeaea2272b0105dd4bdfa7a804f18
@@ -159,6 +162,7 @@ constants:
     bcftools_annotate_contig_update_ucsc2ensembl: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/bcftools/GRCh38_PrimaryContigs_UCSC_2_Ensembl_CrossMap.txt
     denylist: /home/tgenref/homo_sapiens/grch38_hg38/public_databases/encode/Blacklist-2.0/lists/hg38-blacklist.v2.bed.gz
     reference_msisensor_pro: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/msisensor_pro_v1.1.a/GRCh38tempe_decoy_alts_hla_masked.microsatellites.list
+    fish_probe_locations: /home/tgenref/homo_sapiens/grch38_hg38/hg38tgen/tool_resources/seq_fish/GRCh38_Myeloma_FISH_Probe_Locations_for_CNVear.bed
     manta_prepare_sv_vcf: manta_prepare_sv_vcf_f94bcc1.py
     pairoscope_mm_igtx_calling_script: mm_igtx_pairoscope_calling_b38_356362b.py
     cna_seg_extend: seg_extend_229b8c7.py
