@@ -283,14 +283,12 @@
   {% set task %}{{ sample.name }}_{{ sample_lb }}_{{ aligner }}{% endset %}
   {% set bam %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
 
-  {% set output %}{{ results_dir }}/{{ bam|basename }}_{{ sample_lb }}_samtools_markdup_summary.tsv{% endset %}
-  {% set json %}{{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.samtools.markdup.json{% endset %}
-
+  {% set output %}{{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.samtools.markdup_summary.json{% endset %}
 
 - name: samtools_markdup_stats_{{ task }}
   tags: [{{ sample.gltype }}, quality_control, stats, samtools_markdup, {{ sample.name }}]
   methods: Quality control metrics for {{ sample.name }} ({{ aligner }}) were generated with samtools stats.
-  input: {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.samtools.markdup.txt
+  input: {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.samtools.markdup.json
   output: {{ output }}
   walltime: "4:00:00"
   cpus: 1
@@ -306,12 +304,12 @@
     cd {{ results_dir }}
 
     Rscript ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.plotSamStats_Rscript }} \
-        --samtoolsDuplicatesFile={{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.samtools.markdup.txt \
-        --bam={{ bam|basename }}_{{ sample_lb }} \
+        --samtoolsDuplicatesFile={{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.samtools.markdup.json \
+        --bam={{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam \
         --sample={{ sample.name }} \
         --library={{ sample_lb }}
 
-    {{- stats2json(sample.gltype, sample.name, task, output, json, "samtools_markdup_summary", sample=sample, sample_name=sample.name, library_name=sample_lb) }}
+    {{- stats2lims(sample.gltype, sample.name, task, output, "samtools_markdup_summary") }}
 
 {% endif %}
 {% endmacro %}

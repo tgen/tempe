@@ -163,7 +163,7 @@
     {% else %}
     - {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.md.bam
     {% endif %}
-    - {{ results_dir }}/stats/{{ sample.name }}_{{ rglb }}.{{ aligner }}.bam.samtools.markdup.txt
+    - {{ results_dir }}/stats/{{ sample.name }}_{{ rglb }}.{{ aligner }}.bam.samtools.markdup.json
   walltime: "96:00:00"
   cpus: 20
   mem: 20G
@@ -201,7 +201,7 @@
       --json \
       -d {{ opt_dup_distance }} \
       -S \
-      -f {{ results_dir }}/stats/{{ sample.name }}_{{ rglb }}.{{ aligner }}.bam.samtools.markdup.txt \
+      -f {{ results_dir }}/stats/{{ sample.name }}_{{ rglb }}.{{ aligner }}.bam.samtools.markdup.json \
       --threads 20 \
       --write-index \
       -T {{ temp_dir }}/markdup_temp/{{ sample.name }}_{{ rglb }} \
