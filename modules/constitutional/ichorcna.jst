@@ -1,4 +1,5 @@
 {% from 'utilities/remove_files.jst' import remove_files with context %}
+{% from 'utilities/cnvear.jst' import cnvear with context %}
 {% from 'modules/qc/stats2lims.jst' import stats2lims with context %}
 
 {% macro ichorcna(sample, aligner='bwa', taskPrefix='Genome') %}
@@ -156,12 +157,15 @@
     mv "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA/{{ sample.name }}.{{ aligner }}.ichorCNA_genomeWide.pdf" "{{ results_dir }}/"
     mv "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA/{{ sample.name }}.{{ aligner }}.ichorCNA_tpdf.pdf" "{{ results_dir }}/"
 
-    {# Remove the remaining files #}
-    {% set task %}ichor_cna_{{ sample.name }}_{{ aligner }}{% endset %}
-    {% set directory %}{{ temp_dir }}{% endset %}
-    {{- remove_files(directory,none,task) }}
+{# Remove the remaining files #}
+{% set task %}ichor_cna_{{ sample.name }}_{{ aligner }}{% endset %}
+{% set directory %}{{ temp_dir }}{% endset %}
+{{- remove_files(directory,none,task) }}
 
-    {% set task %}{{ sample.name }}_{{ aligner }}{% endset %}
-    {{- stats2lims(sample.gltype, sample.name, task, ichor_json, "ichor_cna") }}
+{% set task %}{{ sample.name }}_{{ aligner }}{% endset %}
+{{- stats2lims(sample.gltype, sample.name, task, ichor_json, "ichor_cna") }}
+
+{% set input_seg %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA.cna.seg{% endset %}
+{{- cnvear(sample, input_seg, 'ICHOR', aligner) }}
 
 {% endmacro %}
