@@ -10,7 +10,7 @@
 {% set cnvear_output %}{{ seg_prefix | basename }}.cnvear.tsv{% endset %}
 {% set config_sex %}{{ sex|default("Female") }}{% endset %}
 
-- name: cnvear_{{ input_tool }}_{{ sample_or_pair.name }}_{{ aligner }}
+- name: cnvear_{{ input_tool | lower }}_{{ sample_or_pair.name }}_{{ aligner }}
   tags: [{{ sample_or_pair.gltype }}, cnvear, {{ sample_or_pair.name }}]
   input:
     - {{ input_seg }}
