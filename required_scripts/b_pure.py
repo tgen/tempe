@@ -56,9 +56,8 @@ def calculate_log2(reads_of_interest, neutral_reads):
         output_list.append(to_output)
         
     output = g_mean(output_list)
-    output_confidence = 1 - abs(output - np.mean(output_list))
 
-    return(math.log2(output), output, output_confidence )
+    return(math.log2(output), output)
 
 #Main code
 def run(args):
@@ -82,12 +81,10 @@ def run(args):
 
     if args.seg_res:
         seg_resolution = 'PURITY_' + args.seg_res.upper() + '_RES' if (args.seg_res and args.seg_res.lower() == 'high' or 'low') else sys.exit(f'Incorrect value: "{args.seg_res}" passed through --seg-resolution, only values "high" or "low" accepted as input')
-        confidence = 'CONFIDENCE_'+args.seg_res.upper() + '_RES'
         output_prefix = args.output_dir+'/'+sample_name+'_'+args.seg_res.lower()+'_res' if args.output_pref is None else args.output_dir+'/'+args.output_pref
     
     else:
         seg_resolution = 'PURITY'
-        confidence = 'CONFIDENCE'
         output_prefix = args.output_dir+'/'+sample_name if args.output_pref is None else args.output_dir+'/'+args.output_pref
 
     log2_col = -1 if args.log2_col is None else int(args.log2_col - 1)
@@ -154,13 +151,13 @@ def run(args):
         out_list = list(calculate_log2(bedcov_dj['reads'], bedcov_neutral['reads']))
 
         #calculating b-cell purity
-        out_list.append(abs((-1*out_list[1])+1))
+        out_list.append(abs(1 - out_list[1]))
 
         #adding sample name to output list
         out_list.insert(0,sample_name)
 
         df_out = pd.DataFrame([out_list],
-                              columns =['sample', 'log2', 'reads_ratio', 'bcell_purity','confidence'])
+                              columns =['sample', 'log2', 'reads_ratio','bcell_purity'])
         df_out.to_csv(output_prefix +'_b_cell_purity.tsv', sep='\t', index=False)
 
         #Defining .json output
@@ -179,12 +176,10 @@ def run(args):
                                     ],
                                     'LB':LB,
                                     seg_resolution:out_list[3],
-                                    confidence:out_list[4]
                                 }
                             ],
                             'SM':sample_name,
                             seg_resolution:out_list[3],
-                            confidence:out_list[4]
                         }
                     ]
                 }
@@ -213,7 +208,7 @@ def main():
     optional = parser.add_argument_group('optional arguments')
 
     required.add_argument('--bam-file', metavar='FILE', type=str, dest='input_bam', help='Input BAM/CRAM file', required=True)
-    required.add_argument('--seg-file', metavar='FILE', type=str, dest='input_seg', help='Input corresponding seg file, assumes first four columns as track name, chromosome, start location, and end location"', required=True)
+    required.add_argument('--seg-file', metavar='FILE', type=str, dest='input_seg', help='Input corresponding seg file, assumes first four columns as track name, chromosome, start location, and end location', required=True)
     required.add_argument('--region-file', metavar='FILE', type=str, dest='region_file', help='Region of interest seg file with only chr, start, and stop', required=True)
 
     optional.add_argument('--reference-file', metavar='FILE', type=str, dest='ref_file', help='Reference sequence FASTA FILE', required=False)
@@ -228,7 +223,7 @@ def main():
     optional.add_argument('--output-prefix', metavar='STR', type=str, dest='output_pref', help='Output file naming prefix (Default: sample_name_seg_resolution)', required=False)
     optional.add_argument('--json-out', metavar='TRUE/FALSE', type=str, dest='json_out', default=False, help='Output .json file in addition to .tsv (Default: False)', required=False)
     optional.add_argument('--seg-resolution', metavar='STR', type=str, dest='seg_res', help='Input seg file resolution (high/low)', required=False)
-    optional.add_argument('--library', metavar='STR', type=str, dest='library', help='Individual or list of comma separated libraries for .json output (Default: None)', required=False )
+    optional.add_argument('--library', metavar='STR', type=str, dest='library', help='Individual or list of comma separated libraries for .json output (Default: None)', required=False)
     
     parser.set_defaults(func=run)
     args=parser.parse_args()
