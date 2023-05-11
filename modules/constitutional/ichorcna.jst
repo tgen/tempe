@@ -78,7 +78,6 @@
   walltime: "24:00:00"
   cpus: 1
   mem: 2G
-  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   queue_preset: "DEFAULT"
   container: {{ constants.tools.ichorcna.container }}
   digest: {{ constants.tools.ichorcna.digest }}
@@ -100,7 +99,7 @@
     # The ichorCNA launcher script does not currently get installed with
     # the rest of the package, so this path is hard coded in constants.yaml
     #}
-    Rscript ${JS_PIPELINE_PATH}/{{ constants.tools.ichorcna.launcher }} \
+    runIchorCNA.R \
       --id "{{ sample.name}}.{{ aligner }}.ichorCNA" \
       --WIG "{{ wig }}" \
       --outDir "{{ temp_dir }}" \
