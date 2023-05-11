@@ -1,5 +1,4 @@
 {% from 'utilities/remove_files.jst' import remove_files with context %}
-{% from 'utilities/cnvear.jst' import cnvear with context %}
 {% from 'modules/metrics/bpure.jst' import bpure with context %}
 {% from 'modules/qc/stats2lims.jst' import stats2lims with context %}
 
@@ -164,9 +163,6 @@
 
 {% set task %}{{ sample.name }}_{{ aligner }}{% endset %}
 {{- stats2lims(sample.gltype, sample.name, task, ichor_json, "ichor_cna") }}
-
-{% set input_seg %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA.seg{% endset %}
-{{- cnvear(sample, input_seg, 'ICHOR', aligner) }}
 
 {% set input_seg %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA.cna.seg{% endset %}
 {{- bpure(sample, input_seg, 'low', 'ichor', aligner) }}
