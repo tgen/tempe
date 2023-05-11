@@ -1,4 +1,4 @@
-{% macro bpure(sample, input_seg, seg_resolution, aligner='bwa') %}
+{% macro bpure(sample, input_seg, seg_resolution, variant_caller, aligner='bwa') %}
 
 {% set sample_bam %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
 {% set temp_dir %}temp/{{ sample.gltype }}/metrics/b_pure/{{ sample.name }}_{{ aligner }}{% endset %}

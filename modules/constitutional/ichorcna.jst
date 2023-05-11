@@ -170,6 +170,6 @@
 {{- cnvear(sample, input_seg, 'ICHOR', aligner) }}
 
 {% set input_seg %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA.cna.seg{% endset %}
-{{- bpure(sample, input_seg, 'low', aligner) }}
+{{- bpure(sample, input_seg, 'low', 'ichor', aligner) }}
 
 {% endmacro %}
