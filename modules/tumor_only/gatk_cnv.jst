@@ -1,5 +1,6 @@
 {% from 'utilities/remove_files.jst' import remove_files with context %}
 {% from 'utilities/cnvear.jst' import cnvear with context %}
+{% from 'modules/metrics/bpure.jst' import bpure with context %}
 
 {% macro gatk_cnv_tumor_only(pair, aligner='bwa') %}
 {% set tumor_only_temp %}temp/tumor_only/control_data_files/{{ pair.normal.assayCode }}{% endset %}
@@ -353,5 +354,7 @@
 
 {% set input_seg %}{{ results_dir }}/{{ pair.tumor.name }}.{{ aligner }}.re_centered.cr.igv.seg{% endset %}
 {{- cnvear(pair, input_seg, 'GATK', aligner) }}
+
+{{- bpure(pair.tumor, input_seg, 'high', 'tumor_only_gatk', aligner) }}
 
 {% endmacro %}
