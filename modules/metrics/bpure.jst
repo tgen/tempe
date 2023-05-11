@@ -34,7 +34,7 @@
     python ${JS_PIPELINE_PATH}/required_scripts/b_pure.py \
         --bam-file {{ sample_bam }} \
         --seg-file {{ input_seg }} \
-        --seg-resolution {{ seg_resolution }} \ 
+        --seg-resolution {{ seg_resolution }} \
         --reference-file {{ constants.tempe.reference_fasta }} \
         --region-file {{ constants.tempe.dj_window }} \
         --temp-dir {{ temp_dir }} \
