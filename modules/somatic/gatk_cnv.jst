@@ -1,6 +1,7 @@
 {% from 'utilities/remove_files.jst' import remove_files with context %}
 {% from 'utilities/cnvear.jst' import cnvear with context %}
 {% from 'modules/metrics/thred.jst' import thred with context %}
+{% from 'modules/metrics/bpure.jst' import bpure with context %}
 # The macros found in this template are used to generate the gatk4 somatic cnv workflow.
 
 {% macro gatk_cnv(pair, aligner='bwa') %}
@@ -801,5 +802,7 @@
 {{- remove_files(directory,none,task) }}
 
 {{- cnvear(pair, final_seg, 'GATK', aligner) }}
+
+{{- bpure(pair.tumor, final_seg, 'high', aligner) }}
 
 {% endmacro %}

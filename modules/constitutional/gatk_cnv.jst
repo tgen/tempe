@@ -1,5 +1,6 @@
 {% from 'utilities/remove_files.jst' import remove_files with context %}
 {% from 'utilities/cnvear.jst' import cnvear with context %}
+{% from 'modules/metrics/bpure.jst' import bpure with context %}
 # The macros found in this template are used to generate the gatk4 tumor_only cnv workflow.
 
 {% macro gatk_cnv_constitutional(sample, normal, aligner='bwa') %}
@@ -335,5 +336,7 @@
 
 {% set input_seg %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.re_centered.cr.igv.seg{% endset %}
 {{- cnvear(sample, input_seg, 'GATK', aligner) }}
+
+{{- bpure(sample, input_seg, 'high', aligner) }}
 
 {% endmacro %}

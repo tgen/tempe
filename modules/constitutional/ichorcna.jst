@@ -1,5 +1,6 @@
 {% from 'utilities/remove_files.jst' import remove_files with context %}
 {% from 'utilities/cnvear.jst' import cnvear with context %}
+{% from 'modules/metrics/bpure.jst' import bpure with context %}
 {% from 'modules/qc/stats2lims.jst' import stats2lims with context %}
 
 {% macro ichorcna(sample, aligner='bwa', taskPrefix='Genome') %}
@@ -167,5 +168,8 @@
 
 {% set input_seg %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA.seg{% endset %}
 {{- cnvear(sample, input_seg, 'ICHOR', aligner) }}
+
+{% set input_seg %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA.cna.seg{% endset %}
+{{- bpure(sample, input_seg, 'low', aligner) }}
 
 {% endmacro %}

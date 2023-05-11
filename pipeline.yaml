@@ -14,6 +14,9 @@ constants:
     bedtools:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/bedtools:2.29.0-v1
       digest: 8f9515e3ddcd168725a232df21f46b7d005d1d5dd8aac78677c72ff78fff2235
+    bpure:
+      container: /home/tgenref/containers/bpure_1.0.0.sif
+      digest: notarealdigest
     bwa_mem2_samtools:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/bwa_mem2_samtools:2.2.1-1.17-v1
       digest: 15c7394b32a7b5f25ad54fe4501ca3232544cf24945e54670013857877d6524c
