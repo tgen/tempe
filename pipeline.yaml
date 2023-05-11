@@ -57,14 +57,14 @@ constants:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/htslib:1.17-v1
       digest: b8dbec4e4bc301ce4bb643aa1d782acb1446381ac5cc2370b85370ab6736ed78
     ichorcna:
-      container: quay.io/biocontainers/r-ichorcna:0.5.0--pl5321r42hdfd78af_0
-      digest: 3effbf6ca62e0f1941bfdf96eb2e5d9131a68cdc91597be6ddb3bd97ad152a42
+      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/ichorcna:0.3.2-v1
+      digest: 79dbf1ef14c119721cbf5fe20f5674fca1285b44d75ce14a2b04a02bc9be8acf
     lancet:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/lancet:1.1.x-v1
       digest: 6d43c6574a7932f7811285cd7b6dabd2d42fe4ce6ae1c68c0923993049e54375
     manta:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/manta:1.6.0-v1
-      digest: 84608fdac662d6bd4ffe7f22568dfb8dc23a0e96c9e4f47c64bde85123606b82
+      digest: 2b560ca068daf2632a7a3da38b82811c28b3f0214685c44f6a0e76b961eb393b
     manta_tgen:
       container: /home/tgenref/containers/manta_v1.6.0-tgen.sif
       digest: notarealdigest
@@ -78,8 +78,8 @@ constants:
       container: ghcr.io/tgen/jetstream_containers/mutation-burden:1.2.4
       digest: eb64be73c74dd7ea57cf75369fc4d251c71dec706eb1f2f3d75cef84fde5e64b
     octopus:
-      container: ghcr.io/tgen/jetstream_containers/octopus:0.7.4
-      digest: cdb7d5116db69a79832bf0fbda5d11be172ccd2765ab445d030cc54fd7dad692
+      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/octopus:0.7.4-v1
+      digest: 4bb49879ead70887250836ce499665eadc1de90cbdfcb7906eea46cdd50ed9f2
     pairoscope:
       container: /home/tgenref/containers/pairoscope_0.4.2.sif
       digest: notarealdigest
@@ -87,14 +87,14 @@ constants:
       container: python:3.7.2-slim
       digest: 78320634b63efb52f591a7d69d5a50076ce76e7b72c4b45c1e4ddad90c39870a
     python3_with_modules:
-      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/python:3.7.2-v1-with_modules
-      digest: 47798426c6603ad456525f4dc417965c329384a4af0348723ea3702403ad4f78
+      container: ghcr.io/tgen/jetstream_containers/python:3.7.2-v1-with_modules
+      digest: 030adca9dc79c97178d00b65ab2dbd30e1b83f6163cad8204c66dc10868393e2
     parabricks:
       container: ghcr.io/tgen/jetstream_containers/clara-parabricks:4.0.0-1
       digest: 2a37e7a13669148bb922b1b675fb5ee32178e18b6813f9e3a9bc99436b59d03d
     R:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/r_with_modules:4.1.2
-      digest: c0148ac13e2f61ef375ebc5c53d5bd15a6d44505cd204dabb1dcf72258487556
+      digest: c4ec9561416aae18e6663931eeab9129bf8003b82295674aded895fba7952b70
     thred:
       container: ghcr.io/tgen/jetstream_containers/thred:1.1.0
       digest: a63fb6915eac8ba936674724d3a205d53994e8214cade190f7551a91cbadafa3
