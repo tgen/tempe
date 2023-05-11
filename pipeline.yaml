@@ -47,6 +47,9 @@ constants:
     gatk:
       container: broadinstitute/gatk:4.1.8.0
       digest: 18146e79d06787483310e5de666502090a480e10ac0fad06a36a5e7a5c9bb1dc
+    gridss:
+      container: /home/tgenref/containers/gridss_gripss_2.13.2_2.3.5.sif
+      digest: notarealdigest
     hmmcopy_utils:
       container: ghcr.io/tgen/jetstream_containers/hmmcopy-utils:v1
       digest: 643fc7efd5f576c1ecc5982bbed474f669efec01efecd233f8832139fc720ce0

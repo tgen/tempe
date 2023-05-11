@@ -1,4 +1,5 @@
 {% from 'modules/somatic/manta.jst' import manta_somatic with context %}
+{% from 'modules/somatic/gridss.jst' import gridss_somatic with context %}
 {% from 'modules/somatic/strelka2.jst' import strelka2_somatic with context %}
 {% from 'modules/somatic/mutect2.jst' import mutect2 with context %}
 {% from 'modules/somatic/lancet.jst' import lancet with context %}
@@ -108,6 +109,10 @@
 
     {% if tasks[taskPrefix+"_somatic_structural_caller_manta"]|default(false) %}
         {{- manta_somatic(pair, aligner) }}
+    {% endif %}
+
+    {% if tasks[taskPrefix+"_somatic_structural_caller_gridss"]|default(false) %}
+        {{- gridss_somatic(pair, aligner) }}
     {% endif %}
 
     {% if tasks[taskPrefix+"_somatic_snp_indel_caller_strelka2"]|default(false) %}

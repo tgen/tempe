@@ -1,0 +1,43 @@
+{% macro gridss_somatic(pair, aligner='bwa') %}
+{% set normal_bam %}{{ pair.normal.gltype }}/alignment/{{ aligner }}/{{ pair.normal.name }}/{{ pair.normal.name }}.{{ aligner }}.bam{% endset %}
+{% set tumor_bam %}{{ pair.tumor.gltype }}/alignment/{{ aligner }}/{{ pair.tumor.name }}/{{ pair.tumor.name }}.{{ aligner }}.bam{% endset %}
+{% set temp_dir %}temp/{{ pair.gltype }}/somatic_structural_calls/manta/{{ pair.name }}_{{ aligner }}{% endset %}
+{% set results_dir %}{{ pair.gltype }}/somatic_structural_calls/manta/{{ pair.name }}_{{ aligner }}{% endset %}
+
+- name: gridss_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, somatic, structural_caller, manta, {{ pair.name }}]
+  input:
+    - {{ normal_bam }}
+    - {{ tumor_bam }}
+    - {{ constants.tempe.bwa_index }}
+    - {{ constants.tempe.encode_denylist }}
+  output:
+    - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.gridss.sv.vcf
+  cpus: 8
+  mem: 32G
+  walltime: "24:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.gridss.container }}
+  digest: {{ constants.tools.gridss.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    gridss \
+      -r {{ constants.tempe.bwa_index }} \
+      -o {{ results_dir }}/{{ pair.name }}.{{ aligner }}.gridss.sv.vcf.gz \
+      -b {{ constants.tempe.encode_denylist }} \
+      --skipsoftcliprealignment \
+      {{ normal_bam }} \
+      {{ tumor_bam }}
+
+    java -jar /opt/gridss/gripss_v2.3.5.jar \
+      -sample {{ pair.tumor.rgsm }} \
+      -reference {{ pair.normal.rgsm }} \
+      -ref_genome_version 38 \
+      -ref_genome {{ constants.tempe.bwa_index }} \
+      -vcf {{ results_dir }}/{{ pair.name }}.{{ aligner }}.gridss.sv.vcf.gz\
+      -output_dir {{ results_dir }}/
+
+
+{% endmacro %}
