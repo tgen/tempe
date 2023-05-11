@@ -38,8 +38,8 @@
         --reference-file {{ constants.tempe.reference_fasta }} \
         --region-file {{ constants.tempe.dj_window }} \
         --temp-dir {{ temp_dir }} \
-        --out-dir {{ results_dir }} \
-        --out-file {{ sample.name }}_{{ variant_caller }}_{{ seg_resolution }}_res \
+        --output-dir {{ results_dir }} \
+        --output-prefix {{ sample.name }}_{{ variant_caller }}_{{ seg_resolution }}_res \
         --sample-name {{ sample.name }} \
         --lib {{ library_list }} \
         --json-out True

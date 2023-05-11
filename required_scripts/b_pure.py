@@ -64,8 +64,8 @@ def calculate_log2(reads_of_interest, neutral_reads):
 def run(args):
     args_dictionary = {'--bam-file':'input_bam','--seg-file':'input_seg','--region-file':'region_file','--reference-file':'ref_file',
                        '--header-prefix':'header_prefix','--log2-column':'log2_col','--cn-cutoff':'cn_cutoff','--num-bins':'num_bins',
-                       '--bin-size':'bin_size','--temp-dir':'temp_dir','--out-dir':'out_dir','--sample_name':'sample_name',
-                       '--out-file':'output_pref','--json-out':'json_out','--library':'library'}
+                       '--bin-size':'bin_size','--temp-dir':'temp_dir','--output-dir':'output_dir','--sample_name':'sample_name',
+                       '--output-prefix':'output_pref','--json-out':'json_out','--library':'library'}
     
     command = ''
     
@@ -83,12 +83,12 @@ def run(args):
     if args.seg_res:
         seg_resolution = 'PURITY_' + args.seg_res.upper() + '_RES' if (args.seg_res and args.seg_res.lower() == 'high' or 'low') else sys.exit(f'Incorrect value: "{args.seg_res}" passed through --seg-resolution, only values "high" or "low" accepted as input')
         confidence = 'CONFIDENCE_'+args.seg_res.upper() + '_RES'
-        output_prefix = args.out_dir+'/'+sample_name+'_'+args.seg_res.lower()+'_res' if args.output_pref is None else args.out_dir+'/'+args.output_pref
+        output_prefix = args.output_dir+'/'+sample_name+'_'+args.seg_res.lower()+'_res' if args.output_pref is None else args.output_dir+'/'+args.output_pref
     
     else:
         seg_resolution = 'PURITY'
         confidence = 'CONFIDENCE'
-        output_prefix = args.out_dir+'/'+sample_name if args.output_pref is None else args.out_dir+'/'+args.output_pref
+        output_prefix = args.output_dir+'/'+sample_name if args.output_pref is None else args.output_dir+'/'+args.output_pref
 
     log2_col = -1 if args.log2_col is None else int(args.log2_col - 1)
 
@@ -214,7 +214,7 @@ def main():
 
     required.add_argument('--bam-file', metavar='FILE', type=str, dest='input_bam', help='Input BAM/CRAM file', required=True)
     required.add_argument('--seg-file', metavar='FILE', type=str, dest='input_seg', help='Input corresponding seg file, assumes first four columns as track name, chromosome, start location, and end location"', required=True)
-    required.add_argument('--region-file', metavar='FILE', type=str, dest='region_file', help='Region of interest seg file with only chr, start, and stop',required=True)
+    required.add_argument('--region-file', metavar='FILE', type=str, dest='region_file', help='Region of interest seg file with only chr, start, and stop', required=True)
 
     optional.add_argument('--reference-file', metavar='FILE', type=str, dest='ref_file', help='Reference sequence FASTA FILE', required=False)
     optional.add_argument('--header-prefix', metavar='STR', type=str, dest='header_prefix', default='#', help='Header lines begin with this string (Default: "#")', required=False)
@@ -223,7 +223,7 @@ def main():
     optional.add_argument('--num-bins', metavar='INT', type=int, dest='num_bins', default=500, help='Number of CN windows to compare to region of interest (Default: 500)', required=False)
     optional.add_argument('--bin-size', metavar='INT', type=int, dest='bin_size', default=1000, help='Size of CN windows (bp) for comparison (Default: 1000 (1kb))', required=False)
     optional.add_argument('--temp-dir', metavar='PATH', type=str, dest='temp_dir', default=os.getcwd(), help='Temp directory (Default: current directory)', required=False)
-    optional.add_argument('--out-dir', metavar='PATH', type=str, dest='out_dir', default=os.getcwd(), help='Final directory (Default: current directory)', required=False)
+    optional.add_argument('--output-dir', metavar='PATH', type=str, dest='output_dir', default=os.getcwd(), help='Final directory (Default: current directory)', required=False)
     optional.add_argument('--sample-name', metavar='STR', type=str, dest='sample_name', help='Sample name (Default: entire file name without extension)', required=False)
     optional.add_argument('--output-prefix', metavar='STR', type=str, dest='output_pref', help='Output file naming prefix (Default: sample_name_seg_resolution)', required=False)
     optional.add_argument('--json-out', metavar='TRUE/FALSE', type=str, dest='json_out', default=False, help='Output .json file in addition to .tsv (Default: False)', required=False)
