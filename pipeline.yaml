@@ -57,8 +57,8 @@ constants:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/htslib:1.17-v1
       digest: b8dbec4e4bc301ce4bb643aa1d782acb1446381ac5cc2370b85370ab6736ed78
     ichorcna:
-      container: quay.io/biocontainers/r-ichorcna:0.3.2--r41hdfd78af_1
-      digest: 03e5a912ec6db75c41d7f8660b061cbda4b9256b9d5fce96de5560a96f43d8a7
+      container: quay.io/biocontainers/r-ichorcna:0.5.0--pl5321r42hdfd78af_0
+      digest: 3effbf6ca62e0f1941bfdf96eb2e5d9131a68cdc91597be6ddb3bd97ad152a42
     lancet:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/lancet:1.1.x-v1
       digest: 6d43c6574a7932f7811285cd7b6dabd2d42fe4ce6ae1c68c0923993049e54375
