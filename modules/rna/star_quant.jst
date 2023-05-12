@@ -290,22 +290,10 @@
 
 {% set task_list = [] %}
 
-{% if tasks.RNA_transcriptome_quantify_expression_HTseq|default(false) %}
-  {% set task %}htseq_{{ sample.name }}{% endset %}
-  {% do task_list.append(task) %}
-  {{- htseq(sample) }}
-{% endif %}
-
 {% if tasks.RNA_transcriptome_quantify_expression_subread_featureCounts|default(false) %}
   {% set task %}featurecounts_{{ sample.name }}{% endset %}
   {% do task_list.append(task) %}
   {{- featurecounts(sample) }}
-{% endif %}
-
-{% if tasks.RNA_transcriptome_quantify_expression_RSEM|default(false) %}
-  {% set task %}rsem_calculate_expression_{{ sample.name }}{% endset %}
-  {% do task_list.append(task) %}
-  {{- rsem_calculate_expression(sample) }}
 {% endif %}
 
 {% set task %}markduplicates_star_gatk_{{ sample.name }}{% endset %}
@@ -314,60 +302,6 @@
 {% set task_name %}{{ sample.name }}_star_quant{% endset %}
 {{- remove_files(temp_dir, none, task_list, task_name) }}
 
-{% endmacro %}
-
-{% macro htseq(sample) %}
-{% set temp_dir %}temp/{{ sample.gltype }}/quant/star/{{ sample.name }}{% endset %}
-{% set star_bam_unsort %}{{ temp_dir }}/{{ sample.name }}.Aligned.out.bam{% endset %}
-
-- name: htseq_{{ sample.name }}
-  tags: [{{ sample.gltype }}, transcriptome, quantify_expression, HTseq, {{ sample.name }}]
-  reset: predecessors
-  input: 
-    - {{ star_bam_unsort }}
-    - {{ constants.tempe.gtf }}
-  output: {{ sample.gltype }}/quant/htseq/{{ sample.name }}/{{ sample.name }}.htseq_counts.txt
-  cpus: 2
-  mem: 4G
-  walltime: "24:00:00"
-  queue_preset: "DEFAULT"
-  container: {{ constants.tools.htseq.container }}
-  digest: {{ constants.tools.htseq.digest }}
-  cmd: |
-    set -eu
-    set -o pipefail
-
-    mkdir -p "{{ sample.gltype }}/quant/htseq/{{ sample.name }}/"
-
-    {#
-    # Notes about command options:
-    # --nprocesses ; default=1 ; number of threads based on number of input files
-    # -r --order=pos ; default=name ; GDC=name (bam unsorted)
-    # -s --stranded=<yes/no/reverse> ; default=yes ; GDC=no (Dumb)
-    # -a --a=<minaqual> ; default=10 ; skip all reads with alignment quality lower than the given minimum value
-    # --additional-attr=gene_name ; default=none ; will be printed as an additional column after the primary
-    #   attribute column but before the counts column(s)
-    # --mode=<union/intersection-strict/intersection-nonempty> ; default=union ; Pegasus=union, GDC=intersection-nonempty
-    # --nonunique=<none/all> ; default=none ; Mode to handle reads that align to or are assigned to more than
-    #   one feature in the overlap
-    # --secondary-alignments=<score/ignore> ; default=score
-    # --supplementary-alignments=<score/ignore> ; default=score
-    #}
-    htseq-count \
-      --nprocesses 2 \
-      --quiet \
-      --format=bam \
-      --order=name \
-      --minaqual=10 \
-      --type=exon \
-      --idattr=gene_id \
-      --additional-attr=gene_name \
-      --mode=union \
-      --nonunique=none \
-      --stranded={{ constants.tempe.strandedness_options[sample.strandedness].htseq }} \
-      "{{ star_bam_unsort }}" \
-      "{{ constants.tempe.gtf }}" \
-      > "{{ sample.gltype }}/quant/htseq/{{ sample.name }}/{{ sample.name }}.htseq_counts.txt"
 {% endmacro %}
 
 {% macro featurecounts(sample) %}
@@ -417,42 +351,4 @@
       -a "{{ constants.tempe.gtf }}" \
       -o "{{ sample.gltype }}/quant/featurecounts/{{ sample.name }}/{{ sample.name }}.gene.counts.tsv" \
       "{{ star_bam_unsort }}"
-{% endmacro %}
-
-{% macro rsem_calculate_expression(sample) %}
-{% set temp_dir %}temp/{{ sample.gltype }}/quant/star/{{ sample.name }}{% endset %}
-{% set star_bam_transcript %}{{ temp_dir }}/{{ sample.name }}.Aligned.toTranscriptome.out.bam{% endset %}
-- name: rsem_calculate_expression_{{ sample.name }}
-  tags: [{{ sample.gltype }}, transcriptome, quantify_expression, rsem_star_bam, {{ sample.name }}]
-  reset: predecessors
-  input: 
-    - {{ star_bam_transcript }}
-    - {{ constants.tempe.rsem_index }}
-  output:
-    - {{ sample.gltype }}/quant/rsem/{{ sample.name }}/{{ sample.name }}.isoforms.results
-    - {{ sample.gltype }}/quant/rsem/{{ sample.name }}/{{ sample.name }}.genes.results
-    - {{ sample.gltype }}/quant/rsem/{{ sample.name }}/{{ sample.name }}.stat/{{ sample.name }}.cnt
-    - {{ sample.gltype }}/quant/rsem/{{ sample.name }}/{{ sample.name }}.stat/{{ sample.name }}.model
-    - {{ sample.gltype }}/quant/rsem/{{ sample.name }}/{{ sample.name }}.stat/{{ sample.name }}.theta
-  cpus: 8
-  mem: 8G
-  walltime: "8:00:00"
-  queue_preset: "DEFAULT"
-  container: {{ constants.tools.rsem.container }}
-  digest: {{ constants.tools.rsem.digest }}
-  cmd: |
-    set -eu
-    set -o pipefail
-
-    mkdir -p "{{ sample.gltype }}/quant/rsem/{{ sample.name }}/"
-
-    rsem-calculate-expression \
-      --num-threads 7 \
-      --alignments \
-      --paired-end \
-      --no-bam-output \
-      --strandedness "{{ constants.tempe.strandedness_options[sample.strandedness].rsem }}" \
-      {{ star_bam_transcript }} \
-      {{ constants.tempe.rsem_index }} \
-      "{{ sample.gltype }}/quant/rsem/{{ sample.name }}/{{ sample.name }}"
 {% endmacro %}
