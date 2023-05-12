@@ -303,7 +303,7 @@
     bcftools index --tbi --force "{{ all_vcf }}"
 
 
-{{- annotate_vcfs(sample, temp_dir, temp_dir, all_vcf, taskPrefix, aligner, 'mutect2', 'constitutional', 'snp_indel_caller') }}
+{{- annotate_vcfs(sample, temp_dir, temp_dir, all_vcf, taskPrefix, aligner, 'mutect2', 'constitutional') }}
 
 {# We require the topmed and gnomad_genome annotations for chip filtering to work #}
 {% if tasks[taskPrefix+"_constitutional_annotate_vcfs_bcftools_topmed"]|default(false) and tasks[taskPrefix+"_constitutional_annotate_vcfs_bcftools_gnomad_genome"]|default(false) %}
