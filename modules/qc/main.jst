@@ -45,10 +45,6 @@
       {% set taskPrefix = 'RNA' %}
       {{- bam_qc_gatk_collectrnaseqmetrics(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner) }}
       {{- bam_qc_rna_BTcell_loci(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner) }}
-    {% elif sample.gltype == 'singlecellrna' %}
-      {% set taskPrefix = 'SingleCellRNA' %}
-      {{- bam_qc_gatk_collectrnaseqmetrics(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner) }}
-      {{- bam_qc_rna_BTcell_loci(sample, libraryCount, sample_lb,taskPrefix=taskPrefix, aligner=aligner) }}
     {% elif sample.gltype == 'exome' %}
       {% set taskPrefix = 'Exome' %}
       {{- bam_qc_gatk_collecthsmetrics(sample, aligner=aligner) }}
@@ -65,14 +61,12 @@
       {{- sex_check(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner) }}
     {% endif %}
 
-    {# get oxo stats unless it is single cell rna #}
-    {% if sample.gltype != 'singlecellrna' %}
-      {{- bam_qc_gatk_convertsequencingarrtifacttooxog(sample, taskPrefix=taskPrefix, aligner=aligner) }}
-    {% endif %}
+    {# get oxo stats #}
+    {{- bam_qc_gatk_convertsequencingarrtifacttooxog(sample, taskPrefix=taskPrefix, aligner=aligner) }}
 
     {% for sample_lb, sample_rgs in sample.read_groups.values()|groupby('rglb') %}
       {# Tasks performed on dna bams #}
-      {% if sample.gltype not in ['rna', 'singlecellrna'] and sample.umiType is defined and sample.umiType == "" and 'bwa' in aligner | default(false) %}
+      {% if sample.gltype not in ['rna',] and sample.umiType is defined and sample.umiType == "" and 'bwa' in aligner | default(false) %}
         {{- bam_qc_samtools_markdup(sample, sample_lb, taskPrefix=taskPrefix, aligner=aligner) }}
       {% endif %}
     {% endfor%}

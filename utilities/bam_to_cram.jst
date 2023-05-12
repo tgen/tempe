@@ -9,7 +9,7 @@
   tags: [{{ sample.gltype }}, {{ sample.name }}, bam_to_cram ]
   input: 
     - {{ bam_path }}
-    {% if sample.gltype == 'rna' or sample.gltype == 'singlecellrna' %}
+    {% if sample.gltype == 'rna' %}
     - {{ constants.tempe.star_fasta }}
     {% else %}
     - {{ constants.tempe.reference_fasta }}
@@ -30,7 +30,7 @@
     samtools view \
       -C \
       -@ 8 \
-      {% if sample.gltype == 'rna' or sample.gltype == 'singlecellrna' %}
+      {% if sample.gltype == 'rna' %}
       --reference "{{ constants.tempe.star_fasta }}" \
       {% else %}
       --reference "{{ constants.tempe.reference_fasta }}" \

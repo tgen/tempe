@@ -21,11 +21,8 @@
     {% set regions %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.bam.samstats_no_N_1based_target_regions.txt{% endset %}
   {% endif %}
 
-  {% if sample.gltype == 'singlecellrna' %}
-    {% set sample_name_string %}{{ sample.name }}{% endset %}
-  {% else %}
-    {% set sample_name_string %}{{ sample.name }}_{{ sample_lb }}{% endset %}
-  {% endif %}
+
+  {% set sample_name_string %}{{ sample.name }}_{{ sample_lb }}{% endset %}
 
   {% set baseQuality_output %}{{ results_dir }}/{{ sample_name_string }}.{{ aligner }}.bam_samtools_baseQualityYield_summary.tsv{% endset %}
   {% set baseQuality_output_json %}{{ results_dir }}/{{ sample_name_string }}.{{ aligner }}.bam_samtools_baseQualityYield_summary.json{% endset %}
@@ -102,7 +99,7 @@
     {% if sample.gltype == 'exome' %}
     - {{ regions }}
     {% endif %}
-    {% if sample.gltype == 'rna' or sample.gltype == 'singlecellrna' %}
+    {% if sample.gltype == 'rna' %}
     - {{ constants.tempe.star_fasta }}
     - {{ constants.tempe.reference_non_N_interval_list }}
     {% else %}
@@ -155,7 +152,7 @@
       --GC-depth 100 \
       --filtering-flag 256 \
       --coverage 1,2500,1 \
-      {% if sample.gltype == 'rna' or sample.gltype == 'singlecellrna' %}
+      {% if sample.gltype == 'rna' %}
       --reference "{{ constants.tempe.star_fasta }}" \
       --target-regions "{{ constants.tempe.reference_non_N_interval_list }}" \
       {% else %}
@@ -239,11 +236,7 @@
         --bam={{ bam|basename }} \
         --sample={{ sample.name }} \
         --library={{ sample_lb }} \
-        {% if sample.gltype == 'singlecellrna' %}
-        --readformat=SingleEnd
-        {% else %}
         --readformat=PairedEnd
-        {% endif %}
 
     {% if libraryCount == 1 %}
       cp {{ bam|basename }}.bamstats.txt {{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.bamstats.txt
@@ -255,7 +248,7 @@
         --library={{ sample_lb }}
     {% endif %}
 
-    {% if bam_level is sameas true and sample.gltype != 'singlecellrna' %}
+    {% if bam_level is sameas true %}
       {{- stats2json(sample.gltype, sample.name, task, bam_level_baseQuality_output, bam_level_baseQuality_output_json, "samtools_baseQualityYield_summary", sample=sample, sample_name=sample.name, lims_upload=false) }}
       {{- stats2json(sample.gltype, sample.name, task, bam_level_coverage_output, bam_level_coverage_output_json, "samtools_coverage_summary", sample=sample, sample_name=sample.name, lims_upload=false) }}
       {{- stats2json(sample.gltype, sample.name, task, bam_level_insertSize_output, bam_level_insertSize_output_json, "samtools_insertSize_summary", sample=sample, sample_name=sample.name, lims_upload=false) }}
@@ -267,10 +260,6 @@
       {{- stats2json(sample.gltype, sample.name, task, baseQuality_output, baseQuality_output_json, "samtools_baseQualityYield_summary", sample=sample, sample_name=sample.name, library_name=sample_lb) }}
       {{- stats2json(sample.gltype, sample.name, task, coverage_output, coverage_output_json, "samtools_coverage_summary", sample=sample, sample_name=sample.name, library_name=sample_lb) }}
       {{- stats2json(sample.gltype, sample.name, task, insertSize_output, insertSize_output_json, "samtools_insertSize_summary", sample=sample, sample_name=sample.name, library_name=sample_lb) }}
-      {{- stats2json(sample.gltype, sample.name, task, summaryNumbers_output, summaryNumbers_output_json, "samtools_summaryNumbers_summary", sample=sample, sample_name=sample.name, library_name=sample_lb) }}
-    {% elif sample.gltype == 'singlecellrna' %}
-      {{- stats2json(sample.gltype, sample.name, task, baseQuality_output, baseQuality_output_json, "samtools_baseQualityYield_summary", sample=sample, sample_name=sample.name, library_name=sample_lb) }}
-      {{- stats2json(sample.gltype, sample.name, task, coverage_output, coverage_output_json, "samtools_coverage_summary", sample=sample, sample_name=sample.name, library_name=sample_lb) }}
       {{- stats2json(sample.gltype, sample.name, task, summaryNumbers_output, summaryNumbers_output_json, "samtools_summaryNumbers_summary", sample=sample, sample_name=sample.name, library_name=sample_lb) }}
     {% endif %}
 
@@ -385,12 +374,8 @@
 
   {% set output %}{{ results_dir }}/{{ bam|basename }}.idxstats.txt{% endset %}
   {% set sample_lb_output %}{{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.idxstats.txt{% endset %}
+  {% set json %}{{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.idxstats.json{% endset %}
 
-  {% if sample.gltype == 'singlecellrna' %}
-    {% set json %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.bam.idxstats.json{% endset %}
-  {% else %}
-    {% set json %}{{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.idxstats.json{% endset %}
-  {% endif %}
 
 - name: samtools_idxstats_{{ task }}
   tags: [{{ sample.gltype }}, quality_control, stats, samtools_idxstats, {{ sample.name }}]
@@ -429,7 +414,7 @@
 
   {% if libraryCount == 1 %}
     {{- stats2json(sample.gltype, sample.name, task, sample_lb_output, json, "samtools_idxstats", sample=sample, sample_name=sample.name, library_name=sample_lb) }}
-  {% elif bam_level is sameas false or sample.gltype == 'singlecellrna' %}
+  {% elif bam_level is sameas false %}
     {{- stats2json(sample.gltype, sample.name, task, output, json, "samtools_idxstats", sample=sample, sample_name=sample.name, library_name=sample_lb) }}
   {% endif %}
 
@@ -460,14 +445,8 @@
   {% set gc_bias_metrics %}{{ results_dir }}/{{ bam|basename }}.gc_bias.summary_metrics{% endset %}
   {% set gc_bias_metrics_json %}{{ gc_bias_metrics }}.json{% endset %}
 
-  {% if sample.gltype == 'singlecellrna' %}
-    {% set error_metrics %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.bam.error_summary_metrics{% endset %}
-    {% set quality_yield_metrics %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.bam.quality_yield_metrics{% endset %}
-  {% else %}
-    {% set error_metrics %}{{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.error_summary_metrics{% endset %}
-    {% set quality_yield_metrics %}{{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.quality_yield_metrics{% endset %}
-  {% endif %}
-
+  {% set error_metrics %}{{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.error_summary_metrics{% endset %}
+  {% set quality_yield_metrics %}{{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.quality_yield_metrics{% endset %}
   {% set error_metrics_json %}{{ error_metrics }}.json{% endset %}
   {% set quality_yield_metrics_json %}{{ quality_yield_metrics }}.json{% endset %}
 
@@ -479,7 +458,7 @@
   input: 
     - {{ bam }}
     - {{ bam }}.bai
-    {% if sample.gltype == 'rna' or sample.gltype == 'singlecellrna' %}
+    {% if sample.gltype == 'rna' %}
     - {{ constants.tempe.star_fasta }}
     {% else %}
     - {{ constants.tempe.reference_fasta }}
@@ -534,7 +513,7 @@
       --java-options "-Xmx7G" \
       --INPUT "{{ bam }}" \
       --OUTPUT "{{ results_dir }}/{{ bam|basename }}" \
-      {% if sample.gltype == 'rna' or sample.gltype == 'singlecellrna' %}
+      {% if sample.gltype == 'rna' %}
       --REFERENCE_SEQUENCE "{{ constants.tempe.star_fasta }}" \
       {% else %}
       --REFERENCE_SEQUENCE "{{ constants.tempe.reference_fasta }}" \
@@ -568,18 +547,14 @@
       {{- stats2json(sample.gltype, sample.name, task, error_metrics, error_metrics_json, "picard_error_summary_metrics", sample=sample, sample_name=sample.name, library_name=sample_lb) }}
       {{- stats2json(sample.gltype, sample.name, task, quality_yield_metrics, quality_yield_metrics_json, "picard_quality_yield_metrics", sample=sample, sample_name=sample.name, library_name=sample_lb) }}
 
-    {% elif bam_level is sameas false or sample.gltype == 'singlecellrna' %}
-      {% if sample.gltype != 'singlecellrna' %}
-        {{- stats2json(sample.gltype, sample.name, task, error_metrics, error_metrics_json, "picard_error_summary_metrics", sample=sample, sample_name=sample.name, library_name=sample_lb) }}
-      {% endif %}
+    {% elif bam_level is sameas false %}
+      {{- stats2json(sample.gltype, sample.name, task, error_metrics, error_metrics_json, "picard_error_summary_metrics", sample=sample, sample_name=sample.name, library_name=sample_lb) }}
       {{- stats2json(sample.gltype, sample.name, task, quality_yield_metrics, quality_yield_metrics_json, "picard_quality_yield_metrics", sample=sample, sample_name=sample.name, library_name=sample_lb) }}
     {% endif %}
 
   {% if bam_level is sameas true %}
     {{- stats2json(sample.gltype, sample.name, task, alignment_summary_metrics, alignment_summary_metrics_json, "picard_alignment_summary_metrics", sample=sample) }}
-    {% if not sample.gltype == 'singlecellrna' %}
     {{- stats2json(sample.gltype, sample.name, task, insert_size_metrics, insert_size_metrics_json, "picard_insert_size_metrics", sample=sample) }}
-    {% endif %}
     {{- stats2json(sample.gltype, sample.name, task, gc_bias_metrics, gc_bias_metrics_json, "picard_gc_bias_summary_metrics", sample=sample) }}
   {% endif %}
 
@@ -598,20 +573,16 @@
   input: 
     - {{ bam }}
     - {{ bam }}.bai
-    {% if sample.gltype == 'rna' or sample.gltype == 'singlecellrna' %}
+    {% if sample.gltype == 'rna' %}
     - {{ constants.tempe.star_fasta }}
     {% else %}
     - {{ constants.tempe.reference_fasta }}
     {% endif %}
   output:
     - {{ results_dir }}/{{ bam|basename }}.oxog_metrics
-    {% if sample.gltype == 'singlecellrna' %}
-    - {{ results_dir }}/{{ bam|basename }}.oxog_metrics_summary.tsv
-    {% else %}
-      {% for sample_lb, sample_rgs in sample.read_groups.values()|groupby('rglb') %}
+    {% for sample_lb, sample_rgs in sample.read_groups.values()|groupby('rglb') %}
     - {{ results_dir }}/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.oxog_metrics_summary.tsv
-      {% endfor %}
-    {% endif %}
+    {% endfor %}
   walltime: "24:00:00"
   cpus: 4
   mem: 8G
@@ -628,14 +599,14 @@
     --java-options "-Xmx7G" \
     --INPUT {{ bam }} \
     --OUTPUT "{{ results_dir }}/{{ bam|basename }}" \
-    {% if sample.gltype == 'rna' or sample.gltype == 'singlecellrna' %}
+    {% if sample.gltype == 'rna' %}
     --REFERENCE_SEQUENCE "{{ constants.tempe.star_fasta }}" \
     {% else %}
     --REFERENCE_SEQUENCE "{{ constants.tempe.reference_fasta }}" \
     {% endif %}
 
     gatk ConvertSequencingArtifactToOxoG \
-      {% if sample.gltype == 'rna' or sample.gltype == 'singlecellrna' %}
+      {% if sample.gltype == 'rna' %}
       --REFERENCE_SEQUENCE "{{ constants.tempe.star_fasta }}" \
       {% else %}
       --REFERENCE_SEQUENCE "{{ constants.tempe.reference_fasta }}" \
@@ -662,13 +633,8 @@
         sort -n | \
         awk 'NR == 3')
 
-      {% if sample.gltype == 'singlecellrna' %}
-      echo -e "OXIDATION_Q_MIN\tC_REF_OXO_Q_MIN\tG_REF_OXO_Q_MIN" > {{ results_dir }}/{{ sample.name }}.{{ aligner }}.bam.oxog_metrics_summary.tsv
-      echo -e "${OXIDATION_Q_MIN}\t${C_REF_OXO_Q_MIN}\t${G_REF_OXO_Q_MIN}" >> {{ results_dir }}/{{ sample.name }}.{{ aligner }}.bam.oxog_metrics_summary.tsv
-      {% else %}
       echo -e "OXIDATION_Q_MIN\tC_REF_OXO_Q_MIN\tG_REF_OXO_Q_MIN" > {{ results_dir }}/{{ sample.name }}_${library}.{{ aligner }}.bam.oxog_metrics_summary.tsv
       echo -e "${OXIDATION_Q_MIN}\t${C_REF_OXO_Q_MIN}\t${G_REF_OXO_Q_MIN}" >> {{ results_dir }}/{{ sample.name }}_${library}.{{ aligner }}.bam.oxog_metrics_summary.tsv
-      {% endif %}
     done
 
     {% for sample_lb, sample_rgs in sample.read_groups.values()|groupby('rglb') %}
@@ -700,7 +666,7 @@
   input: 
     - {{ bam }}
     - {{ bam }}.bai
-    {% if sample.gltype == 'rna' or sample.gltype == 'singlecellrna' %}
+    {% if sample.gltype == 'rna' %}
     - {{ constants.tempe.star_fasta }}
     {% else %}
     - {{ constants.tempe.reference_fasta }}
@@ -730,7 +696,7 @@
       --max-depth 5000 \
       --min-MQ 0 \
       --min-BQ 13 \
-      {% if sample.gltype == 'rna' or sample.gltype == 'singlecellrna' %}
+      {% if sample.gltype == 'rna' %}
       --fasta-ref "{{ constants.tempe.star_fasta }}" \
       {% else %}
       --fasta-ref "{{ constants.tempe.reference_fasta }}" \

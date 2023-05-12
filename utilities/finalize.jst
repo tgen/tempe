@@ -106,34 +106,6 @@ fastq from the source location.
       {% elif general_library_type in 'rna' %}
         {% set taskPrefix = 'RNA' %}
 
-      {% elif general_library_type in 'singlecellrna' and data_files[0].glprep in 'singlecellrna' %}
-        {% set taskPrefix = 'SingleCellRNA' %}
-        {% if tasks[taskPrefix+"_transcriptome_quantify_expression_cellranger_count"]|default(false) %}
-          for line in `find ../{{ general_library_type }}/alignment/cellranger_count -name "*.cellranger_count.bam.web_summary.html"`
-          do
-            ln --symbolic --force ${line}
-          done
-
-          for line in `find ../{{ general_library_type }}/expression_estimates/cellranger_count -name "*.cellranger_count.bam.cloupe"`
-          do
-            ln --symbolic --force ${line}
-          done
-        {% endif %}
-      {% elif general_library_type in 'singlecellrna' and data_files[0].glprep in 'singlecellenrichment' %}
-        {% set taskPrefix = 'SingleCellEnrichment' %}
-        {% if tasks[taskPrefix+"_transcriptome_quantify_expression_cellranger_count"]|default(false) %}
-          for line in `find ../{{ general_library_type }}/vdj_assembly/cellranger_vdj -name "*.web_summary.html"`
-          do
-            ln --symbolic --force ${line}
-          done
-
-          for line in `find ../{{ general_library_type }}/vdj_assembly/cellranger_vdj -name "*.vloupe"`
-          do
-            ln --symbolic --force ${line}
-          done
-        {% endif %}
-      {% endif %}
-
 
     {% if cram|default(true) %}
       for line in `find ../{{ general_library_type }}/alignment -name "*.cram"`
