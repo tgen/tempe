@@ -105,7 +105,7 @@ fastq from the source location.
         {% endif %}
       {% elif general_library_type in 'rna' %}
         {% set taskPrefix = 'RNA' %}
-
+      {% endif %}
 
     {% if cram|default(true) %}
       for line in `find ../{{ general_library_type }}/alignment -name "*.cram"`
