@@ -763,27 +763,29 @@ insertSize_summary <- function(input, bam, rgsm, rglb, rgid) {
 
 #### Samtools markdups stats table processed as follows is the the expected input:
 ##
-markdup_summary <- function(file, bam, rgsm, rglb, rgid) {
+markdup_summary <- function(file, bam, rgsm, rglb) {
   # Import data table
-  mdups <- fromJSON(file, simplifyDataFrame = TRUE)
-  names(mdups) <- gsub(" ", "_", names(mdups))
-  names(mdups$READ_GROUPS) <- gsub(" ", "_", names(mdups$READ_GROUPS))
-  mdups_df <- data.frame(mdups)
+  mdups_df <- data.frame(fromJSON(file, simplifyDataFrame = TRUE))
   mdups_df <- mdups_df %>%
+    rename_with(~ str_replace_all(.x, pattern = '\\.', replacement = "_")) %>% 
     mutate(LB = rglb) %>%
     mutate(PERCENT_TOTAL_DUPLICATES = DUPLICATE_TOTAL / EXAMINED) %>%
     mutate(PERCENT_PRIMARY_PLATFORM_DUPLICATES = (DUPLICATE_PAIR_OPTICAL + DUPLICATE_SINGLE_OPTICAL) / DUPLICATE_PRIMARY_TOTAL) %>%
-    mutate(PERCENT_TOTAL_PLATFORM_DUPLICATES = (DUPLICATE_PAIR_OPTICAL + DUPLICATE_SINGLE_OPTICAL + DUPLICATE_NON_PRIMARY_OPTICAL) / DUPLICATE_TOTAL) %>%
-    mutate(READ_GROUPS.PERCENT_TOTAL_DUPLICATES = READ_GROUPS.DUPLICATE_TOTAL / READ_GROUPS.EXAMINED) %>%
-    mutate(READ_GROUPS.PERCENT_PRIMARY_PLATFORM_DUPLICATES = (READ_GROUPS.DUPLICATE_PAIR_OPTICAL + READ_GROUPS.DUPLICATE_SINGLE_OPTICAL) / READ_GROUPS.DUPLICATE_PRIMARY_TOTAL) %>%
-    mutate(READ_GROUPS.PERCENT_TOTAL_PLATFORM_DUPLICATES = (READ_GROUPS.DUPLICATE_PAIR_OPTICAL + READ_GROUPS.DUPLICATE_SINGLE_OPTICAL + READ_GROUPS.DUPLICATE_NON_PRIMARY_OPTICAL) / READ_GROUPS.DUPLICATE_TOTAL)
+    mutate(PERCENT_TOTAL_PLATFORM_DUPLICATES = (DUPLICATE_PAIR_OPTICAL + DUPLICATE_SINGLE_OPTICAL + DUPLICATE_NON_PRIMARY_OPTICAL) / DUPLICATE_TOTAL)
+
+  if (any(grepl('READ_GROUPS', names(mdups_df)))) {
+    mdups_df <- mdups_df %>%
+      mutate(READ_GROUPS_PERCENT_TOTAL_DUPLICATES = READ_GROUPS_DUPLICATE_TOTAL / READ_GROUPS_EXAMINED) %>% 
+      mutate(READ_GROUPS_PERCENT_PRIMARY_PLATFORM_DUPLICATES = (READ_GROUPS_DUPLICATE_PAIR_OPTICAL + READ_GROUPS_DUPLICATE_SINGLE_OPTICAL) / READ_GROUPS_DUPLICATE_PRIMARY_TOTAL) %>%
+      mutate(READ_GROUPS_PERCENT_TOTAL_PLATFORM_DUPLICATES = (READ_GROUPS_DUPLICATE_PAIR_OPTICAL + READ_GROUPS_DUPLICATE_SINGLE_OPTICAL + READ_GROUPS_DUPLICATE_NON_PRIMARY_OPTICAL) / READ_GROUPS_DUPLICATE_TOTAL)
+  }
   
-  mdups_sm <- list(SM = rgsm)
+  mdups_sm <- data.frame(SM = rgsm)
   mdups_lb <- mdups_df %>%
-    select(!contains("READ_GROUPS")) %>% distinct() %>% as.list()
+    select(!contains("READ_GROUPS")) %>% distinct()
   mdups_rgs <- mdups_df %>%
     select(contains("READ_GROUPS")) %>% 
-    rename_all(~stringr::str_replace(.,"READ_GROUPS.",""))
+    rename_all(~stringr::str_replace(.,"READ_GROUPS_",""))
   
   mdups_list <- list(SAMPLES = append(mdups_sm, 
                 list(LIBRARIES = append(mdups_lb, 
@@ -904,5 +906,5 @@ if (!is.null(opt$samtoolsDuplicatesFile)) {
   
   print("Summarizing Samtools markdups Statistics:")
   # Call Coverage Summary
-  markdup_summary(opt$samtoolsDuplicatesFile, opt$bam, opt$sample, opt$library, opt$readgroup)
+  markdup_summary(opt$samtoolsDuplicatesFile, opt$bam, opt$sample, opt$library)
 }
