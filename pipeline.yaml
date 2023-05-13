@@ -42,8 +42,8 @@ constants:
       container: ghcr.io/tgen/jetstream_containers/multiqc:1.13
       digest: edf7d9b44251530ccb6449702b3c9802a6665d85c0f88eb7a75a54bae5796388
     freebayes:
-      container: ghcr.io/tgen/jetstream_containers/freebayes:1.3.6
-      digest: 41a5d2e71a9a5c4f9b034eebe18e1d6f93024c81e33e66f47d3fa0d3543cd6ae
+      container: quay.io/biocontainers/freebayes:1.3.6--h6f59eb7_3
+      digest: 2f782d0d87c6c30097fd39694de3c4a52e840681dc27dd4cf3f87526b13abbba
     gatk:
       container: broadinstitute/gatk:4.1.8.0
       digest: 18146e79d06787483310e5de666502090a480e10ac0fad06a36a5e7a5c9bb1dc
@@ -62,14 +62,14 @@ constants:
     lancet:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/lancet:1.1.x-v1
       digest: 6d43c6574a7932f7811285cd7b6dabd2d42fe4ce6ae1c68c0923993049e54375
+    lumosvar2:
+      container: /home/tgenref/containers/lumosvar2_1.1.sif
+      digest: notarealdigest
     manta:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/manta:1.6.0-v1
       digest: 2b560ca068daf2632a7a3da38b82811c28b3f0214685c44f6a0e76b961eb393b
     manta_tgen:
       container: /home/tgenref/containers/manta_v1.6.0-tgen.sif
-      digest: notarealdigest
-    lumosvar2:
-      container: /home/tgenref/containers/lumosvar2_1.1.sif
       digest: notarealdigest
     msisensor:
       container: ghcr.io/tgen/jetstream_containers/msisensor:1.1.a
