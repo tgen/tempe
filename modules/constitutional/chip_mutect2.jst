@@ -15,6 +15,7 @@
     - {{ normal_bam }}
     - {{ constants.tempe.reference_fasta }}
     - {{ constants.tempe.gnomad_genome_mutect_germlinereference }}
+    - {{ constants.tempe.somatic_GRCh38_1000g_pon }}
   output:
   - {{ temp_dir }}/{{ loop.index }}.mutect2.chip.vcf.gz
   - {{ temp_dir }}/{{ loop.index }}.mutect2.chip.vcf.gz.stats
