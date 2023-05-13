@@ -267,7 +267,7 @@
 
 
 - name: constitutional_gatk_call_cnv_step2_plot_cnv_{{ sample.name }}_{{ aligner }}
-  tags: [{{ pair.gltype }}, tumor_only, cna_caller, gatk, {{ sample.name }}]
+  tags: [{{ sample.gltype }}, tumor_only, cna_caller, gatk, {{ sample.name }}]
   reset: constitutional_gatk_call_cnv_step2_{{ sample.name }}_{{ aligner }}
   input:
     - {{ temp_dir }}/results/{{ sample.name }}.{{ aligner }}.denoisedCR.genderCorrected.tsv
