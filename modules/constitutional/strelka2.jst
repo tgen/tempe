@@ -5,7 +5,7 @@
 {%- macro strelka2_constitutional(sample, aligner='bwa', taskPrefix='Genome') %}
 
 {%- set bam %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
-{%- set indel_candidates %}{{ sample.gltype }}/constitutional_structural_calls/manta/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.manta.candidateSmallIndels.vcf.gz{% endset %}
+{%- set indel_candidates %}{{ sample.gltype }}/constitutional_structural_calls/manta/{{ sample.name }}_{{ aligner }}/{{ sample.name }}.{{ aligner }}.manta.candidateSmallIndels.vcf.gz{% endset %}
 {%- set temp_dir %}temp/{{ sample.gltype }}/constitutional_variant_calls/strelka2/{{ sample.name }}_{{ aligner }}{% endset %}
 {%- set results_dir %}{{ sample.gltype }}/constitutional_variant_calls/strelka2/{{ sample.name }}_{{ aligner }}{% endset %}
 {%- set all_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.strelka2.all.vcf.gz{% endset %}
