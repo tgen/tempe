@@ -1,7 +1,6 @@
 {% from 'utilities/remove_files.jst' import remove_files with context %}
 {% from 'utilities/cnvear.jst' import cnvear with context %}
 {% from 'modules/metrics/bpure.jst' import bpure with context %}
-# The macros found in this template are used to generate the gatk4 tumor_only cnv workflow.
 
 {% macro gatk_cnv_constitutional(sample, normal, aligner='bwa') %}
 {% set normal_temp %}temp/tumor_only/control_data_files/{{ normal.assayCode }}{% endset %}
@@ -151,67 +150,26 @@
   input:
     - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.denoisedCR.tsv
     - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.modelFinal.seg
-    - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.hets.tsv
     - {{ constants.tempe.centromere }}
   output:
-    - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.denoisedCR.genderCorrected.tsv
-    - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
-    - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.re_centered.cr.igv.seg
-    - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.dLRs.tsv
-    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}.hets.density.png
-    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_cna_withhets.png
-    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_cna.png
-    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_baf.png
-    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}.png
-    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr1.png
-    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr2.png
-    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr3.png
-    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr4.png
-    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr5.png
-    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr6.png
-    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr7.png
-    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr8.png
-    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr9.png
-    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr10.png
-    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr11.png
-    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr12.png
-    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr13.png
-    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr14.png
-    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr15.png
-    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr16.png
-    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr17.png
-    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr18.png
-    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr19.png
-    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr20.png
-    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr21.png
-    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr22.png
-    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chrX.png
-    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chrY.png
+    - {{ temp_dir }}/results/{{ sample.name }}.{{ aligner }}.denoisedCR.genderCorrected.tsv
+    - {{ temp_dir }}/results/{{ sample.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
   cpus: 1
   mem: 16G
   walltime: "24:00:00"
-  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   queue_preset: "DEFAULT"
-  container: {{ constants.tools.gatk.container }}
-  digest: {{ constants.tools.gatk.digest }}
+  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
+  container: {{ constants.tools.python3.container }}
+  digest: {{ constants.tools.python3.digest }}
   cmd: |
     set -eu
     set -o pipefail
 
-    rm -r {{ results_dir }}/plots || true
-
     {# Make working and temp directories #}
     mkdir -p "{{ temp_dir }}"
 
-    {# Get the sex results of the normal. If undetermined then use the sex from the config if known. else default to female. #}
-    SEX="Female"
-
-    touch {{ temp_dir }}/results/plots/{{ sample.name }}.{{ aligner }}_chrY.png
     cp {{ results_dir }}/{{ sample.name }}.{{ aligner }}.denoisedCR.tsv {{ temp_dir }}/results/{{ sample.name }}.{{ aligner }}.denoisedCR.genderCorrected.tsv
     cp {{ results_dir }}/{{ sample.name }}.{{ aligner }}.modelFinal.seg {{ temp_dir }}/results/{{ sample.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
-    contig_names_string="{{ constants.tempe.primary_calling_contigs[:-1]|join('CONTIG_DELIMITER', attribute='contig') }}"
-    contig_lengths_string="{{ constants.tempe.primary_calling_contigs[:-1]|join('CONTIG_DELIMITER', attribute='length') }}"
-
 
     for CHR in {1..24}
     do
@@ -307,6 +265,66 @@
 
     python ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.cna_seg_extend }} {{ constants.tempe.centromere }} {{ temp_dir }}/results/{{ sample.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
 
+
+- name: constitutional_gatk_call_cnv_step2_plot_cnv_{{ sample.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, tumor_only, cna_caller, gatk, {{ sample.name }}]
+  reset: constitutional_gatk_call_cnv_step2_{{ sample.name }}_{{ aligner }}
+  input:
+    - {{ temp_dir }}/results/{{ sample.name }}.{{ aligner }}.denoisedCR.genderCorrected.tsv
+    - {{ temp_dir }}/results/{{ sample.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
+    - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.hets.tsv
+  output:
+    - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.denoisedCR.genderCorrected.tsv
+    - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
+    - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.re_centered.cr.igv.seg
+    - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.dLRs.tsv
+    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}.hets.density.png
+    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_cna_withhets.png
+    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_cna.png
+    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_baf.png
+    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}.png
+    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr1.png
+    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr2.png
+    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr3.png
+    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr4.png
+    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr5.png
+    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr6.png
+    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr7.png
+    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr8.png
+    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr9.png
+    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr10.png
+    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr11.png
+    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr12.png
+    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr13.png
+    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr14.png
+    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr15.png
+    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr16.png
+    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr17.png
+    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr18.png
+    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr19.png
+    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr20.png
+    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr21.png
+    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chr22.png
+    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chrX.png
+    - {{ results_dir }}/plots/{{ sample.name }}.{{ aligner }}_chrY.png
+  cpus: 1
+  mem: 16G
+  walltime: "24:00:00"
+  queue_preset: "DEFAULT"
+  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
+  container: {{ constants.tools.R.container }}
+  digest: {{ constants.tools.R.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    rm -r {{ results_dir }}/plots || true
+
+    touch {{ temp_dir }}/results/plots/{{ sample.name }}.{{ aligner }}_chrY.png
+
+    contig_names_string="{{ constants.tempe.primary_calling_contigs[:-1]|join('CONTIG_DELIMITER', attribute='contig') }}"
+    contig_lengths_string="{{ constants.tempe.primary_calling_contigs[:-1]|join('CONTIG_DELIMITER', attribute='length') }}"
+
     Rscript ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.plotCNVplus_Rscript }} \
       --point_size 2 \
       --hetDPfilter 1 \
@@ -328,9 +346,10 @@
       --allelic_counts_file={{ results_dir }}/{{ sample.name }}.{{ aligner }}.hets.tsv \
       --modeled_segments_file={{ temp_dir }}/results/{{ sample.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
 
-    mv {{ temp_dir }}/results/* {{ results_dir }}/
+    {# using cp instead of move because singularity mounts things weird #}
+    cp -r {{ temp_dir }}/results/* {{ results_dir }}/
 
-{% set task %}constitutional_gatk_call_cnv_step2_{{ sample.name }}_{{ aligner }}{% endset %}
+{% set task %}constitutional_gatk_call_cnv_step2_plot_cnv_{{ sample.name }}_{{ aligner }}{% endset %}
 {% set directory %}{{ temp_dir }}{% endset %}
 {{- remove_files(directory,none,task) }}
 
