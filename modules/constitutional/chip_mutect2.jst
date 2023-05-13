@@ -283,6 +283,7 @@
   input:
     - {{ temp_vcf }}
     - {{ temp_vcf }}.tbi
+    - {{ sample.capture_kit.extended_bed }}
   output:
     - {{ all_vcf }}
     - {{ all_vcf }}.tbi
@@ -297,9 +298,9 @@
 
     bcftools filter \
       --output-type z \
-      --targets-file "{{ sample.capture_kit.extended_bed }}" \
-      --output "{{ all_vcf }}" \
-      "{{ temp_vcf }}"
+      --targets-file {{ sample.capture_kit.extended_bed }}" \
+      --output {{ all_vcf }} \
+      {{ temp_vcf }}
     
     bcftools index --tbi --force "{{ all_vcf }}"
 
