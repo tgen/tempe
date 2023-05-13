@@ -780,18 +780,14 @@ markdup_summary <- function(file, bam, rgsm, rglb) {
       mutate(READ_GROUPS_PERCENT_TOTAL_PLATFORM_DUPLICATES = (READ_GROUPS_DUPLICATE_PAIR_OPTICAL + READ_GROUPS_DUPLICATE_SINGLE_OPTICAL + READ_GROUPS_DUPLICATE_NON_PRIMARY_OPTICAL) / READ_GROUPS_DUPLICATE_TOTAL)
   }
   
-  mdups_sm <- data.frame(SM = rgsm)
   mdups_lb <- mdups_df %>%
     select(!contains("READ_GROUPS")) %>% distinct()
   mdups_rgs <- mdups_df %>%
     select(contains("READ_GROUPS")) %>% 
     rename_all(~stringr::str_replace(.,"READ_GROUPS_",""))
   
-  mdups_list <- list(SAMPLES = append(mdups_sm, 
-                list(LIBRARIES = append(mdups_lb, 
-                list(READGROUPS = mdups_rgs)))))
-  
-  toJSON(mdups_list, pretty = T, auto_unbox = T)
+  mdups_list <- list("SAMPLES" = list(list("SM" = rgsm, LIBRARIES = list(append(mdups_lb, list(READGROUPS = mdups_rgs))))))
+  # toJSON(mdups_list, pretty = T, auto_unbox = T)
   
   # Save samtools markdups summary table
   write_json(mdups_list, paste(bam, "samtools.markdup_summary.json", sep = "."), auto_unbox = T)
