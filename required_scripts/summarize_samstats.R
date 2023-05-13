@@ -767,6 +767,7 @@ markdup_summary <- function(file, bam, rgsm, rglb) {
   # Import data table
   mdups_df <- data.frame(fromJSON(file, simplifyDataFrame = TRUE))
   mdups_df <- mdups_df %>%
+    select(-c(COMMAND)) %>% 
     rename_with(~ str_replace_all(.x, pattern = '\\.', replacement = "_")) %>% 
     mutate(LB = rglb) %>%
     mutate(PERCENT_TOTAL_DUPLICATES = DUPLICATE_TOTAL / EXAMINED) %>%
