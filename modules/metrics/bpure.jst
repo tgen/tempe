@@ -35,9 +35,6 @@
         --bam-file {{ sample_bam }} \
         --seg-file {{ input_seg }} \
         --seg-resolution {{ seg_resolution }} \
-        {% if 'gatk' in variant_caller %}
-        --header-prefix '@' \
-        {% endif %}
         --reference-file {{ constants.tempe.reference_fasta }} \
         --region-file {{ constants.tempe.dj_window }} \
         --temp-dir {{ temp_dir }} \
