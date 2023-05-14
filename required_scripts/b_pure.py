@@ -97,7 +97,7 @@ def run(args):
                              names=['contig', 'start', 'end', 'CN', 'event', 'logR', 'subclone_status', 'corrected_CN', 'corrected_call', 'logR_CN'])
     else:
         seg_df = pd.read_csv(args.input_seg, sep='\t', header=0, comment=args.header_prefix)
-        seg_df = seg_df.rename(columns={seg_df.columns[1]:'contig', seg_df.columns[2]:'start', seg_df.columns[3]:'end', seg_df.columns[log2_col]:'logR'})
+        seg_df = seg_df.rename(columns={seg_df.columns[0]:'contig', seg_df.columns[1]:'start', seg_df.columns[2]:'end', seg_df.columns[log2_col]:'logR'})
     
     #first filter to subset to CN neutral segments. can be user defined, default is 0.1
     cn_neut_region = seg_df[(seg_df['logR'] >= -args.cn_cutoff) & (seg_df['logR'] <= args.cn_cutoff)].reset_index(drop=True).dropna()
