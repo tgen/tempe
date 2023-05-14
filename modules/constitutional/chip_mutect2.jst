@@ -298,7 +298,7 @@
 
     bcftools filter \
       --output-type z \
-      --targets-file {{ sample.capture_kit.extended_bed }}" \
+      --targets-file {{ sample.capture_kit.extended_bed }} \
       --output {{ all_vcf }} \
       {{ temp_vcf }}
     
@@ -319,6 +319,7 @@
   tags: [{{ sample.gltype }}, constitutional, snp_indel_caller, mutect2, {{ sample.name }}]
   input:
     - {{ annotated_vcf }}
+    - {{ constants.tempe.known_chip_snv }}
   output:
     - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.mutect2.chip_annot.vcf.gz
     - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.mutect2.chip_annot.flt.vcf.gz
