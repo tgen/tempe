@@ -803,6 +803,7 @@
 
 {{- cnvear(pair, final_seg, 'GATK', aligner) }}
 
-{{- bpure(pair.tumor, final_seg, 'high', 'somatic_gatk', aligner) }}
+{% set bpure_input %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.denoisedCR.genderCorrected.tsv{% endset %}
+{{- bpure(pair.tumor, bpure_input, 'high', 'somatic_gatk', aligner) }}
 
 {% endmacro %}

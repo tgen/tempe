@@ -355,6 +355,7 @@
 {% set input_seg %}{{ results_dir }}/{{ pair.tumor.name }}.{{ aligner }}.re_centered.cr.igv.seg{% endset %}
 {{- cnvear(pair, input_seg, 'GATK', aligner) }}
 
-{{- bpure(pair.tumor, input_seg, 'high', 'tumor_only_gatk', aligner) }}
+{% set bpure_input %}{{ results_dir }}/{{ pair.tumor.name }}.{{ aligner }}.denoisedCR.genderCorrected.tsv{% endset %}
+{{- bpure(pair.tumor, bpure_input, 'high', 'tumor_only_gatk', aligner) }}
 
 {% endmacro %}

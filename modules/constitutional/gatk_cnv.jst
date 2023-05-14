@@ -356,6 +356,7 @@
 {% set input_seg %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.re_centered.cr.igv.seg{% endset %}
 {{- cnvear(sample, input_seg, 'GATK', aligner) }}
 
-{{- bpure(sample, input_seg, 'high', 'constitutional_gatk', aligner) }}
+{% set bpure_input %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.denoisedCR.genderCorrected.tsv{% endset %}
+{{- bpure(sample, bpure_input, 'high', 'constitutional_gatk', aligner) }}
 
 {% endmacro %}
