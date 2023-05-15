@@ -11,17 +11,17 @@
 {% set all_vcf %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.strelka2.all.vcf.gz{% endset %}
 {% set pass_vcf %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.strelka2.pass.vcf.gz{% endset %}
 
-{# empty input, is this okay? #}
 - name: strelka2_build_call_regions_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, snp_indel_caller, strelka2, {{ pair.name }}]
   output:
-    - {{ temp_dir }}/callRegions.bed
+    - {{ temp_dir }}/callRegions.bed.gz
+    - {{ temp_dir }}/callRegions.bed.tbi
   cpus: 1
   mem: 2G
   walltime: "1:00:00"
   queue_preset: "DEFAULT"
-  container: {{ constants.tools.base.container }}
-  digest: {{ constants.tools.base.digest }}
+  container: {{ constants.tools.htslib.container }}
+  digest: {{ constants.tools.htslib.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -43,32 +43,13 @@
     {% endfor %}
     EOF
 
-
-- name: strelka2_process_call_regions_{{ pair.name }}_{{ aligner }}
-  tags: [{{ pair.gltype }}, somatic, snp_indel_caller, strelka2, {{ pair.name }}]
-  reset: strelka2_build_call_regions_{{ pair.name }}_{{ aligner }}
-  input:
-    - {{ temp_dir }}/callRegions.bed
-  output:
-    - {{ temp_dir }}/callRegions.bed.gz
-    - {{ temp_dir }}/callRegions.bed.tbi
-  cpus: 1
-  mem: 2G
-  walltime: "1:00:00"
-  queue_preset: "DEFAULT"
-  container: {{ constants.tools.htslib.container }}
-  digest: {{ constants.tools.htslib.digest }}
-  cmd: |
-    set -eu
-    set -o pipefail
-
     bgzip -f "{{ temp_dir }}/callRegions.bed"
     tabix -f -p bed "{{ temp_dir }}/callRegions.bed.gz"
 
 
 - name: strelka2_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, snp_indel_caller, strelka2, {{ pair.name }}]
-  reset: strelka2_process_call_regions_{{ pair.name }}_{{ aligner }}
+  reset: strelka2_build_call_regions_{{ pair.name }}_{{ aligner }}
   input:
     - {{ normal_bam }}
     - {{ tumor_bam }}
