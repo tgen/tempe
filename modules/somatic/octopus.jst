@@ -22,7 +22,7 @@
     - {{ temp_dir }}/{{ loop.index }}.realigned.bam
     - {{ temp_dir }}/{{ loop.index }}.octopus.vcf
   cpus: 8
-  mem: 16G
+  mem: 24G
   walltime: "24:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.octopus.container }}

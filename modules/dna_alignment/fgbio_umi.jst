@@ -220,7 +220,7 @@
   output:
     - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam
   cpus: 10
-  mem: 32G
+  mem: 60G
   walltime: "4:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.fgbio.container }}

@@ -23,7 +23,7 @@
     - {{ temp_dir }}/{{ loop.index }}.octopus.vcf
   walltime: "24:00:00"
   cpus: 4
-  mem: 16G
+  mem: 24G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.octopus.container }}
   digest: {{ constants.tools.octopus.digest }}
