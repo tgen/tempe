@@ -164,7 +164,9 @@
 {% set task %}{{ sample.name }}_{{ aligner }}{% endset %}
 {{- stats2lims(sample.gltype, sample.name, task, ichor_json, "ichor_cna") }}
 
+{% if studyDisease == "Multiple Myeloma" | default(false) %}
 {% set input_seg %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA.cna.seg{% endset %}
 {{- bpure(sample, input_seg, 'low', 'ichor', aligner) }}
+{% endif %}
 
 {% endmacro %}

@@ -355,6 +355,8 @@
 {% set input_seg %}{{ results_dir }}/{{ pair.tumor.name }}.{{ aligner }}.re_centered.cr.igv.seg{% endset %}
 {{- cnvear(pair, input_seg, 'GATK', aligner) }}
 
+{% if studyDisease == "Multiple Myeloma" | default(false) %}
 {{- bpure(pair.tumor, input_seg, 'high', 'tumor_only_gatk', aligner) }}
+{% endif %}
 
 {% endmacro %}

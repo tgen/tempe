@@ -803,6 +803,8 @@
 
 {{- cnvear(pair, final_seg, 'GATK', aligner) }}
 
+{% if studyDisease == "Multiple Myeloma" | default(false) %}
 {{- bpure(pair.tumor, final_seg, 'high', 'somatic_gatk', aligner) }}
+{% endif %}
 
 {% endmacro %}
