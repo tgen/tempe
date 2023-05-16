@@ -1,10 +1,12 @@
+{% from 'modules/qc/stats2lims.jst' import stats2lims with context %}
+
 {% macro bpure(sample, input_seg, seg_resolution, variant_caller, aligner='bwa') %}
 
 {% set sample_bam %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
 {% set temp_dir %}temp/{{ sample.gltype }}/metrics/b_pure/{{ sample.name }}_{{ aligner }}{% endset %}
 {% set results_dir %}{{ sample.gltype }}/metrics/b_pure/{{ sample.name }}_{{ aligner }}{% endset %}
 
-{% set library_list %}{{ sample.read_groups.values()|map(attribute='rglb')|unique|join(',') }}{% endset %}
+{% set library_list %}{{ sample.read_groups.values()|map(attribute='rglb')|unique }}{% endset %}
 
 - name: bpure_{{ variant_caller }}_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype }}, b_cell_purity, {{ sample.name }}]
@@ -43,5 +45,11 @@
         --sample-name {{ sample.name }} \
         --lib {{ library_list }} \
         --json-out True
+
+{% for library in library_list %}
+{% set task %}bpure_{{ variant_caller }}_{{ sample.name }}_{{ aligner }}{% endset %}
+{% set json %}{{ results_dir }}/{{ sample.name }}_{{ variant_caller }}_{{ seg_resolution }}_res_b_cell_purity.json{% endset %}
+{{- stats2lims(sample.gltype, sample.name, task, json, "b_pure") }}
+{% endfor %}
 
 {% endmacro %}
