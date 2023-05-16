@@ -6,7 +6,7 @@
 {% set temp_dir %}temp/{{ sample.gltype }}/metrics/b_pure/{{ sample.name }}_{{ aligner }}{% endset %}
 {% set results_dir %}{{ sample.gltype }}/metrics/b_pure/{{ sample.name }}_{{ aligner }}{% endset %}
 
-{% set library_list %}{{ sample.read_groups.values()|map(attribute='rglb')|unique }}{% endset %}
+{% set library_list %}{{ sample.read_groups.values()|map(attribute='rglb')|unique|list }}{% endset %}
 
 - name: bpure_{{ variant_caller }}_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype }}, b_cell_purity, {{ sample.name }}]
@@ -43,11 +43,11 @@
         --output-dir {{ results_dir }} \
         --output-prefix {{ sample.name }}_{{ variant_caller }}_{{ seg_resolution }}_res \
         --sample-name {{ sample.name }} \
-        --lib {{ library_list }} \
+        --lib {{ library_list | join(',') }} \
         --json-out True
 
 {% for library in library_list %}
-{% set task %}bpure_{{ variant_caller }}_{{ sample.name }}_{{ aligner }}{% endset %}
+{% set task %}bpure_{{ variant_caller }}_{{ sample.name }}_{{ aligner }}_{{ library }}{% endset %}
 {% set json %}{{ results_dir }}/{{ sample.name }}_{{ variant_caller }}_{{ seg_resolution }}_res_b_cell_purity.json{% endset %}
 {{- stats2lims(sample.gltype, sample.name, task, json, "b_pure") }}
 {% endfor %}
