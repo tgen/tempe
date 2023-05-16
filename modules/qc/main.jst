@@ -31,14 +31,9 @@
 
 {% macro bam_qc(sample, aligner='bwa') %}
 
-    {% if aligner == "cellranger_count" or aligner == "starSOLO" %}
-      {% set libraryCount = 0 %}
-      {% set sample_lb = sample.rglb %}
-    {% else %}
-      {% set sample_lbs = sample.read_groups.values()|groupby('rglb') %}
-      {% set libraryCount = sample_lbs|length %}
-      {% set sample_lb = sample_lbs[0][0] %}
-    {% endif %}
+    {% set sample_lbs = sample.read_groups.values()|groupby('rglb') %}
+    {% set libraryCount = sample_lbs|length %}
+    {% set sample_lb = sample_lbs[0][0] %}
 
     {# General Library type specific tasks #}
     {% if sample.gltype == 'rna' %}

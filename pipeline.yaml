@@ -178,33 +178,6 @@ constants:
     stats2json: samStats2json_2f64a79.py
     stats2lims: uploadStats2Lims.py
     sigprofiler: sigprofiler_7595614.py
-    cellranger_reference: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/tool_resources/cellranger_6.0.0/hg38_tempe_ensembl_v103
-    cellranger_vdj_reference: /home/tgenref/homo_sapiens/grch38_hg38/tool_specific_resources/cellranger/refdata-cellranger-vdj-GRCh38-alts-ensembl-5.0.0
-    scrna_chemistry_options:
-      X3SCR:
-        chemistry_name: SC3Pv1
-        umi_length: 10
-        cell_barcode_whitelist_file: /packages/easy-build/software/CellRanger/6.0.0/lib/python/cellranger/barcodes/737K-april-2014_rc.txt
-      XCSCR:
-        chemistry_name: SC3Pv2
-        umi_length: 10
-        cell_barcode_whitelist_file: /packages/easy-build/software/CellRanger/6.0.0/lib/python/cellranger/barcodes/737K-august-2016.txt
-      X3SC3:
-        chemistry_name: SC3Pv3
-        umi_length: 12
-        cell_barcode_whitelist_file: /packages/easy-build/software/CellRanger/6.0.0/lib/python/cellranger/barcodes/3M-february-2018.txt
-      X5SCR:
-        chemistry_name: SC5P-R2
-        umi_length: 10
-        cell_barcode_whitelist_file: /packages/easy-build/software/CellRanger/6.0.0/lib/python/cellranger/barcodes/737K-august-2016.txt
-      X5SC2:
-        chemistry_name: SC5P-R2
-        umi_length: 10
-        cell_barcode_whitelist_file: /packages/easy-build/software/CellRanger/6.0.0/lib/python/cellranger/barcodes/737K-august-2016.txt
-      unknown:
-        chemistry_name: auto
-        umi_lenth: 10
-        cell_barcode_whitelist_file: /packages/easy-build/software/CellRanger/6.0.0/lib/python/cellranger/barcodes/737K-august-2016.txt
     umi_options:
       TETK2:
         umi_files: /home/tgenref/assay_files/twist_umi_adaptor_system/known_umi_sequences.txt
