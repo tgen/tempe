@@ -70,6 +70,9 @@
       --vcf "{{ unzipped_path }}" \
       -o "{{ prepped_path }}"
 
+{% if vcfmerger_exclude_filter is not defined %}
+{% set vcfmerger_exclude_filter %}(FMT/DP<10 | FMT/AR[0]>=0.02 | FMT/AR[1]<0.05){% endset %}
+{% endif %}
 
 - name: vcfmerger2_filter_{{ caller }}_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, merge_vcfs, vcfMerger2, {{ pair.name }}]
@@ -88,7 +91,7 @@
 
     bcftools filter \
       --output-type v \
-      --exclude 'FMT/DP<10 | FMT/AR[0]>=0.02 | FMT/AR[1]<0.05' \
+      --exclude '{{ vcfmerger_exclude_filter }}' \
       "{{ prepped_path }}" \
       > "{{ filtered_path }}"
 
