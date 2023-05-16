@@ -176,7 +176,7 @@ constants:
     summarize_mm_igtx_Rscript: summarize_Ig_875a823.R
     process_assembled_bam: Process_Assembled_BAM_277eed7.py
     stats2json: samStats2json_2f64a79.py
-    stats2lims: uploadStats2Lims_1ace81f.py
+    stats2lims: uploadStats2Lims.py
     sigprofiler: sigprofiler_7595614.py
     cellranger_reference: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/tool_resources/cellranger_6.0.0/hg38_tempe_ensembl_v103
     cellranger_vdj_reference: /home/tgenref/homo_sapiens/grch38_hg38/tool_specific_resources/cellranger/refdata-cellranger-vdj-GRCh38-alts-ensembl-5.0.0
