@@ -6,10 +6,17 @@ This will only run in special circumstances and will not be enablable from kbase
 Expecation is that after rsync, which should be error free, we no longer need the
 fastq from the source location.
 #}
+
+{% set fastq_list = [] %}
+{% for fastq in dataFiles %}
+  {% set fastq_path %}{{ fastq.fastqPath | dirname | dirname }}{% endset %}
+  {% do fastq_list.append(fastq_path) %}
+{% endfor %}
+
 - name: clean_up_source
   input: 
-    {% for fastq in dataFiles %}
-    - {{ fastq.fastqPath | dirname }}
+    {% for fastq_path in fastq_list | unique %}
+    - {{ fastq_path }}
     {% endfor %}
   before: finalize
   after-re: ^(?!finalize).*$
