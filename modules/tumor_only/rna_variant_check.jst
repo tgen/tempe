@@ -89,15 +89,17 @@
       {{ temp_dir }}/temp_variant_pos.bed
 
 
-- name: tumor_only_add_matched_rna_bedtools_prep_{{ pair.name }}_{{ aligner }}
+{% for batch in constants.tempe.calling_intervals %}
+
+- name: tumor_only_add_matched_rna_bedtools_prep_{{ pair.name }}_{{ aligner }}_{{ loop.index }}
   tags: [{{ pair.gltype }}, tumor_only, merge_vcfs, vcfMerger2, {{ pair.name }}]
   reset: predecessors
   input:
     - {{ temp_dir }}/temp_variant_pos.bed
     - {{ temp_dir }}/contig_lengths.txt
   output:
-    - {{ temp_dir }}/temp_intervals.bed
-    - {{ temp_dir }}/temp_target_intervals.bed
+    - {{ temp_dir }}/{{ loop.index }}_temp_intervals.bed
+    - {{ temp_dir }}/{{ loop.index }}_temp_target_intervals.bed
   walltime: "8:00:00"
   cpus: 1
   mem: 2G
@@ -108,7 +110,18 @@
     set -eu
     set -o pipefail
 
+    TAB=$'\t'
+    cat <<EOF > "{{ temp_dir }}/{{ loop.index }}_calling_interval.bed"
+    {% for interval in batch %}
+    {{ interval.contig }}${TAB}{{ interval.start - 1 }}${TAB}{{ interval.stop }}
+    {% endfor %}
+    EOF
+
     {# No long options available for the following:
+        bedtools intersect
+          -a      <bed/gff/vcf>
+          -b      <bed/gff/vcf>
+
         bedtools slop
           -i      <bed/gff/vcf>
           -g      <genome>
@@ -118,36 +131,41 @@
         bedtools merge
           -i      <bed/gff/vcf>
     #}
+    bedtools intersect \
+      -a {{ temp_dir }}/{{ loop.index }}_calling_interval.bed \
+      -b {{ temp_dir }}/temp_variant_pos.bed > \
+      {{ temp_dir }}/{{ loop.index }}_temp_variant_pos_in_interval.bed
+
     {#
     # Bedtools slop is used to add 100bp padding and ensure padding does not extend off a contig, if so it is trimmed
     # to the contig start or end
     #}
     bedtools slop \
-      -i {{ temp_dir }}/temp_variant_pos.bed \
+      -i {{ temp_dir }}/{{ loop.index }}_temp_variant_pos_in_interval.bed \
       -g {{ temp_dir }}/contig_lengths.txt \
       -l 100 \
       -r 100 > \
-      {{ temp_dir }}/temp_intervals.bed
+      {{ temp_dir }}/{{ loop.index }}_temp_intervals.bed
 
     {# Bedtools merge is used to join any overlapping intervals created by the padding to prevent calling events twice #}
     bedtools merge \
-      -i {{ temp_dir }}/temp_intervals.bed > \
-      {{ temp_dir }}/temp_target_intervals.bed
+      -i {{ temp_dir }}/{{ loop.index }}_temp_intervals.bed > \
+      {{ temp_dir }}/{{ loop.index }}_temp_target_intervals.bed
 
 
-- name: tumor_only_add_matched_rna_freebayes_{{ pair.name }}_{{ aligner }}
+- name: tumor_only_add_matched_rna_freebayes_{{ pair.name }}_{{ aligner }}_{{ loop.index }}
   tags: [{{ pair.gltype }}, tumor_only, merge_vcfs, vcfMerger2, {{ pair.name }}]
   reset: tumor_only_vcfmerger2_{{ pair.name }}_{{ aligner }}
   input:
     - {{ input_vcf }}
     - {{ star_bam_final }}
     - {{ star_bam_final }}.bai
-    - {{ temp_dir }}/temp_target_intervals.bed
+    - {{ temp_dir }}/{{ loop.index }}_temp_target_intervals.bed
     - {{ constants.tempe.reference_fasta }}
   output:
-    - {{ temp_dir }}/{{ rna_sample }}_DnaVarInRNA.vcf
+    - {{ temp_dir }}/{{ loop.index }}_{{ rna_sample }}_DnaVarInRNA.vcf
   walltime: "8:00:00"
-  cpus: 2
+  cpus: 1
   mem: 4G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.freebayes.container }}
@@ -160,21 +178,24 @@
     {## Limitation: Does not output anything at positions with no reads (ie. DP=0 is not seen) #}
     freebayes \
       --fasta-reference "{{ constants.tempe.reference_fasta }}" \
-      --targets {{ temp_dir }}/temp_target_intervals.bed \
+      --targets {{ temp_dir }}/{{ loop.index }}_temp_target_intervals.bed \
       --variant-input {{ input_vcf }} \
       --only-use-input-alleles \
       --min-alternate-count 1 \
       --min-alternate-fraction 0.0001 \
-      --vcf {{ temp_dir }}/{{ rna_sample }}_DnaVarInRNA.vcf \
+      --vcf {{ temp_dir }}/{{ loop.index }}_{{ rna_sample }}_DnaVarInRNA.vcf \
       {{ star_bam_final }}
 
+{% endfor %}
 
 - name: tumor_only_add_matched_rna_bcftools_process_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, tumor_only, merge_vcfs, vcfMerger2, {{ pair.name }}]
   reset: predecessors
   input:
     - {{ input_vcf }}
-    - {{ temp_dir }}/{{ rna_sample }}_DnaVarInRNA.vcf
+    {% for batch in constants.tempe.calling_intervals %}
+    - {{ temp_dir }}/{{ loop.index }}_{{ rna_sample }}_DnaVarInRNA.vcf
+    {% endfor %}
     - {{ constants.tempe.reference_fasta }}
   output:
     - {{ output_vcf }}
@@ -190,6 +211,22 @@
     set -eu
     set -o pipefail
     
+    bcftools concat \
+      --output-type z \
+      --output {{ temp_dir }}/{{ rna_sample }}_DnaVarInRNA.uns.vcf \
+      {% for b in constants.tempe.primary_contig_calling_intervals %}
+      {% if not loop.last %}
+      {{ temp_dir }}/{{ loop.index }}_{{ rna_sample }}_DnaVarInRNA.vcf \
+      {% else %}
+      {{ temp_dir }}/{{ loop.index }}_{{ rna_sample }}_DnaVarInRNA.vcf
+      {% endif %}
+      {% endfor %}
+    
+    bcftools sort \
+      --output-type z \
+      --output-file {{ temp_dir }}/{{ rna_sample }}_DnaVarInRNA.vcf \
+      {{ temp_dir }}/{{ rna_sample }}_DnaVarInRNA.uns.vcf
+
     {#
     # Since the input variants are all normalized, use bcftools to normalize the RNA calls and remove any variant line
     # with no ALT allele noted (ie. ALT = ".") (Largely a Seurat related bug)
@@ -319,6 +356,5 @@
       --threads 2 \
       --force \
       {{ output_vcf }}
-
 
 {% endmacro %}
