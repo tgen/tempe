@@ -5,14 +5,14 @@
 
 import pandas as pd
 import numpy as np
-import argparse
 import subprocess
+import argparse
+import logging
 import json
 import math
 import sys
 import io
 import os
-import re
 
 #using subprocess to push commands to command line
 def call_subprocess(subprocess_argument, column_names):
@@ -61,13 +61,24 @@ def calculate_log2(reads_of_interest, neutral_reads):
 
 #Main code
 def run(args):
+    sample_name =  os.path.basename(args.input_bam).split('.')[0] if args.sample_name is None  else args.sample_name
+
+    #Setting up logging
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+
+    handler = logging.FileHandler(sample_name + '_bpure.log.out')
+    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s',
+                                  datefmt='%Y-%m-%d %H:%M:%S')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
     args_dictionary = {'--bam-file':'input_bam','--seg-file':'input_seg','--region-file':'region_file','--reference-file':'ref_file',
                        '--header-prefix':'header_prefix','--log2-column':'log2_col','--cn-cutoff':'cn_cutoff','--num-bins':'num_bins',
                        '--bin-size':'bin_size','--temp-dir':'temp_dir','--output-dir':'output_dir','--sample_name':'sample_name',
-                       '--output-prefix':'output_pref','--json-out':'json_out','--library':'library'}
-    
+                       '--output-prefix':'output_pref','--json-out':'json_out', '--seg-resolution': 'seg_res', '--library':'library'}
+
     command = ''
-    
     for k, v in args.__dict__.items():
         try:
             kk = [a for a, v in args_dictionary.items() if v == k]
@@ -75,12 +86,16 @@ def run(args):
         except:
             pass
 
-    print(f'Arguments: {command}')
-    
-    sample_name =  os.path.basename(args.input_bam).split('.')[0] if args.sample_name is None  else args.sample_name
+    logger.info(f'Input Arguments: {command}')
 
     if args.seg_res:
-        seg_resolution = 'PURITY_' + args.seg_res.upper() + '_RES' if (args.seg_res and args.seg_res.lower() == 'high' or 'low') else sys.exit(f'Incorrect value: "{args.seg_res}" passed through --seg-resolution, only values "high" or "low" accepted as input')
+        if args.seg_res.lower() == ('high' or 'low'):
+            seg_resolution = 'PURITY_' + args.seg_res.upper() + '_RES'
+
+        else:
+            logger.error(f'Incorrect value: "{args.seg_res}" passed through --seg-resolution, only values "high" or "low" accepted as input')
+            sys.exit()
+
         output_prefix = args.output_dir+'/'+sample_name+'_'+args.seg_res.lower()+'_res' if args.output_pref is None else args.output_dir+'/'+args.output_pref
     
     else:
@@ -131,9 +146,15 @@ def run(args):
         #grabbing number of defined windows(bins) from CN neutral regions 
         try:
             subset_bed = bed_output.sample(n=args.num_bins, random_state=53287)
+            logger.info(f'{len(bed_output)} windows that meet criteria found.')
+            meets_criteria = 1
+
         #if number of available windows does not match value provided, error message will print and script will exit
         except ValueError:
-            sys.exit(f'Insufficient CN neutral windows available. {len(bed_output)} windows of length {args.bin_size} bp, user requested {args.num_bins}.')
+            logger.warning(f'Insufficient CN neutral windows available.{len(bed_output)} windows will be used in place of the user requested value ({args.num_bins}).')
+            num_bins = len(bed_output)
+            subset_bed = bed_output.sample(n=num_bins, random_state=53287)
+            meets_criteria = 0
 
         subset_bed.to_csv(temp_bed_name, sep='\t', index=False, header=False)
 
@@ -151,17 +172,17 @@ def run(args):
         out_list = list(calculate_log2(bedcov_dj['reads'], bedcov_neutral['reads']))
 
         #calculating b-cell purity
-        out_list.append(abs(1 - out_list[1]))
+        out_list.extend([abs(1 - out_list[1]), meets_criteria])
 
         #adding sample name to output list
         out_list.insert(0,sample_name)
 
         df_out = pd.DataFrame([out_list],
-                              columns =['sample', 'log2', 'reads_ratio','bcell_purity'])
+                              columns =['sample', 'log2', 'reads_ratio','bcell_purity','meets_criteria'])
         df_out.to_csv(output_prefix +'_b_cell_purity.tsv', sep='\t', index=False)
 
         #Defining .json output
-        if args.json_out == 'True':
+        if args.json_out.lower() == 'true':
             libraries = [x.strip(' ') for x in args.library.split(',')] if args.library else [sample_name]
 
             for LB in set(libraries):
@@ -190,15 +211,25 @@ def run(args):
 
                 with open(jsonFile, 'w') as outfile:
                     outfile.write(jsonString)
+                logger.info('.json file created')
         else:
             pass
 
         os.remove(temp_bed_name)
         os.remove(sorted_bed)
+        logger.info('Process Complete')
 
     #if number of available windows does not match value provided, error message will print and script will exit
     else:
-        sys.exit('No viable copy number neutral regions discovered')
+        logger.error('No copy number neutral regions available')
+        meets_criteria = 0 
+
+        out_list = [sample_name, 'Na', 'Na', 'Na', meets_criteria]
+        df_out = pd.DataFrame([out_list],
+                              columns =['sample', 'log2', 'reads_ratio','bcell_purity','meets_criteria'])
+        
+        df_out.to_csv(output_prefix +'_b_cell_purity.tsv', sep='\t', index=False)
+        logger.info('Process Complete')
 
 def main():
     parser=argparse.ArgumentParser(description='Calculate estimated b-cell purity of sample')
@@ -214,7 +245,7 @@ def main():
     optional.add_argument('--reference-file', metavar='FILE', type=str, dest='ref_file', help='Reference sequence FASTA FILE', required=False)
     optional.add_argument('--header-prefix', metavar='STR', type=str, dest='header_prefix', default='#', help='Header lines begin with this string (Default: "#")', required=False)
     optional.add_argument('--log2-column', metavar='INT', type=int, dest='log2_col', help='Column index number containing log2 values (Default: last column in seg file)', required=False)
-    optional.add_argument('--cn-cutoff', metavar='INT', type=int, dest='cn_cutoff', default=0.1, help='Cutoff value on either side of 0 to define CN neutral region (Default: 0.1)', required=False)
+    optional.add_argument('--cn-cutoff', metavar='FLOAT', type=float, dest='cn_cutoff', default=0.1, help='Cutoff value on either side of 0 to define CN neutral region (Default: 0.1)', required=False)
     optional.add_argument('--num-bins', metavar='INT', type=int, dest='num_bins', default=500, help='Number of CN windows to compare to region of interest (Default: 500)', required=False)
     optional.add_argument('--bin-size', metavar='INT', type=int, dest='bin_size', default=1000, help='Size of CN windows (bp) for comparison (Default: 1000 (1kb))', required=False)
     optional.add_argument('--temp-dir', metavar='PATH', type=str, dest='temp_dir', default=os.getcwd(), help='Temp directory (Default: current directory)', required=False)
