@@ -174,7 +174,7 @@ constants:
     plotCNVplus_Rscript: plotCNVplus_4d89cb4.R
     plotSamStats_Rscript: summarize_samstats.R
     summarize_mm_igtx_Rscript: summarize_Ig_875a823.R
-    process_assembled_bam: Process_Assembled_BAM_277eed7.py
+    process_assembled_bam: Process_Assembled_BAM.py
     stats2json: samStats2json_2f64a79.py
     stats2lims: uploadStats2Lims.py
     sigprofiler: sigprofiler_7595614.py

@@ -1,21 +1,21 @@
 # Usage
 #
 # (c) TGEN 2020
-# requires python 3.0 with pandas, numpy, pysam packages
+# requires python 3.0 with pandas, pysam packages
 #
 #
 
-print("Importing Packages")
 # Configure Enviroment
 import pandas as pd
-import numpy as np
 import pysam
 import sys
 import os.path
-import re
 import argparse
+import tempfile
+import logging
 from subprocess import call
-import itertools
+
+log = logging.getLogger(__name__)
 
 # Variables
 
@@ -88,14 +88,14 @@ ig_dict = {
   "IGL": "3"
 }
 
-print("Defining Functions")
+log.info("Defining Functions")
 
 
 # Function to process SAM file from SAMBLASTER DISCORDANT EXPORT
 def bam_to_df(bam, chr=None, start=None, stop=None, file_name=None):
   file_name = os.path.basename(file_name)
   file_name = file_name.replace('\_R1\_Trinity\_sorted\.bam', '')
-  # print('Updated file name is ' + file_name)
+  log.debug('Updated file name is ' + file_name)
   index = 0
   seq = []
   name = []
@@ -299,7 +299,7 @@ def get_longest_seqforcontig(contig_read_table_tmp, cur_row):
       longest_rev = contig_read_table_tmp.at[row, 'r1_is_reversed']
       if (contig_read_table_tmp.at[row, 'r1_is_reversed']):  # and not cur_row_rev):
         longest_seq = reverseComplement(next_seq, 1)
-        print("longest reversed")
+        log.info("longest reversed")
   return longest_seq
 
 
@@ -374,12 +374,12 @@ def check_contigs(contig_table, fastq_path, reads_sam_path, igregions, window_si
   # Process each contig
   for currIndex in final_table.index:
     names = final_table.at[currIndex, 'name']
-    print("\nNow Processing " + names)
+    log.info("\nNow Processing " + names)
     contig_table_by_read = contig_table[(contig_table.name == names)]
     # if contigs aligns to multiple locations
     count = len(contig_table_by_read.index)
     if (count > 1):  # only need Txs
-      print("In test loop " + str(count))
+      log.info("In test loop " + str(count))
       # initialize vars for loop
       loop_var = 1
       # track mininum mval
@@ -395,7 +395,7 @@ def check_contigs(contig_table, fastq_path, reads_sam_path, igregions, window_si
         contig_name = contig_table_by_read.at[contig_row, 'name']
         r_contig = "_" + contig_chr + "r"
         f_contig = "_" + contig_chr + "f"
-        print("\n  " + contig_chr + "===" + r_contig + " ^^^^******* " + f_contig + "=" + name)
+        log.info("\n  " + contig_chr + "===" + r_contig + " ^^^^******* " + f_contig + "=" + name)
         if (f_contig in contig_name):
           strand = "Pos"
         if (r_contig in contig_name):
@@ -444,7 +444,7 @@ def check_contigs(contig_table, fastq_path, reads_sam_path, igregions, window_si
         # case 1 query contig is reversed by longest is not, since longest contig func reverses dont do anything
         if ((contig_table_by_read.at[contig_row, 'r1_is_reversed']) and (
             same_orient_as_longest == 0)):  # (rev_chr_str in contig_table_by_read.at[contig_row,'name'])):
-          print("reverse contig junc" + str(juncbreak))
+          log.info("reverse contig junc" + str(juncbreak))
         # if longest was reversed and query is not
         elif ((not contig_table_by_read.at[contig_row, 'r1_is_reversed']) and (same_orient_as_longest == 0)):
           contig = reverseComplement(contig, 1)
@@ -497,7 +497,7 @@ def check_contigs(contig_table, fastq_path, reads_sam_path, igregions, window_si
         if (loop_var == 1):
           final_table.at[[currIndex], SEQ] = contig
 
-        print("IG_found =" + IG_found + " and Gene_found " + Gene_found)
+        log.info("IG_found =" + IG_found + " and Gene_found " + Gene_found)
         # if( mygene !=''):
         if (mVal >= window_size and mygene != ''):
           final_table.at[[currIndex], CIGAR] = contig_table_by_read.at[contig_row, 'r1_cigar']
@@ -518,7 +518,7 @@ def check_contigs(contig_table, fastq_path, reads_sam_path, igregions, window_si
 
           loop_var = loop_var + 1
           if (count > 1 and IG_found != "" and Gene_found != "" and gene_len > window_size and IG_len > window_size):
-            print("count " + str(count) + " ig len " + str(IG_len) + " gene len " + str(gene_len))
+            log.info("count " + str(count) + " ig len " + str(IG_len) + " gene len " + str(gene_len))
             final_table.at[[currIndex], 'IgTxCalled'] = 1
   return final_table
 
@@ -564,42 +564,16 @@ def isKnownTx(qchr, qpos, listofRegions):
 def getReadsatjunction(region, contig, fastq):
   r1_count = 0
   # grep region1 from fastq
-  # @Bryce Should be changed to a tmp location
-  tmp_file = out_path + "/r1counts.txt"
-  status = call("zcat " + fastq + " | grep " + region + " > " + tmp_file, shell=True)
+  tmp_file = tempfile.NamedTemporaryFile()
+  status = call("zcat " + fastq + " | grep " + region + " > " + tmp_file.name, shell=True)
   if status < 0:
-    print("### Cat Command Failed....now exiting!!")
+    log.info("### Cat Command Failed....now exiting!!")
     sys.exit(-1)
   else:
-    with open(tmp_file, "r") as myfile:
+    with open(tmp_file.name, "r") as myfile:
       data = myfile.readlines()
       r1_count = len(data)
-  return r1_count
-
-
-###############################################
-#  Simple approach to find reads at junction
-#  Need to be replaced with samtools in next
-#  update. NOT CURRENTLY USED
-###############################################
-def getAllMappedReadsatJunction(region, contig, readsam):
-  r1_count = 0
-  r2_count = 0
-
-  region_rev = reverseComplement(region)
-
-  # @Bryce Should be changed to a tmp location
-  tmp_file = out_path + "/r1counts.txt"
-  status = call(
-    "egrep \"" + region + "|" + region_rev + "\" " + readsam + " | awk '{ print $1 }' | sort | uniq  > " + tmp_file,
-    shell=True)
-  if status < 0:
-    print("### Cat Command Failed....now exiting!!")
-    sys.exit(-1)
-  else:
-    with open(tmp_file, "r") as myfile:
-      data = myfile.readlines()
-      r1_count = len(data)
+  tmp_file.close
   return r1_count
 
 
@@ -642,20 +616,20 @@ def get_genomic_bp(cigar, matchlen, orient, pos_start):
     #      Mval = int(values)
 
     # if clipping is sbefore M  then Mval =Mval -length
-    print("cigar=" + cigar)
+    log.info("cigar=" + cigar)
     sindex = cigar.find('S')
     hindex = cigar.find('H')
     mindex = cigar.find('M')
-    print(" h in " + str(hindex) + " m index " + str(mindex) + " s index" + str(sindex))
+    log.info(" h in " + str(hindex) + " m index " + str(mindex) + " s index" + str(sindex))
     if (hindex < mindex and hindex != -1):  # Hard clipping first
-      print("h first")
+      log.info("h first")
       gen_bp = pos_start
     elif (sindex < mindex and sindex != -1):  # add soft clip region to np
       gen_bp = pos_start  # + Sval
-      print(" s fiesr")
+      log.info(" s fiesr")
     else:  # if(mindex < sindex and index < hindex):
       gen_bp = pos_start + Mval
-      print(" m first=" + str(Mval))
+      log.info(" m first=" + str(Mval))
   # split
   # count
   # if H dont add
@@ -705,7 +679,7 @@ def check_gene_call(table, gene, nreads, min_con_len):
   table_by_gene = table_by_gene[(table_by_gene.IgTxCalled == 1)]
   #loop all rows
   for row in table_by_gene.index:
-    print("In Table Gene1 is target")
+    log.info("In Table Gene1 is target")
     print(table_by_gene.at[row, 'name'])
     print(table_by_gene.at[row, gg])
 
@@ -731,12 +705,12 @@ def check_gene_call(table, gene, nreads, min_con_len):
     #for  loop range add 1
     max_contig_splits = max_contig_splits + 1
 
-    print("We have total contig splits "+str(max_contig_splits))
+    log.info("We have total contig splits "+str(max_contig_splits))
     #loop through all columns of each row
     for gindex in range(1,max_contig_splits):
       gg =  'Gene_'+str(gindex)
 
-      print("Gene is "+gg+" "+str(gindex))
+      log.info("Gene is "+gg+" "+str(gindex))
       gindex2 =  gindex
 
       #set indices
@@ -762,15 +736,15 @@ def check_gene_call(table, gene, nreads, min_con_len):
         count_gene = table_by_gene.at[row, frag_col]
         contig_length = table_by_gene.at[row, contig_col]
         if(matchlen > gene_overlap):
-       	  gene_overlap = matchlen
+          gene_overlap = matchlen
         total_aligned_length = total_aligned_length + matchlen
         breakpoint = get_genomic_bp(gene_cigar, matchlen, table_by_gene.at[row, contig_flag_col], pos_start)
         gene_strand = table_by_gene.at[row, strand_col]
-        #print(" bb="+str(breakpoint)+" "+str(matchlen)+" "+gene_cigar+" "+str(pos_start))
+        #log.info(" bb="+str(breakpoint)+" "+str(matchlen)+" "+gene_cigar+" "+str(pos_start))
 
       #if gg is IG
       elif('IG' in str(table_by_gene.at[row,gg])):
-        #print("Found IG at "+gg)
+        #log.info("Found IG at "+gg)
         ig_breakpoint = get_genomic_bp(table_by_gene.at[row, cigar_col], table_by_gene.at[row, align_col],
                                         table_by_gene.at[row, contig_flag_col], table_by_gene.at[row, pos_col])
         gene_tmp = table_by_gene.at[row,gg]
@@ -799,7 +773,7 @@ def check_gene_call(table, gene, nreads, min_con_len):
 
         #if gene is same as target gene
         if((table_by_gene.at[row,gg] == table_by_gene.at[row,gg2]) and (table_by_gene.at[row,gg]==gene)):
-          print("Found double match"+gg2)
+          log.info("Found double match"+gg2)
           align_col2 = 'aligned_length_'+str(gindex2)
           total_aligned_length = total_aligned_length + table_by_gene.at[row, align_col2]
           gene_cigar = gene_cigar+';'+table_by_gene.at[row, cigar_col2]
@@ -810,7 +784,7 @@ def check_gene_call(table, gene, nreads, min_con_len):
 
         #multiple alignments of IG
         if(('IG' in str(table_by_gene.at[row,gg2])) and (table_by_gene.at[row,gg]==table_by_gene.at[row,gg2])):
-          print("Found IG at "+gg2)
+          log.info("Found IG at "+gg2)
           ig_breakpoint2 = get_genomic_bp(table_by_gene.at[row, cigar_col2], table_by_gene.at[row, align_col2],
                                         table_by_gene.at[row, contig_flag_col2], table_by_gene.at[row, pos_col2])
           if(table_by_gene.at[row, align_col2] > ig_aligned_length):
@@ -818,7 +792,7 @@ def check_gene_call(table, gene, nreads, min_con_len):
           ig_breakpoint = str(int(ig_breakpoint))+';'+str(int(ig_breakpoint2))
           ig_cigar = ig_cigar+';'+table_by_gene.at[row, cigar_col2]
     #test onky since we are missing fastq
-    print("************************\n"+str(total_aligned_length) + " "+str(ig_aligned_length)+"*****************\n")
+    log.info("************************\n"+str(total_aligned_length) + " "+str(ig_aligned_length)+"*****************\n")
     #gene overlap is max alignment and total is total region aligned
     #switching total to gene to filer by max.
     #we keep both in case we would like to  get total length in later revisions
@@ -826,23 +800,23 @@ def check_gene_call(table, gene, nreads, min_con_len):
     #ig_overlap = ig_aligned_length
     if (total_aligned_length >= min_con_len and ig_aligned_length >= min_con_len and count_gene >= nreads):
       call = 1
-      print("Tx pass")
+      log.info("Tx pass")
       if (gene_strand == 'Pos'):
-        print("Found pos")
+        log.info("Found pos")
         pos_strand_der = 1
         pos_strand_list = (
         pos_strand_der, contig_length, gene_overlap, all_gene_cigar, ig_overlap, all_ig_cigar, breakpoint, ig_breakpoint,
         count_gene)
       elif (gene_strand == 'Neg'):
         neg_strand_der = 1
-        print("found neg")
+        log.info("found neg")
         neg_strand_list = (
         neg_strand_der, contig_length, gene_overlap, all_gene_cigar, ig_overlap, all_ig_cigar, breakpoint, ig_breakpoint,
         count_gene)
 
 ##end of updated code
 
-  print("call = " + str(call))
+  log.info("call = " + str(call))
   # Collapse into one list
   if (call == 1):
     #print(pos_strand_list)
@@ -856,7 +830,7 @@ def check_gene_call(table, gene, nreads, min_con_len):
   # check for Gene 2
   if (found_flag == 0):
     res_gene = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-  print("res gene")
+  log.info("res gene")
   print(res_gene)
 
   full_list = []
@@ -919,7 +893,7 @@ def gen_summ_table(filt_table, results_table, nreads, min_con_len, sample):
   for x in mafb_call:
     con_results.append(x)
 
-  print("full list")
+  log.info("full list")
   #print(con_results)
   translocationsTable = pd.DataFrame(columns=column_names)
   translocationsTable.loc[len(translocationsTable)] = con_results
@@ -935,19 +909,19 @@ def getFragsatJunction_samtools(location, contig, bam):
   r1_count = 0
   r2_count = 0
   # grep region1 from fastq
-  # @Bryce Should be changed to a tmp location
-  tmp_file = out_path + "/r1counts.txt"
+  tmp_file = tempfile.NamedTemporaryFile()
 
-  print("samtools view " + bam + " " + location + " | awk '{ print $1 }' | sort | uniq | wc -l ")
-  status = call("samtools view " + bam + " " + location + " | awk '{ print $1 }' | sort | uniq  > " + tmp_file,
+  log.info("samtools view " + bam + " " + location + " | awk '{ print $1 }' | sort | uniq | wc -l ")
+  status = call("samtools view " + bam + " " + location + " | awk '{ print $1 }' | sort | uniq  > " + tmp_file.name,
                 shell=True)
   if status < 0:
-    print("### Cat Command Failed....now exiting!!")
+    log.info("### Cat Command Failed....now exiting!!")
     sys.exit(-1)
   else:
-    with open(tmp_file, "r") as myfile:
+    with open(tmp_file.name, "r") as myfile:
       data = myfile.readlines()
       r1_count = len(data)
+  tmp_file.close
   return r1_count
 
 
@@ -956,9 +930,9 @@ def getFragsatJunction_samtools(location, contig, bam):
 # END FUNCTION DEFINITIONS
 #
 ###################################################
-print("Importing Data")
+log.info("Importing Data")
 
-print("Reading SAM File")
+log.info("Reading SAM File")
 
 # Create python object for the SAM file
 
@@ -974,7 +948,7 @@ table_hrd = []
 if (assm_sam_file != ""):
   samfile = pysam.AlignmentFile(assm_sam_file, "r")
 
-  print("Creating SAM File Table")
+  log.info("Creating SAM File Table")
   # Call Function to convert SAM file into pandas dataframe
 
   table = bam_to_df(samfile, file_name=assm_sam_file)
@@ -986,7 +960,7 @@ print(results_table)
 if not results_table.empty:
   filt_table = results_table[
     results_table.Gene_1.isin(['IGH', 'IGL', 'NSD2', 'CCND1', 'CCND2', 'CCND3', 'IGK', 'MYC', 'MAFA', 'MAFB', 'MAF'])]
-  print("\nWriting outfile ****************")
+  log.info("\nWriting outfile ****************")
 
   out_file = out_path + "/ContigResults.txt"
   out_file_filt = out_path + "/FilteredContigResults.txt"
@@ -1000,4 +974,4 @@ summ_table = gen_summ_table(filt_table, results_table, min_reads, window_size, s
 #print(summ_table)
 out_file_summ = out_path + "/DEX_IgTx_GA_Summary.txt"
 summ_table.to_csv(out_file_summ, sep="\t", index=False, na_rep=0, float_format='%.0f')
-print("Test Done")
+log.info("Test Done")
