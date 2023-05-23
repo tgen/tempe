@@ -176,6 +176,7 @@
 
     {### Call freebayes forcing genotyping even if only a single alternate allele is seen #}
     {## Limitation: Does not output anything at positions with no reads (ie. DP=0 is not seen) #}
+    [ -s {{ temp_dir }}/{{ loop.index }}_temp_target_intervals.bed ] && \
     freebayes \
       --fasta-reference "{{ constants.tempe.reference_fasta }}" \
       --targets {{ temp_dir }}/{{ loop.index }}_temp_target_intervals.bed \
@@ -184,7 +185,7 @@
       --min-alternate-count 1 \
       --min-alternate-fraction 0.0001 \
       --vcf {{ temp_dir }}/{{ loop.index }}_{{ rna_sample }}_DnaVarInRNA.vcf \
-      {{ star_bam_final }}
+      {{ star_bam_final }} || zcat {{ input_vcf }} | grep '^#' > {{ temp_dir }}/{{ loop.index }}_{{ rna_sample }}_DnaVarInRNA.vcf
 
 {% endfor %}
 
