@@ -89,7 +89,7 @@
       {{ temp_dir }}/temp_variant_pos.bed
 
 
-{% for batch in constants.tempe.calling_intervals %}
+{% for batch in constants.tempe.primary_contig_calling_intervals %}
 
 - name: add_matched_rna_bedtools_prep_{{ pair.name }}_{{ aligner }}_{{ loop.index }}
   tags: [{{ pair.gltype }}, somatic, merge_vcfs, vcfMerger2, {{ pair.name }}]
@@ -133,7 +133,7 @@
     #}
     bedtools intersect \
       -a {{ temp_dir }}/{{ loop.index }}_calling_interval.bed \
-      -b {{ temp_dir }}/temp_variant_pos.bed > \
+      -b {{ temp_dir }}/temp_variant_pos.bed | sort -k1,1V -k2,2n -k3,3n > \
       {{ temp_dir }}/{{ loop.index }}_temp_variant_pos_in_interval.bed
 
     {#
@@ -193,7 +193,7 @@
   reset: predecessors
   input:
     - {{ input_vcf }}
-    {% for batch in constants.tempe.calling_intervals %}
+    {% for batch in constants.tempe.primary_contig_calling_intervals %}
     - {{ temp_dir }}/{{ loop.index }}_{{ rna_sample }}_DnaVarInRNA.vcf
     {% endfor %}
     - {{ constants.tempe.reference_fasta }}

@@ -89,7 +89,7 @@
       {{ temp_dir }}/temp_variant_pos.bed
 
 
-{% for batch in constants.tempe.calling_intervals %}
+{% for batch in constants.tempe.primary_contig_calling_intervals %}
 
 - name: tumor_only_add_matched_rna_bedtools_prep_{{ pair.name }}_{{ aligner }}_{{ loop.index }}
   tags: [{{ pair.gltype }}, tumor_only, merge_vcfs, vcfMerger2, {{ pair.name }}]
@@ -193,7 +193,7 @@
   reset: predecessors
   input:
     - {{ input_vcf }}
-    {% for batch in constants.tempe.calling_intervals %}
+    {% for batch in constants.tempe.primary_contig_calling_intervals %}
     - {{ temp_dir }}/{{ loop.index }}_{{ rna_sample }}_DnaVarInRNA.vcf
     {% endfor %}
     - {{ constants.tempe.reference_fasta }}
