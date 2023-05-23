@@ -67,7 +67,7 @@ def run(args):
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
 
-    handler = logging.FileHandler(sample_name + '_bpure.log.out')
+    handler = logging.FileHandler(args.output_dir + '/' + sample_name + '_bpure.log.out')
     formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s',
                                   datefmt='%Y-%m-%d %H:%M:%S')
     handler.setFormatter(formatter)
