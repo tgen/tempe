@@ -556,7 +556,6 @@
   mem: 16G
   walltime: "24:00:00"
   queue_preset: "DEFAULT"
-  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   container: {{ constants.tools.python3.container }}
   digest: {{ constants.tools.python3.digest }}
   cmd: |
@@ -690,7 +689,8 @@
       mv {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg.temp {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
     done
 
-    python3 ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.cna_seg_extend }} {{ constants.tempe.centromere }} {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
+    # {{ required_scripts.cna_seg_extend.path }} md5: {{ required_scripts.cna_seg_extend.path | md5 }}
+    python3 {{ required_scripts.cna_seg_extend.path }} {{ constants.tempe.centromere }} {{ temp_dir }}/results/{{ pair.name }}.{{ aligner }}.modelFinal.genderCorrected.seg
 
 
 - name: gatk_call_cnv_step4_plot_cnv_{{ pair.name }}_{{ aligner }}
@@ -739,7 +739,6 @@
   mem: 16G
   walltime: "24:00:00"
   queue_preset: "DEFAULT"
-  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   container: {{ constants.tools.R.container }}
   digest: {{ constants.tools.R.digest }}
   cmd: |
@@ -771,7 +770,7 @@
       contig_lengths_string="{{ constants.tempe.primary_calling_contigs[:-1]|join('CONTIG_DELIMITER', attribute='length') }}"
     fi
 
-    Rscript ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.plotCNVplus_Rscript }} \
+    Rscript {{ required_scripts.plotCNVplus_Rscript.path }} \
       --hetDPfilter 1 \
       --hetAFlow 0.45 \
       --hetAFhigh 0.55 \

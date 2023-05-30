@@ -19,7 +19,8 @@
     set -eu
     set -o pipefail
 
-    ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.stats2lims }} \
+    # {{ required_scripts.stats2lims.path }} md5: {{ required_scripts.stats2lims.path | md5 }}
+    python3 {{ required_scripts.stats2lims.path }} \
       {% if file_type == "samtools_idxstats" %}
       --contigList "{{ constants.tempe.lims_contigs | replace(" ", "") }}" \
       {% endif %}

@@ -54,7 +54,6 @@
   cpus: 1
   mem: 4G
   walltime: "4:00:00"
-  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   queue_preset: "DEFAULT"
   container: {{ constants.tools.python3_with_modules.container }}
   digest: {{ constants.tools.python3_with_modules.digest }}
@@ -62,7 +61,8 @@
     set -eu
     set -o pipefail
 
-    python ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.pairoscope_mm_igtx_calling_script }} \
+    # {{ required_scripts.pairoscope_mm_igtx_calling_script.path }} md5: {{ required_scripts.pairoscope_mm_igtx_calling_script.path | md5 }}
+    python3 {{ required_scripts.pairoscope_mm_igtx_calling_script.path }} \
       --input_file {{ results_dir }}/{{ tumor.name }}.{{ aligner }}_pairoscope_igtx_discordantTable.txt \
       --specimen {{ tumor.rgsm }} \
       --output_file {{ results_dir }}/{{ tumor.name }}.{{ aligner }}_pairoscope_igtx_calls.txt \
@@ -157,7 +157,6 @@
   walltime: "24:00:00"
   cpus: 4
   mem: 48G
-  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   queue_preset: "DEFAULT"
   container: {{ constants.tools.trinity_bwa_samtools.container }}
   digest: {{ constants.tools.trinity_bwa_samtools.digest }}
@@ -275,7 +274,6 @@
   walltime: "24:00:00"
   cpus: 4
   mem: 10G
-  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   queue_preset: "DEFAULT"
   container: {{ constants.tools.samtools_with_python.container }}
   digest: {{ constants.tools.samtools_with_python.digest }}
@@ -298,7 +296,8 @@
     then
       tar -xzf {{ temp_dir }}/{{ tumor.name }}_assembled_fastqs.tar.gz
 
-      python3 ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.process_assembled_bam }} \
+      # {{ required_scripts.process_assembled_bam.path }} md5: {{ required_scripts.process_assembled_bam.path | md5 }}
+      python3 {{ required_scripts.process_assembled_bam.path }} \
         --input_bam {{ results_dir }}/{{ tumor.name }}_Trinity_All_Clusters_sorted.bam \
         --fastq_dir {{ temp_dir }} \
         --contig 125 \
@@ -441,7 +440,6 @@
   cpus: 4
   mem: 4G
   walltime: "12:00:00"
-  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
   digest: {{ constants.tools.bcftools.digest }}
@@ -473,7 +471,6 @@
   cpus: 4
   mem: 4G
   walltime: "12:00:00"
-  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   queue_preset: "DEFAULT"
   container: {{ constants.tools.python3_with_modules.container }}
   digest: {{ constants.tools.python3_with_modules.digest }}
@@ -489,8 +486,8 @@
     echo ${STD_IS}
     echo -e "----------------"
 
-    {# adding fields and flags to pass.vcf.gz file #}
-    python3 ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.manta_prepare_sv_vcf }} \
+    # {{ required_scripts.manta_prepare_sv_vcf.path }} md5: {{ required_scripts.manta_prepare_sv_vcf.path | md5 }}
+    python3 {{ required_scripts.manta_prepare_sv_vcf.path }} \
       -p 4 \
       -i {{ temp_dir }}/results/variants/somaticSV.pass.vcf.gz \
       -t {{ tumor_bam }} \
@@ -598,7 +595,6 @@
   cpus: 2
   mem: 4G
   queue_preset: "DEFAULT"
-  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   container: {{ constants.tools.R.container }}
   digest: {{ constants.tools.R.digest }}
   cmd: |
@@ -607,7 +603,8 @@
 
     mkdir -p {{ results_dir }}
 
-    Rscript ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.summarize_mm_igtx_Rscript }} \
+    # {{ required_scripts.summarize_mm_igtx_Rscript.path }} md5: {{ required_scripts.summarize_mm_igtx_Rscript.path | md5 }}
+    Rscript {{ required_scripts.summarize_mm_igtx_Rscript.path }} \
         -p {{ pairoscope_path }} \
         {% if control.pathToBam is defined %}
         -m {{ manta_path }} \

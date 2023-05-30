@@ -138,7 +138,6 @@
   mem: 4G
   walltime: "12:00:00"
   queue_preset: "DEFAULT"
-  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   container: {{ constants.tools.python3_with_modules.container }}
   digest: {{ constants.tools.python3_with_modules.digest }}
   cmd: |
@@ -158,7 +157,8 @@
     {# adding fields and flags to pass.vcf.gz file #}
     {% set temp_dir_pass_vcf %}{{ temp_dir }}/results/variants/somaticSV.pass.vcf{% endset %}
 
-    python3 ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.manta_prepare_sv_vcf }} \
+    # {{ required_scripts.manta_prepare_sv_vcf.path }} md5: {{ required_scripts.manta_prepare_sv_vcf.path | md5 }}
+    python3 {{ required_scripts.manta_prepare_sv_vcf.path }} \
       -p 4 \
       -i {{ temp_dir }}/results/variants/somaticSV.pass.vcf.gz \
       -t {{ tumor_bam }} \

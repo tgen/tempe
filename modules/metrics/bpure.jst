@@ -31,7 +31,6 @@
   mem: 8G
   walltime: "24:00:00"
   queue_preset: "DEFAULT"
-  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   container: {{ constants.tools.bpure.container }}
   digest: {{ constants.tools.bpure.digest }}
   cmd: |
@@ -42,7 +41,12 @@
     mkdir -p {{ temp_dir }}
     mkdir -p {{ results_dir }}
 
-    python ${JS_PIPELINE_PATH}/required_scripts/b_pure.py \
+    {#
+    These bash comments will be updated at render time and cause the task 
+    identity to change based on changes to input files/scripts
+    #}
+    # {{ required_scripts.bpure.path }} md5: {{ required_scripts.bpure.path | md5 }}
+    python {{ required_scripts.bpure.path }} \
         --bam-file {{ sample_bam }} \
         --seg-file {{ input_seg }} \
         --seg-resolution {{ seg_resolution }} \

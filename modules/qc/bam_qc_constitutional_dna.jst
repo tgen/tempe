@@ -95,7 +95,6 @@
   walltime: "8:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.R.container }}
-  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   digest: {{ constants.tools.R.digest }}
   cmd: |
     set -eu
@@ -109,7 +108,8 @@
     SAMPLE_ALPHA=`head -n4 "{{ metrics }}.out" | tail -n1 | cut -d: -f2`
     echo -e "{{ bam|basename }}""\t"${SAMPLE_PC1}"\t"${SAMPLE_PC2} > "{{ metrics }}.plot.txt"
 
-    Rscript ${JS_PIPELINE_PATH}/required_scripts/verifybamid_plot.R \
+    # {{ required_scripts.verifybamid_plot.path }} md5: {{ required_scripts.verifybamid_plot.path | md5 }}
+    Rscript {{ required_scripts.verifybamid_plot.path }} \
       -i {{ metrics }}.plot.txt \
       -o {{ metrics }}.plot \
       -t 1000g \

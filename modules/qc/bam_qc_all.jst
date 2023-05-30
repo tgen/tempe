@@ -222,7 +222,6 @@
   cpus: 4
   mem: 8G
   queue_preset: "DEFAULT"
-  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   container: {{ constants.tools.R.container }}
   digest: {{ constants.tools.R.digest }}
   cmd: |
@@ -231,7 +230,8 @@
 
     cd {{ results_dir }}
 
-    Rscript ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.plotSamStats_Rscript }} \
+    # {{ required_scripts.plotSamStats_Rscript.path }} md5: {{ required_scripts.plotSamStats_Rscript.path | md5 }}
+    Rscript {{ required_scripts.plotSamStats_Rscript.path }} \
         --samtoolsStatsFile={{ bam|basename }}.bamstats.txt \
         --bam={{ bam|basename }} \
         --sample={{ sample.name }} \
@@ -241,7 +241,7 @@
     {% if libraryCount == 1 %}
       cp {{ bam|basename }}.bamstats.txt {{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.bamstats.txt
 
-      Rscript ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.plotSamStats_Rscript }} \
+      Rscript {{ required_scripts.plotSamStats_Rscript.path }} \
         --samtoolsStatsFile={{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.bamstats.txt \
         --bam={{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam \
         --sample={{ sample.name }} \
@@ -284,7 +284,6 @@
   cpus: 1
   mem: 4G
   queue_preset: "DEFAULT"
-  runner_args: ['--env', 'JS_PIPELINE_PATH=${JS_PIPELINE_PATH}']
   container: {{ constants.tools.R.container }}
   digest: {{ constants.tools.R.digest }}
   cmd: |
@@ -293,7 +292,8 @@
 
     cd {{ results_dir }}
 
-    Rscript ${JS_PIPELINE_PATH}/required_scripts/{{ constants.tempe.plotSamStats_Rscript }} \
+    # {{ required_scripts.plotSamStats_Rscript.path }} md5: {{ required_scripts.plotSamStats_Rscript.path | md5 }}
+    Rscript {{ required_scripts.plotSamStats_Rscript.path }} \
         --samtoolsDuplicatesFile={{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.samtools.markdup.json \
         --bam={{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam \
         --sample={{ sample.name }} \

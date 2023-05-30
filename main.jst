@@ -39,6 +39,13 @@
     {% set tasks = {} %}
 {% endif %}
 
+{% set required_scripts = {} %}
+{% for name, value in constants.tempe.required_scripts.items() %}
+    {% set path = __pipeline__.path ~ '/' ~ __pipeline__.bin ~ value %}
+    {% do required_scripts.update({name: {}}) %}
+    {% do required_scripts[name].update({"path": path}) %}
+{% endfor %}
+
 {# submissionSource toggles specific tasks based on how they were submitted #}
 {% if submissionSource is not defined %}
     {% set submissionSource = "unknown" %}
@@ -184,7 +191,5 @@
 {{- rna_quant(samples) }}
 
 {{- rna_fusion_detection(samples) }}
-{#
-{{- single_cell_rna(dataFiles) }}
-#}
+
 {{- tumor_only_variant_calling(samples) }}

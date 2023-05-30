@@ -2,7 +2,8 @@ __pipeline__:
   name: tempe
   main: main.jst
   description: Rapid Human GRCh38 genomics suite
-  version: development
+  version: optimized
+  bin: required_scripts/
 constants:
   tools:
     base:
@@ -168,16 +169,19 @@ constants:
     denylist: /home/tgenref/homo_sapiens/grch38_hg38/public_databases/encode/Blacklist-2.0/lists/hg38-blacklist.v2.bed.gz
     reference_msisensor_pro: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/msisensor_pro_v1.1.a/GRCh38tempe_decoy_alts_hla_masked.microsatellites.list
     fish_probe_locations: /home/tgenref/homo_sapiens/grch38_hg38/hg38tgen/tool_resources/seq_fish/GRCh38_Myeloma_FISH_Probe_Locations_for_CNVear.bed
-    manta_prepare_sv_vcf: manta_prepare_sv_vcf_f94bcc1.py
-    pairoscope_mm_igtx_calling_script: mm_igtx_pairoscope_calling_b38_356362b.py
-    cna_seg_extend: seg_extend_229b8c7.py
-    plotCNVplus_Rscript: plotCNVplus_4d89cb4.R
-    plotSamStats_Rscript: summarize_samstats.R
-    summarize_mm_igtx_Rscript: summarize_Ig_875a823.R
-    process_assembled_bam: Process_Assembled_BAM.py
-    stats2json: samStats2json_2f64a79.py
-    stats2lims: uploadStats2Lims.py
-    sigprofiler: sigprofiler_7595614.py
+    required_scripts:
+      bpure: b_pure.py
+      manta_prepare_sv_vcf: manta_prepare_sv_vcf.py
+      pairoscope_mm_igtx_calling_script: mm_igtx_pairoscope_calling_b38.py
+      cna_seg_extend: seg_extend.py
+      plotCNVplus_Rscript: plotCNVplus.R
+      plotSamStats_Rscript: summarize_samstats.R
+      summarize_mm_igtx_Rscript: summarize_Ig.R
+      process_assembled_bam: Process_Assembled_BAM.py
+      stats2json: samStats2json.py
+      stats2lims: uploadStats2Lims.py
+      sigprofiler: sigprofiler.py
+      verifybamid_plot: verifybamid_plot.R
     umi_options:
       TETK2:
         umi_files: /home/tgenref/assay_files/twist_umi_adaptor_system/known_umi_sequences.txt
