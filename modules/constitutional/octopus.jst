@@ -22,7 +22,7 @@
     - {{ temp_dir }}/{{ loop.index }}.realigned.bam
     - {{ temp_dir }}/{{ loop.index }}.octopus.vcf
   walltime: "24:00:00"
-  cpus: 4
+  cpus: 8
   mem: 24G
   queue_preset: "DEFAULT"
   container: {{ constants.tools.octopus.container }}
@@ -43,7 +43,7 @@
 
     octopus \
       --caller individual \
-      --threads 4 \
+      --threads 8 \
       --ignore-unmapped-contigs \
       --sequence-error-model PCR.NOVASEQ \
       --annotations AD ADP AF SB \

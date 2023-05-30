@@ -20,7 +20,7 @@
     - {{ constants.tempe.reference_fasta }}
   output: {{ temp_dir }}/{{ loop.index }}.lancet-uns.vcf
   cpus: 4
-  mem: 24G
+  mem: 32G
   walltime: "24:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.lancet.container }}
