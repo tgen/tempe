@@ -508,11 +508,11 @@ If the attribute isn't strictly required then it is not included in this list.
   - *fileType*  
     Assigns the file type.
 
-  - *glPrep* [genome|capture|rna|singlecellrna|singlecellenrichment|singlecellcdna|singlecelltargetamp|matepair|chip]  
+  - *glPrep* [genome|capture|rna|matepair]  
     Used for determining the prep used to create the sample and then modifying how the
-    pipeline runs depending on the prep. This is used to configure single cell as well as CHIP preps.
+    pipeline runs depending on the prep. This is used to configure single cell.
 
-  - *glType* [genome|genomephased|exome|rna|singlecellrna|singlecelldna|matepair|chip]  
+  - *glType* [genome|genomephased|exome|rna|matepair]  
     Used for determining if the sample is DNA/RNA/etc. and adding the corresponding
     tasks to the final workflow. Each sample discovered will take this attribute from
     the first file encountered for that sample in the config file.
