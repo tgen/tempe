@@ -22,7 +22,7 @@
     - {{ bam }}.bai
     - {{ constants.tempe.reference_fasta }}
   output:
-    - {{ temp_dir }}/z
+    - {{ temp_dir }}/{{ sample.name }}.ex.tfrecord-{{ iteration }}-of-{{ stop }}.gz
     - {{ temp_dir }}/{{ sample.name }}.gvcf.tfrecord-{{ iteration }}-of-{{ stop }}.gz
   cpus: 1
   mem: 4G
