@@ -10,24 +10,21 @@
 {%- set pass_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.deepvariant.pass.vcf.gz{% endset %}
 
 {%- set nshards=40 %}
-{% for i in range(nshards) %}
 
-{% set iteration = ('00000' + i|string)|reverse|truncate(5, True, '', 0)|reverse %}
-{% set stop = ('00000' + nshards|string)|reverse|truncate(5, True, '', 0)|reverse %}
-
-- name: tumor_only_deepvariant_make_examples_{{ sample.name }}_{{ aligner }}_shard{{ i }}
+- name: tumor_only_deepvariant_make_examples_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype}}, tumor_only, snp_indel_caller, deepvariant, {{ sample.name }}]
   input: 
     - {{ bam }}
     - {{ bam }}.bai
     - {{ constants.tempe.reference_fasta }}
   output:
-    - {{ temp_dir }}/{{ sample.name }}.ex.tfrecord-{{ iteration }}-of-{{ stop }}.gz
-    - {{ temp_dir }}/{{ sample.name }}.gvcf.tfrecord-{{ iteration }}-of-{{ stop }}.gz
+    - {{ temp_dir }}/{{ sample.name }}.ex.tfrecord@{{ nshards }}.gz
+    - {{ temp_dir }}/{{ sample.name }}.gvcf.tfrecord@{{ nshards }}.gz
   cpus: 1
   mem: 4G
   walltime: "24:00:00"
   queue_preset: "DEFAULT"
+  queue_args: ['--array=0-{{ nshards - 1 }}']
   container: {{ constants.tools.deepvariant_cpu.container }}
   digest: {{ constants.tools.deepvariant_cpu.digest }}
   cmd: |
@@ -49,24 +46,19 @@
       --logging_level WARN \
       --mode calling \
       --channels insert_size \
-      --task {{ i }} \
+      --task $SLURM_ARRAY_TASK_ID \
       --ref "{{ constants.tempe.reference_fasta }}" \
       --reads "${PROJECT_ROOT}/{{ bam }}" \
       --examples "${PROJECT_ROOT}/{{ temp_dir }}/{{ sample.name }}.ex.tfrecord@{{ nshards }}.gz" \
       --gvcf "${PROJECT_ROOT}/{{ temp_dir }}/{{ sample.name }}.gvcf.tfrecord@{{ nshards }}.gz"
-      
-{% endfor %}
+
 
 - name: tumor_only_deepvariant_call_variants_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype}}, tumor_only, snp_indel_caller, deepvariant, {{ sample.name }}]
   reset: predecessors
   input:
-    {% for i in range(nshards) %}
-    {% set iteration = ('00000' + i|string)|reverse|truncate(5, True, '', 0)|reverse %}
-    {% set stop = ('00000' + nshards|string)|reverse|truncate(5, True, '', 0)|reverse %}
-    - {{ temp_dir }}/{{ sample.name }}.ex.tfrecord-{{ iteration }}-of-{{ stop }}.gz
-    - {{ temp_dir }}/{{ sample.name }}.gvcf.tfrecord-{{ iteration }}-of-{{ stop }}.gz
-    {% endfor %}
+    - {{ temp_dir }}/{{ sample.name }}.ex.tfrecord@{{ nshards }}.gz
+    - {{ temp_dir }}/{{ sample.name }}.gvcf.tfrecord@{{ nshards }}.gz
   output: {{ temp_dir }}/{{ sample.name }}.cvo.tfrecord.gz
   cpus: 8
   mem: 40G
