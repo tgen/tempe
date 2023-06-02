@@ -65,15 +65,15 @@ baseDistribution_summary <- function(input, bam, rgsm, rglb, rgid) {
   # Extract first read data table
   fbc <- grep("^FBC",input, value=TRUE)
   fbc <- separate(tibble(fbc),
-                  col=1,
-                  into=c("ID", "Cycle", "A_Bases", "C_Bases", "G_Bases", "T_Bases", "N_Bases", "NoBases"),
-                  sep="\t") %>%
+                         col=1,
+                         into=c("ID", "Cycle", "A_Bases", "C_Bases", "G_Bases", "T_Bases", "N_Bases", "NoBases"),
+                         sep="\t") %>%
     type_convert() %>%
     select(-ID, -NoBases)
-  
+ 
   # Pivot for graphing
   fbc_long <- fbc %>% pivot_longer(-Cycle, names_to = "Bases", values_to = "Percentage") %>% add_column(Source = "First Read - R1")
-  
+
   # Extract second read data table
   lbc <- grep("^LBC",input, value=TRUE)
   lbc <- separate(tibble(lbc),
@@ -82,13 +82,13 @@ baseDistribution_summary <- function(input, bam, rgsm, rglb, rgid) {
                   sep="\t") %>%
     type_convert() %>%
     select(-ID, -NoBases)
-  
+
   # Pivot for graphing
   lbc_long <- lbc %>% pivot_longer(-Cycle, names_to = "Bases", values_to = "Percentage") %>% add_column(Source = "Last Read - R2")
-  
+
   # Join tables
   bc_long <- bind_rows(fbc_long, lbc_long)
-  
+
   # Graph
   ggplot(bc_long, aes(Cycle, Percentage, color = Bases)) +
     geom_line(stat = "identity", position = position_jitterdodge(jitter.height = 0.1) ) +
@@ -103,33 +103,33 @@ baseDistribution_summary <- function(input, bam, rgsm, rglb, rgid) {
           legend.position="top") +
     facet_grid(. ~ Source)
   ggsave(paste(bam, "samtools_baseDistribution_linePlot.png", sep = "_"))
-  
+
 }
 
 baseQuality_summary <- function(input, bam, rgsm, rglb, rgid, format) {
   ## Import first fragment base qualities and distirbution
   ffbq <- grep("^FFQ",input, value=TRUE)
-  ffbq <- separate(tibble(ffbq),
-                   col=1,
-                   into = c("ID","Cycle", seq(from = 0, to = 40, by = 1)),
-                   sep="\t") %>%
-    type_convert() %>%
+  ffbq <- separate(tibble(ffbq), 
+                   col=1, 
+                   into = c("ID","Cycle", seq(from = 0, to = 100, by = 1)), 
+                   sep="\t") %>% 
+    type_convert() %>% 
     select(-ID)
   # Convert to longformat to make graphing easier and add column to indicate read of origin
-  ffbq_long <- ffbq %>%
-    pivot_longer(-Cycle, names_to = "BaseQuality", values_to = "Bases") %>%
+  ffbq_long <- ffbq %>% 
+    pivot_longer(-Cycle, names_to = "BaseQuality", values_to = "Bases") %>% 
     add_column(Read = "First") %>% type_convert()
   # Create new column with the total quality value
-  ffbq_long <- ffbq_long %>%
-    select(Read, Cycle, BaseQuality, Bases) %>%
+  ffbq_long <- ffbq_long %>% 
+    select(Read, Cycle, BaseQuality, Bases) %>% 
     mutate(Total_BaseQuality = BaseQuality * Bases)
-  
+
   if (format == "PairedEnd") {
     ## Import second fragment base qualities and distirbution
     sfbq <- grep("^LFQ",input, value=TRUE)
     sfbq <- separate(tibble(sfbq),
                      col=1,
-                     into = c("ID","Cycle", seq(from = 0, to = 40, by = 1)),
+                     into = c("ID","Cycle", seq(from = 0, to = 100, by = 1)),
                      sep="\t") %>%
       type_convert() %>%
       select(-ID)
@@ -141,22 +141,22 @@ baseQuality_summary <- function(input, bam, rgsm, rglb, rgid, format) {
     sfbq_long <- sfbq_long %>%
       select(Read, Cycle, BaseQuality, Bases) %>%
       mutate(Total_BaseQuality = BaseQuality * Bases)
-    
+
     # Join the two tables together, remove lines with Bases = NA
-    bq_table <- bind_rows(ffbq_long, sfbq_long) %>% filter(!is.na(Bases))
+    bq_table <- bind_rows(ffbq_long, sfbq_long) %>% drop_na(Bases)
   } else {
-    bq_table <- ffbq_long %>% filter(!is.na(Bases))
+    bq_table <- ffbq_long %>% drop_na(Bases)
   }
   
   # Summarize the overall yield
-  bq_summary <- bq_table %>%
-    mutate(Q20_Base_Count = if_else(BaseQuality >= 20, Bases, 0)) %>%
-    mutate(Q30_Base_Count = if_else(BaseQuality >= 30, Bases, 0)) %>%
-    mutate(Total_Quality_Yield = BaseQuality * Bases) %>%
-    summarise(Total_Bases = sum(Bases),
-              Q20_Bases = sum(Q20_Base_Count),
+  bq_summary <- bq_table %>% 
+    mutate(Q20_Base_Count = if_else(BaseQuality >= 20, Bases, 0)) %>% 
+    mutate(Q30_Base_Count = if_else(BaseQuality >= 30, Bases, 0)) %>% 
+    mutate(Total_Quality_Yield = BaseQuality * Bases) %>% 
+    summarise(Total_Bases = sum(Bases), 
+              Q20_Bases = sum(Q20_Base_Count), 
               Q30_Bases = sum(Q30_Base_Count),
-              Q20_Equivalent_Yield = sum(Total_Quality_Yield) / 20) %>%
+              Q20_Equivalent_Yield = sum(Total_Quality_Yield) / 20) %>% 
     add_column(Sample = rgsm) %>%
     add_column(Library = rglb) %>%
     add_column(Read_Group = rgid) %>%
@@ -165,11 +165,15 @@ baseQuality_summary <- function(input, bam, rgsm, rglb, rgid, format) {
   # Save the data
   write_tsv(bq_summary,paste(bam, "samtools_baseQualityYield_summary.tsv", sep = "_"))
   
-  # Plot #1 - Pecentage of Bases at each Quality Value (x=Q-value y=percent) facet by read
-  plot1_data <- bq_table %>%
-    group_by(Read, BaseQuality) %>%
-    summarise(TotalBases = sum(Bases))
+  # Determine the max base quality to make plots dynamic
+  max <- max(bq_table$BaseQuality)
+  plot_max_bq <- 5 * round(max/5)
   
+  # Plot #1 - Pecentage of Bases at each Quality Value (x=Q-value y=percent) facet by read
+  plot1_data <- bq_table %>% 
+    group_by(Read, BaseQuality) %>% 
+    summarise(TotalBases = sum(Bases))
+
   # Get sum of total bases for each read
   if (format == "PairedEnd") {
     r1_base_sum <- plot1_data %>% filter(Read == "First") %>% summarise(Bases_Sum = sum(TotalBases)) %>% pull(var = Bases_Sum)
@@ -197,26 +201,27 @@ baseQuality_summary <- function(input, bam, rgsm, rglb, rgid, format) {
   write_tsv(plot1_data,paste(bam, "samtools_baseQualityDistribution_histogram.tsv", sep = "_"))
   
   # Graph
-  ggplot(plot1_data, aes(BaseQuality, Percent_Bases, fill = Read)) +
-    geom_bar(stat = "identity", position = "dodge") +
-    scale_y_continuous(breaks = c(0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0),
-                       name = "Percentage of Bases") +
-    scale_fill_manual(values = c("#d8b365", "#5ab4ac"),
-                      name = "Sequencing Read",
-                      labels = c("First - R1","Last - R2")) +
+  ggplot(plot1_data, aes(BaseQuality, Percent_Bases, fill = Read)) + 
+    geom_bar(stat = "identity", position = "dodge") + 
+    scale_x_continuous(breaks = seq(from = 0, to = plot_max_bq, by = 5)) +
+    scale_y_continuous(breaks = c(0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0), 
+                       name = "Percentage of Bases") + 
+    scale_fill_manual(values = c("#d8b365", "#5ab4ac"), 
+                       name = "Sequencing Read", 
+                       labels = c("First - R1","Last - R2")) + 
     ggtitle(bam) +
     theme_bw() +
-    theme(plot.title = element_text(hjust = 0.5),
+    theme(plot.title = element_text(hjust = 0.5), 
           legend.position="top")
   ggsave(paste(bam, "samtools_baseQualityDistribution_histogram.png", sep = "_"))
   
   
-  
+    
   # Plot #2 - Mean Quality Value at each Cycle (x=cycle y=meanQualityByCycle) facet by read
-  plot2_data <- bq_table %>%
-    mutate(Total_Quality = BaseQuality * Bases) %>%
-    group_by(Read, Cycle) %>%
-    summarise(MeanBaseQuality = sum(Total_Quality) / sum(Bases)) %>%
+  plot2_data <- bq_table %>% 
+    mutate(Total_Quality = BaseQuality * Bases) %>% 
+    group_by(Read, Cycle) %>% 
+    summarise(MeanBaseQuality = sum(Total_Quality) / sum(Bases)) %>% 
     add_column(Sample = rgsm) %>%
     add_column(Library = rglb) %>%
     add_column(Read_Group = rgid) %>%
@@ -226,16 +231,16 @@ baseQuality_summary <- function(input, bam, rgsm, rglb, rgid, format) {
   write_tsv(plot2_data,paste(bam, "samtools_meanBaseQualityByCycle_histogram.tsv", sep = "_"))
   
   # Graph
-  ggplot(plot2_data, aes(Cycle, MeanBaseQuality, color = Read)) +
-    geom_line(stat = "identity") +
-    scale_y_continuous(breaks = c(0, 5, 10, 15, 20, 25, 30, 35, 40),
-                       limits = c(20,40)) +
-    scale_color_manual(values = c("#d8b365", "#5ab4ac"),
-                       name = "Sequencing Read",
-                       labels = c("First - R1","Last - R2")) +
+  ggplot(plot2_data, aes(Cycle, MeanBaseQuality, color = Read)) + 
+    geom_line(stat = "identity") + 
+    scale_y_continuous(breaks = seq(from = 0, to = plot_max_bq, by = 5), 
+                       limits = c(20, plot_max_bq)) + 
+    scale_color_manual(values = c("#d8b365", "#5ab4ac"), 
+                       name = "Sequencing Read", 
+                       labels = c("First - R1","Last - R2")) + 
     ggtitle(bam) +
     theme_bw() +
-    theme(plot.title = element_text(hjust = 0.5),
+    theme(plot.title = element_text(hjust = 0.5), 
           legend.position="top")
   ggsave(paste(bam, "samtools_meanBaseQualityByCycle_lineplot.png", sep = "_"))
 }
@@ -246,23 +251,23 @@ coverage_summary <- function(input, bam, rgsm, rglb, rgid) {
   # Import data table
   coverage <- grep("^COV",input, value=TRUE)
   coverage <- separate(tibble(coverage),
-                       col=1,
-                       into=c("ID","Range", "Depth", "Bases"),
-                       sep="\t") %>%
-    type_convert() %>%
+                       col=1, 
+                       into=c("ID","Range", "Depth", "Bases"), 
+                       sep="\t") %>% 
+    type_convert() %>% 
     select(-ID)
   
   # Add meta-data
-  coverage <- coverage %>%
+  coverage <- coverage %>% 
     add_column(Sample = rgsm) %>%
     add_column(Library = rglb) %>%
     add_column(Read_Group = rgid) %>%
     add_column(BAM_File = bam)
-  
+
   # Save histogram table
   write_tsv(coverage, paste(bam, "samtools_coverage_histogram.tsv", sep = "_"))
   #coverage <- read_tsv(paste(bam, "samtools_coverage_histogram.tsv", sep = "_"))
-  
+
   # Add column for total depth
   coverage <- coverage %>%
     mutate(Last_Ordered_Base = cumsum(Bases)) %>%
@@ -298,19 +303,19 @@ coverage_summary <- function(input, bam, rgsm, rglb, rgid) {
     mutate(Bases_800x = case_when(Depth >= 800 ~ Bases, TRUE ~ 0)) %>%
     mutate(Bases_900x = case_when(Depth >= 900 ~ Bases, TRUE ~ 0)) %>%
     mutate(Bases_1000x = case_when(Depth >= 1000 ~ Bases, TRUE ~ 0))
-  
+
   # Calculate MEAN, for SD calculation
   fast_mean <- coverage %>%
     summarise(Bases_Tested = sum(Bases),
               Tested_Total_Depth = sum(Total_Depth)) %>%
     mutate(MEAN = Tested_Total_Depth / Bases_Tested) %>%
     pull(var = MEAN)
-  
+
   # Add columne to coverage table SD_lineNumerator = ((Depth - MEAN)^2) * Bases
   coverage <- coverage %>% mutate(SD_lineNumerator = ((Depth - fast_mean)^2) * Bases)
   ## Then to calculate Variance = (1 / Bases_Tested) * SD_lineNumerator
   ## Then to calcualte SD = sqrt(Variance)
-  
+
   # Summarize
   summary <- coverage %>%
     summarise(Bases_Tested = sum(Bases),
@@ -345,7 +350,7 @@ coverage_summary <- function(input, bam, rgsm, rglb, rgid) {
               Bases_900x = sum(Bases_900x),
               Bases_1000x = sum(Bases_1000x),
               SD_lineNumerator = sum(SD_lineNumerator))
-  
+
   # Get position information for coverge percentiles
   median_position <- round(summary %>% pull(var = Bases_Tested) * 0.5)
   median_value <- coverage %>% filter(First_Ordered_Base <= median_position) %>% filter(Last_Ordered_Base >= median_position) %>% pull(var = Depth)
@@ -367,31 +372,31 @@ coverage_summary <- function(input, bam, rgsm, rglb, rgid) {
   percentile99_value <- coverage %>% filter(First_Ordered_Base <= percentile99_position) %>% filter(Last_Ordered_Base >= percentile99_position) %>% pull(var = Depth)
   
   # Determine the MAD
-  mad_cov <- coverage %>%
-    select(Depth, Bases) %>%
-    mutate(Abs_Deviation = abs(Depth - median_value)) %>%
-    arrange(desc(Abs_Deviation)) %>%
+  mad_cov <- coverage %>% 
+    select(Depth, Bases) %>% 
+    mutate(Abs_Deviation = abs(Depth - median_value)) %>% 
+    arrange(desc(Abs_Deviation)) %>% 
     mutate(Last_Ordered_Base = cumsum(Bases)) %>%
-    mutate(First_Ordered_Base = Last_Ordered_Base - Bases + 1) %>%
-    filter(First_Ordered_Base <= median_position) %>%
-    filter(Last_Ordered_Base >= median_position) %>%
+    mutate(First_Ordered_Base = Last_Ordered_Base - Bases + 1) %>% 
+    filter(First_Ordered_Base <= median_position) %>% 
+    filter(Last_Ordered_Base >= median_position) %>% 
     pull(var = Abs_Deviation)
-  
+
   # Add Summary Calculations
   summary <- summary %>%
     mutate(Mean_Coverage = Tested_Total_Depth / Bases_Tested) %>%
     mutate(Variance = (1 / Bases_Tested) * SD_lineNumerator) %>%
     mutate(SD = sqrt(Variance)) %>%
-    mutate(Median = median_value) %>%
-    mutate(MAD = mad_cov) %>%
-    mutate(Percentile_1 = percentile1_value) %>%
-    mutate(Percentile_5 = percentile5_value) %>%
-    mutate(Percentile_10 = percentile10_value) %>%
-    mutate(Percentile_25 = percentile25_value) %>%
-    mutate(Percentile_75 = percentile75_value) %>%
-    mutate(Percentile_90 = percentile90_value) %>%
-    mutate(Percentile_95 = percentile95_value) %>%
-    mutate(Percentile_99 = percentile99_value) %>%
+    mutate(Median = median_value) %>% 
+    mutate(MAD = mad_cov) %>% 
+    mutate(Percentile_1 = percentile1_value) %>% 
+    mutate(Percentile_5 = percentile5_value) %>% 
+    mutate(Percentile_10 = percentile10_value) %>% 
+    mutate(Percentile_25 = percentile25_value) %>% 
+    mutate(Percentile_75 = percentile75_value) %>% 
+    mutate(Percentile_90 = percentile90_value) %>% 
+    mutate(Percentile_95 = percentile95_value) %>% 
+    mutate(Percentile_99 = percentile99_value) %>% 
     mutate(IQR = Percentile_75 - Percentile_25) %>%
     mutate(Pct_2x = Bases_2x / Bases_Tested) %>%
     mutate(Pct_5x = Bases_5x / Bases_Tested) %>%
@@ -426,17 +431,17 @@ coverage_summary <- function(input, bam, rgsm, rglb, rgid) {
     add_column(Library = rglb) %>%
     add_column(Read_Group = rgid) %>%
     add_column(BAM_File = bam)
-  
+
   # TO ADD: HET_SNP_SENSITIVITY, HET_SNP_Q
   # Can't do equivalent as done on the fly - PCT_EXC_ADAPTER PCT_EXC_MAPQ, PCT_EXC_DUPE, PCT_EXC_UNPAIRED, PCT_EXC_BASEQ, PCT_EXC_OVERLAP, PCT_EXC_CAPPED, PCT_EXC_TOTAL
-  
+
   # Save summary table
   write_tsv(summary, paste(bam, "samtools_coverage_summary.tsv", sep = "_"))
-  
+
   # Define ploting positions for text blob
   max_depth <- coverage %>% filter(Depth == max(Depth)) %>% filter(Bases == min(Bases)) %>% pull(var = Depth)
   max_pct_bases <- coverage %>% filter(Pct_Total_Bases == max(Pct_Total_Bases)) %>% pull(var = Pct_Total_Bases)
-  
+
   mean_cov <- pull(summary, var = Mean_Coverage)
   sd_cov <- pull(summary, var = SD) %>% round(digits = 3)
   pct10x_cov <- pull(summary, var = Pct_10x) %>% round(digits = 3) * 100
@@ -446,21 +451,21 @@ coverage_summary <- function(input, bam, rgsm, rglb, rgid) {
   pct150x_cov <- pull(summary, var = Pct_150x) %>% round(digits = 3) * 100
   pct200x_cov <- pull(summary, var = Pct_200x) %>% round(digits = 3) * 100
   coverage_label <- paste(paste("Mean(SD): ", round(mean_cov, digits = 2), " +/- ", sd_cov, sep = ""),
-                          paste("Median(MAD): ", median_value, " +/- ", mad_cov, sep = ""),
-                          paste("10x: ", pct10x_cov, "%", sep = ""),
-                          paste("20x: ", pct20x_cov, "%", sep = ""),
-                          paste("30x: ", pct30x_cov, "%", sep = ""),
-                          paste("100x: ", pct100x_cov, "%", sep = ""),
-                          paste("150x: ", pct150x_cov, "%", sep = ""),
-                          paste("200x: ", pct200x_cov, "%", sep = ""),
+                          paste("Median(MAD): ", median_value, " +/- ", mad_cov, sep = ""), 
+                          paste("10x: ", pct10x_cov, "%", sep = ""), 
+                          paste("20x: ", pct20x_cov, "%", sep = ""), 
+                          paste("30x: ", pct30x_cov, "%", sep = ""), 
+                          paste("100x: ", pct100x_cov, "%", sep = ""), 
+                          paste("150x: ", pct150x_cov, "%", sep = ""), 
+                          paste("200x: ", pct200x_cov, "%", sep = ""), 
                           sep = "\n")
-  
+
   # Plot
-  ggplot(coverage, aes(Depth, Pct_Total_Bases)) +
-    geom_density(stat="identity", fill = "#d8b365") +
-    geom_vline(xintercept = mean_cov, color = "#5ab4ac", linetype = "dashed") +
-    annotate(geom = "text", x=mean_cov * 3.25, y=max_pct_bases * 0.85, label = coverage_label) +
-    scale_x_continuous(name = "Coverage Depth", limits = c(1,mean_cov * 4)) +
+  ggplot(coverage, aes(Depth, Pct_Total_Bases)) + 
+    geom_density(stat="identity", fill = "#d8b365") + 
+    geom_vline(xintercept = mean_cov, color = "#5ab4ac", linetype = "dashed") + 
+    annotate(geom = "text", x=mean_cov * 3.25, y=max_pct_bases * 0.85, label = coverage_label) + 
+    scale_x_continuous(name = "Coverage Depth", limits = c(1,mean_cov * 4)) + 
     scale_y_continuous(name = "Percent Bases", labels = scales::percent) +
     ggtitle(bam) +
     theme_bw() +
@@ -473,27 +478,27 @@ coverage_summary <- function(input, bam, rgsm, rglb, rgid) {
 
 #### GC Depth Summary
 gcdepth_summary <- function(input, median_coverage, bam, rgsm, rglb, rgid) {
-  
+
   ## Extract data table for relationship between GC percentage and coverage
   gcDepth <- grep("^GCD",input, value=TRUE)
   gcDepth <- separate(tibble(gcDepth),
-                      col=1,
-                      into=c("ID", "PercentGC", "UniquePercentiles", "Percentile10", "Percentile25", "Percentile50", "Percentile75", "Percentile90"),
-                      sep="\t") %>%
+                         col=1,
+                         into=c("ID", "PercentGC", "UniquePercentiles", "Percentile10", "Percentile25", "Percentile50", "Percentile75", "Percentile90"),
+                         sep="\t") %>%
     type_convert() %>%
     select(-ID)
-  
+
   # Add meta-data to insert size table (histogram)
   gcDepth <- gcDepth %>%
     add_column(Sample = rgsm) %>%
     add_column(Library = rglb) %>%
     add_column(Read_Group = rgid) %>%
     add_column(BAM_File = bam)
-  
+
   # Add percent (NEED TO DO FIRST ON CORRECT)
   gcDepth <- gcDepth %>%
     mutate(Pct_Genome = if_else(row_number()==1, UniquePercentiles, UniquePercentiles - lag(UniquePercentiles)))
-  
+
   # Set colors for forced legend
   colors <- c("GC Bin Frequency" = "#d8b365", "Median Coverage (+/-IQR)" = "#5ab4ac")
   # Calculate a scale factor for the GC bins
@@ -518,7 +523,7 @@ gcdepth_summary <- function(input, median_coverage, bam, rgsm, rglb, rgid) {
           axis.ticks.y.right = element_line(color = "#d8b365"),
           legend.position = "top")
   ggsave(paste(bam, "samtools_gcDepth_plot.png", sep = "_"))
-  
+
   # Save insert size histogram table
   write_tsv(gcDepth, paste(bam, "samtools_gcDepth_histogram.tsv", sep = "_"))
 }
@@ -538,12 +543,12 @@ indel_summary <- function(input, bam, rgsm, rglb, rgid) {
   indel_size_long <- indel_size %>% pivot_longer(-Length, names_to = "Source", values_to = "Count")
   
   # Graph
-  ggplot(indel_size_long, aes(Length, Count, color = Source)) +
+  ggplot(indel_size_long, aes(Length, Count, color = Source)) + 
     geom_line() +
-    scale_y_log10(name = "INDEL Count",
-                  breaks = c(1, 10, 100, 1000, 10000, 100000, 1000000, 10000000),
-                  labels = scales::trans_format("log10", scales::math_format(10^.x)), ) +
-    annotation_logticks(sides = "l") +
+    scale_y_log10(name = "INDEL Count", 
+                  breaks = c(1, 10, 100, 1000, 10000, 100000, 1000000, 10000000), 
+                  labels = scales::trans_format("log10", scales::math_format(10^.x)), ) + 
+    annotation_logticks(sides = "l") + 
     scale_color_manual(values = c("#d8b365", "#5ab4ac"), labels = c("Deletion", "Insertion")) +
     ggtitle(label = bam) +
     theme_bw() +
@@ -554,27 +559,27 @@ indel_summary <- function(input, bam, rgsm, rglb, rgid) {
   # Extreact indel cycle distribution
   indel_cycle <- grep("^IC",input, value=TRUE)
   indel_cycle <- separate(tibble(indel_cycle),
-                          col=1,
-                          into=c("ID", "Cycle", "Insertion_Forward_Count", "Insertion_Reverse_Count", "Deletion_Forward_Count", "Deletion_Reverse_Count"),
-                          sep="\t") %>%
+                         col=1,
+                         into=c("ID", "Cycle", "Insertion_Forward_Count", "Insertion_Reverse_Count", "Deletion_Forward_Count", "Deletion_Reverse_Count"),
+                         sep="\t") %>%
     type_convert() %>%
     select(-ID)
-  
+
   # Pivot for graphing
   indel_cycle_long <- indel_cycle %>% pivot_longer(-Cycle, names_to = "Source", values_to = "Count")
-  
+
   # Graph
   ggplot(indel_cycle_long, aes(Cycle, Count, color = Source)) +
     geom_line() +
-    scale_y_continuous(name = "INDEL Count",
-                       labels = scales::comma) +
+    scale_y_continuous(name = "INDEL Count", 
+                       labels = scales::comma) + 
     scale_color_manual(values = c("#a6611a", "#dfc27d", "#80cdc1", "#018571"), labels = c("Deletion-Forward", "Deletion-Reverse", "Insertion-Forward", "Insertion-Reverse")) +
     ggtitle(label = bam) +
     theme_bw() +
     theme(plot.title = element_text(hjust = 0.5),
           legend.position="top")
   ggsave(paste(bam, "samtools_indelDistByCycle_linePlot.png", sep = "_"))
-  
+
 }
 
 #### Insert Summary
@@ -588,7 +593,7 @@ insertSize_summary <- function(input, bam, rgsm, rglb, rgid) {
     type_convert()
   # Because there can be multiple read lengths used we capture the max read length value
   read1_length <- max(read1_length$Read_Length)
-  
+
   # Extract the lastRead length
   read2_length <- grep("^LRL",input, value=TRUE)
   read2_length <- separate(tibble(read2_length),
@@ -598,7 +603,7 @@ insertSize_summary <- function(input, bam, rgsm, rglb, rgid) {
     type_convert()
   # Because there can be multiple read lengths used we capture the max read length value
   read2_length <- max(read2_length$Read_Length)
-  
+
   # Import inserts size data table
   insertSize <- grep("^IS",input, value=TRUE)
   insertSize <- separate(tibble(insertSize),
@@ -607,21 +612,21 @@ insertSize_summary <- function(input, bam, rgsm, rglb, rgid) {
                          sep="\t") %>%
     type_convert() %>%
     select(-ID)
-  
+
   # Add meta-data to insert size table (histogram)
   insertSize <- insertSize %>%
     add_column(Sample = rgsm) %>%
     add_column(Library = rglb) %>%
     add_column(Read_Group = rgid) %>%
     add_column(BAM_File = bam)
-  
+
   # Save insert size histogram table
   write_tsv(insertSize, paste(bam, "samtools_insertSize_histogram.tsv", sep = "_"))
   #insertSize <- read_tsv(paste(bam, "samtools_insertSize_histogram.tsv", sep = "_"))
-  
+
   # Calculate the combined read length
   combined_read_length <- read1_length + read2_length
-  
+
   # Add column to table to indicate if below combined read length
   insertSize <- insertSize %>%
     mutate(Last_Ordered_Pair = cumsum(Total_Pairs)) %>%
@@ -632,18 +637,18 @@ insertSize_summary <- function(input, bam, rgsm, rglb, rgid) {
     mutate(Inward_Pairs_Thousands = Inward_Pairs / 1000) %>%
     mutate(Outward_Pairs_Thousands = Outward_Pairs / 1000) %>%
     mutate(Total_Insert_Space = Insert_Size * Total_Pairs)
-  
+
   # Calculate MEAN, for SD calculation
   fast_mean <- insertSize %>%
     summarise(Pairs = sum(Total_Pairs),
               InsertSpace = sum(Total_Insert_Space)) %>%
     mutate(MEAN = InsertSpace / Pairs) %>%
     pull(var = MEAN)
-  
+
   # Add column to insertSize table SD_lineNumerator = ((InsertSize - MEAN)^2) * Total_Pairs
   insertSize <- insertSize %>%
     mutate(SD_lineNumerator = ((Insert_Size - fast_mean)^2) * Total_Pairs)
-  
+
   # Summarize InsertSize table
   summary <- insertSize %>%
     summarise(Total_Pairs = sum(Total_Pairs),
@@ -654,7 +659,7 @@ insertSize_summary <- function(input, bam, rgsm, rglb, rgid) {
               Pairs_Below_Read_Length = sum(Below_Paired_Lenth),
               Bases_Lost_By_Overlap = sum(Bases_Lost),
               SD_lineNumerator = sum(SD_lineNumerator))
-  
+
   # Get position information for insertSize percentiles
   median_position <- round(summary %>% pull(var = Total_Pairs) * 0.5)
   median_value <- insertSize %>% filter(First_Ordered_Pair <= median_position) %>% filter(Last_Ordered_Pair >= median_position) %>% pull(var = Insert_Size)
@@ -674,7 +679,7 @@ insertSize_summary <- function(input, bam, rgsm, rglb, rgid) {
   percentile95_value <- insertSize %>% filter(First_Ordered_Pair <= percentile95_position) %>% filter(Last_Ordered_Pair >= percentile95_position) %>% pull(var = Insert_Size)
   percentile99_position <- round(summary %>% pull(var = Total_Pairs) * 0.99)
   percentile99_value <- insertSize %>% filter(First_Ordered_Pair <= percentile99_position) %>% filter(Last_Ordered_Pair >= percentile99_position) %>% pull(var = Insert_Size)
-  
+
   # Determin the MAD
   mad_insertSize <- insertSize %>%
     select(Insert_Size, Total_Pairs) %>%
@@ -685,7 +690,7 @@ insertSize_summary <- function(input, bam, rgsm, rglb, rgid) {
     filter(First_Ordered_Pair <= median_position) %>%
     filter(Last_Ordered_Pair >= median_position) %>%
     pull(var = Abs_Deviation)
-  
+
   # Add Summary Calculations
   summary <- summary %>%
     mutate(Mean = Total_Insert_Length / Total_Pairs) %>%
@@ -709,10 +714,10 @@ insertSize_summary <- function(input, bam, rgsm, rglb, rgid) {
     add_column(Library = rglb) %>%
     add_column(Read_Group = rgid) %>%
     add_column(BAM_File = bam)
-  
+
   # Write out the summary table
   write_tsv(summary, paste(bam, "samtools_insertSize_summary.tsv", sep = "_"))
-  
+
   # Define ploting positions for text blob
   max_total_pairs <- insertSize %>% filter(Total_Pairs == max(Total_Pairs)) %>% pull(var = Total_Pairs_Thousands)
   max_insert_length <- insertSize %>% filter(Insert_Size == max(Insert_Size)) %>% pull(var = Insert_Size)
@@ -722,7 +727,7 @@ insertSize_summary <- function(input, bam, rgsm, rglb, rgid) {
   } else {
     x_limit <- max_insert_length + 200
   }
-  
+
   # Capture variables needed for plot
   mean_insert_length <- pull(summary, var = Mean) %>% round(digits = 3)
   standard_deviation <- pull(summary, var = SD) %>% round(digits = 3)
@@ -730,19 +735,19 @@ insertSize_summary <- function(input, bam, rgsm, rglb, rgid) {
   mad_insert_length <- pull(summary, var = MAD) %>% round(digits = 3)
   pct_below_pairedlength <- pull(summary, var = Pct_Below_PairedReadLength) %>% round(digits = 3)
   pct_bases_lost <- pull(summary, var = Pct_Bases_Lost) %>% round(digits = 3)
-  
+
   # Generate a summary text blob to add to plot
   summary_label <- paste(paste("Mean(SD): ", mean_insert_length, " +/- ", standard_deviation, sep = ""),
                          paste("Median(MAD): ", median_insert_length, " +/- ", mad_insert_length, sep = ""),
                          paste("Overlapping Pairs: ", pct_below_pairedlength * 100, "%", sep = ""),
                          paste("Bases Lost: ", pct_bases_lost * 100, "%", sep = ""),
                          sep="\n")
-  
+
   # Make long format file for graphing inward and outward pairs
   long_insertSize <- insertSize %>%
     select(Insert_Size, Inward_Pairs_Thousands, Outward_Pairs_Thousands) %>%
     pivot_longer(-Insert_Size, names_to = "Pair_Type", values_to = "Count")
-  
+
   # Plot
   ggplot(long_insertSize, aes(x = Insert_Size, y = Count, fill = Pair_Type)) +
     geom_density(stat="identity", alpha = 0.8) +
@@ -803,7 +808,7 @@ summaryNumbers_summary <- function(input, bam, rgsm, rglb, rgid, format) {
                  into=c("ID", "Name","Value"), sep="\t") %>%
     type_convert() %>%
     select(-ID)
-  
+
   # Clean up names
   sn <- sn %>%
     mutate(Name = str_replace_all(Name, " ", "_")) %>%
@@ -813,10 +818,10 @@ summaryNumbers_summary <- function(input, bam, rgsm, rglb, rgid, format) {
     mutate(Name = str_replace_all(Name, "\\(", "")) %>%
     mutate(Name = str_replace_all(Name, "\\)", "")) %>%
     mutate(Name = str_replace_all(Name, "_>_0", "_above0x"))
-  
+
   # Transpose and ensure order matches original vertical table order and update types from character
   flipped_sn <- sn %>% spread(Name, Value) %>% select(sn$Name) %>% type_convert()
-  
+
   # Add column for chimeric reads (if single-end, chimeras cannot be determined so force to 0)
   if (format == "PairedEnd") {
     flipped_sn <- flipped_sn %>%
@@ -825,15 +830,15 @@ summaryNumbers_summary <- function(input, bam, rgsm, rglb, rgid, format) {
     flipped_sn <- flipped_sn %>%
       mutate(PERCENT_CHIMERA = 0)
   }
-  
-  
+
+
   # Add columns with sample meta data
   flipped_sn <- flipped_sn %>%
     add_column(Sample = rgsm) %>%
     add_column(Library = rglb) %>%
     add_column(Read_Group = rgid) %>%
     add_column(BAM_File = bam)
-  
+
   # Save samtools markdups summary table
   write_tsv(flipped_sn, paste(bam, "samtools_summaryNumbers_summary.tsv", sep = "_"))
 }
@@ -876,7 +881,7 @@ if (!is.null(opt$samtoolsStatsFile)) {
     # Call the insertSize function
     insertSize_summary(stats_file, opt$bam, opt$sample, opt$library, opt$readgroup)
   }
-  
+
   # Calcualte per cycle and overal base quality distributions
   print("Summarizing Samtools stats Base Quality Statistics:")
   # Call the base quality function
@@ -891,7 +896,7 @@ if (!is.null(opt$samtoolsStatsFile)) {
   print("Summarizing Samtools stats GC Effect on Coverage:")
   # Call the base distribution function (mean_cov is returned from the coverage function)
   gcdepth_summary(stats_file, median_cov, opt$bam, opt$sample, opt$library, opt$readgroup)
-  
+
   # Summarize INDEL data
   print("Summarizing Samtools stats INDEL size and distribution:")
   # Call the base distribution function (mean_cov is returned from the coverage function)
