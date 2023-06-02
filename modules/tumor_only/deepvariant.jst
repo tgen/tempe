@@ -72,13 +72,11 @@
   mem: 40G
   walltime: "24:00:00"
   queue_preset: "DEEPVARIANT"
-  runner_args: ['--env', 'CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES/,/_}']
   container: {{ constants.tools.deepvariant_gpu.container }}
   digest: {{ constants.tools.deepvariant_gpu.digest }}
   cmd: |
     set -eu
     set -o pipefail
-    CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES/_/,}
 
     PROJECT_ROOT=$PWD
 
