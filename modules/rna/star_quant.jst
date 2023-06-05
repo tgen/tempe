@@ -10,7 +10,6 @@
 {% set star_finalcountsdir %}{{ sample.gltype }}/quant/star/{{ sample.name }}{% endset %}
 {% set temp_dir %}temp/{{ sample.gltype }}/quant/star/{{ sample.name }}{% endset %}
 {% set star_bam_unsort %}{{ temp_dir }}/{{ sample.name }}.Aligned.out.bam{% endset %}
-{% set star_bam_transcript %}{{ temp_dir }}/{{ sample.name }}.Aligned.toTranscriptome.out.bam{% endset %}
 {% set star_bam_sorted %}{{ temp_dir }}/{{ sample.name }}.Aligned.sorted.bam{% endset %}
 {% set star_bam_md %}{{ temp_dir }}/{{ sample.name }}.md.bam{% endset %}
 {% set star_bam_final %}{{ results_dir }}/{{ sample.name }}.star.bam{% endset %}
@@ -53,11 +52,6 @@
     - {{ star_finalcountsdir }}/{{ sample.name }}.ReadsPerGene.out.tab
     - {{ star_finalcountsdir }}/{{ sample.name }}.star.junctions
     - {{ results_dir }}/stats/{{ sample.name }}_star.Log.final.out
-    {% if tasks.RNA_transcriptome_quantify_expression_salmon_bam or tasks.RNA_transcriptome_quantify_expression_RSEM %}
-    - {{ star_bam_transcript }}
-    {% elif tasks.RNA_transcriptome_quantify_expression_RSEM is not defined %}
-    - {{ star_bam_transcript }}
-    {% endif %}
   cpus: 20
   mem: 80G
   walltime: "24:00:00"
@@ -170,13 +164,7 @@
       --chimMultimapScoreRange 10 \
       --chimNonchimScoreDropMin 10 \
       --chimOutJunctionFormat 1 \
-      {% if tasks.RNA_transcriptome_quantify_expression_salmon_bam or tasks.RNA_transcriptome_quantify_expression_RSEM %}
-      --quantMode TranscriptomeSAM GeneCounts \
-      {% elif tasks.RNA_transcriptome_quantify_expression_RSEM is not defined %}
-      --quantMode TranscriptomeSAM GeneCounts \
-      {% else %}
       --quantMode GeneCounts \
-      {% endif %}
       --outSAMattrRGline {{ rglinelist|join(' , ') }} \
       --sjdbOverhang "{{ sjdb_overhang }}" \
       --genomeDir ${STAR_INDEX} \
