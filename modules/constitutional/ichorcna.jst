@@ -32,8 +32,8 @@
   cpus: 1
   mem: 2G
   queue_preset: "DEFAULT"
-  container: {{ constants.tools.hmmcopy_utils.container }}
-  digest: {{ constants.tools.hmmcopy_utils.digest }}
+  container: {{ constants.tools.hmmcopy.container }}
+  digest: {{ constants.tools.hmmcopy.digest }}
   cmd: |
     set -eu
     set -o pipefail
