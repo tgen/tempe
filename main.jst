@@ -111,6 +111,11 @@
     {% do samples[name]['read_groups'][rgid].update({'data_files': data_files}) %}
 {% endfor %}
 
+{% for sample in samples.values() %}
+    {% set totalReads = sample.read_groups.values() | sum(attribute="numberOfReads") %}
+    {% do sample.update({'total_reads': totalReads}) %}
+{% endfor %}
+
 {# A sample can have multiple aligners (for dev purposes), building a list for this purpose #}
 {# We build the list here to ensure traversal to all called macros #}
 {% for sample in samples.values() %}
