@@ -74,7 +74,7 @@
 {% endmacro %}
 
 {% macro bam_qc_rna_BTcell_loci(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner='star', bam_level=true) %}
-{% if tasks[taskPrefix+"_quality_control_stats_samtools_bedcov"]|default(false) %}
+{% if tasks.RNA_quality_control_stats_samtools_bedcov|default(false) %}
 
   {% set results_dir %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/stats{% endset %}
 
