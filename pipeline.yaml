@@ -35,7 +35,7 @@ constants:
       digest: notarealdigest
     expansion_hunter:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/expansion_hunter:4.0.2-23052209
-      digest: sha256:fcc47f20135fddc0f556b8273863d5c3fad4cd9688e1b3e6d5a3ea7c66b50107
+      digest: fcc47f20135fddc0f556b8273863d5c3fad4cd9688e1b3e6d5a3ea7c66b50107
     fgbio:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/fgbio:2.0.2-v1
       digest: ba908141e58e5ae0621f0a4af2109f12608686db238d3846cd10d6209290bc85
@@ -74,10 +74,10 @@ constants:
       digest: notarealdigest
     msisensor:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/msisensor:1.1.a
-      digest: sha256:91da19fc70e7b51bfe7868531d79e121579e2741b2ef5acf1575ca5384254a3e
+      digest: 91da19fc70e7b51bfe7868531d79e121579e2741b2ef5acf1575ca5384254a3e
     mutation_burden:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/mutation-burden:1.2.4-23051714
-      digest: sha256:fcb0e12a1402ac4153633b9f276a5c8906c6c7fc6f8e61d79392d3b3b105c2c9
+      digest: fcb0e12a1402ac4153633b9f276a5c8906c6c7fc6f8e61d79392d3b3b105c2c9
     octopus:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/octopus:0.7.4-v1
       digest: 4bb49879ead70887250836ce499665eadc1de90cbdfcb7906eea46cdd50ed9f2
@@ -95,10 +95,10 @@ constants:
       digest: 2a37e7a13669148bb922b1b675fb5ee32178e18b6813f9e3a9bc99436b59d03d
     R:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/tempe/testing/r_with_modules:4.1.2-23052213
-      digest: sha256:138790a23400006f66c9506d9da956405e5f7a829d6c536d621ed71fc3630caa
+      digest: 138790a23400006f66c9506d9da956405e5f7a829d6c536d621ed71fc3630caa
     thred:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/thred:1.1.0-23051915
-      digest: sha256:3068b7af7d12722a6b6de4ee9b76605b8c01e6001fd92cbe95017f532c5d2477
+      digest: 3068b7af7d12722a6b6de4ee9b76605b8c01e6001fd92cbe95017f532c5d2477
     trinity_bwa_samtools:
       container: /home/tgenref/containers/trinity_with_bwa_2.8.6.sif
       digest: notarealdigest
@@ -113,7 +113,7 @@ constants:
       digest: notarealdigest
     sigprofiler:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/sigprofiler:0.0.24-23060209
-      digest: sha256:99412ce71dc012154034ec9397cf803a4977a4fd9645ceea6fcf4268a909d19b
+      digest: 99412ce71dc012154034ec9397cf803a4977a4fd9645ceea6fcf4268a909d19b
     snpsniffer:
       container: ghcr.io/tgen/jetstream_containers/snpsniffer:7.0.0
       digest: cafd6b4b27614bf7a5460dd9812bdf5bf7bdc8c8971f1f0fa6d0b9e7b8a6dc9a
@@ -122,7 +122,7 @@ constants:
       digest: a3f1bfbb3a7a3b501ecdd1cec4325d00516b73b504afac274d351d20deee44e4
     strelka:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/strelka:2.9.10-23052210
-      digest: sha256:2c46c820caed381eb693b54393d3bf45b361d8189c869d8f96f15ab3ab6af0cb
+      digest: 2c46c820caed381eb693b54393d3bf45b361d8189c869d8f96f15ab3ab6af0cb
     subread:
       container: quay.io/biocontainers/subread:2.0.0--hed695b0_0
       digest: 97b2f544c6a8a1b209febcc23616fd77c46bdbb1d4f3005012456a380ca43d99
