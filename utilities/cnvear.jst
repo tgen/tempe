@@ -26,7 +26,11 @@
   cmd: |
     
     cnvear.py \
-      --file-probes {{ constants.tempe.fish_probe_locations }}  \
+      {% if studyDisease == "Multiple Myeloma" | default(false) %}
+      --file-probes {{ constants.tempe.fish_probe_locations }} \
+      {% else %}
+      --file-probes {{ constants.tempe.cnvear_locations }} \
+      {% endif %}
       --file-segments {{ input_seg }} \
       --input-copy-number-space 'LOG2' \
       --output-copy-number-space 'LOG2' \
