@@ -44,6 +44,7 @@
       --targets "{{ temp_dir }}/{{ loop.index }}.bed" \
       --ploidy 2 \
       --min-repeat-entropy 1 \
+      --skip-coverage 10000 \
       > "{{ temp_dir }}/{{ loop.index }}.vcf"
 
 {% endfor %}
