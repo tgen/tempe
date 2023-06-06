@@ -93,7 +93,7 @@
       --outfile "{{ sample.name }}.cvo.tfrecord.gz"
 
 {% set read_bins = [0, 500000000, 1000000000, 2000000000, 4000000000, 8000000000] %}
-{% set memory_bins = ['8G','16G','24G','32G','40G'] %}
+{% set memory_bins = ['16G','24G','32G','40G','48G'] %}
 
 - name: deepvariant_postprocess_variants_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, deepvariant, {{ sample.name }}]
