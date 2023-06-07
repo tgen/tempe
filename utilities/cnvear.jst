@@ -14,7 +14,11 @@
   tags: [{{ sample_or_pair.gltype }}, cnvear, {{ sample_or_pair.name }}]
   input:
     - {{ input_seg }}
+    {% if studyDisease == "Multiple Myeloma" | default(false) %}
     - {{ constants.tempe.fish_probe_locations }}
+    {% else %}
+    - {{ constants.tempe.cnvear_locations }}
+    {% endif %}
   output:
     - {{ output_dir }}/{{ cnvear_output }}
   cpus: 1
