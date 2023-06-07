@@ -46,8 +46,8 @@ constants:
       container: quay.io/biocontainers/freebayes:1.3.6--h6f59eb7_3
       digest: 2f782d0d87c6c30097fd39694de3c4a52e840681dc27dd4cf3f87526b13abbba
     gatk:
-      container: quay.io/biocontainers/gatk4:4.4.0.0--py36hdfd78af_0
-      digest: 31fd0f00431b92ab4a59906e1959b9cfea346e2996de2f7a1e999774b43c2ba1
+      container: broadinstitute/gatk:4.4.0.0
+      digest: 044112d3d70603732d4a654ecaee33919cf9d45332d47268f5f1697b6ed558ed
     gridss:
       container: /home/tgenref/containers/gridss_gripss_2.13.2_2.3.5.sif
       digest: notarealdigest
