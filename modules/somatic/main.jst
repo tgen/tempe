@@ -31,7 +31,7 @@
                 {% if 'rna_samples' not in tumor %}
                    {% do tumor.update({'rna_samples': []}) %}
                 {% endif %}
-                {% do tumor.rna_samples.append({'rna_name': rna.name}) %}
+                {% do tumor.rna_samples.append(rna) %}
            {% endfor %}
         {% endif %}
 
@@ -53,7 +53,7 @@
                 {% if 'rna_samples' not in tumor %}
                    {% do tumor.update({'rna_samples': []}) %}
                 {% endif %}
-                {% do tumor.rna_samples.append({'rna_name': rna.name}) %}
+                {% do tumor.rna_samples.append(rna) %}
            {% endfor %}
         {% endif %}
 
@@ -68,7 +68,7 @@
                 {% if 'rna_samples' not in tumor %}
                    {% do tumor.update({'rna_samples': []}) %}
                 {% endif %}
-                {% do tumor.rna_samples.append({'rna_name': rna.name}) %}
+                {% do tumor.rna_samples.append(rna) %}
            {% endfor %}
         {% endif %}
 
