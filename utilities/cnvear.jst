@@ -8,7 +8,11 @@
 
 {% set output_dir %}{{ input_seg | dirname }}{% endset %}
 {% set cnvear_output %}{{ seg_prefix | basename }}.cnvear.tsv{% endset %}
-{% set config_sex %}{{ sex|default("Female") }}{% endset %}
+{% if sex is defined and sex in ['Female','female','Male','male'] %}
+{% set config_sex %}{{ sex }}{% endset %}
+{% else %}
+{% set config_sex %}Female{% endset %}
+{% endif %}
 
 - name: cnvear_{{ input_tool | lower }}_{{ sample_or_pair.name }}_{{ aligner }}
   tags: [{{ sample_or_pair.gltype }}, cnvear, {{ sample_or_pair.name }}]
