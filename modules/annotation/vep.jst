@@ -7,7 +7,7 @@
     - {{ constants.tempe.vep_data }}
     - {{ constants.tempe.reference_fasta }}
   output: {{ final_vcf_prefix }}.vep.full.vcf
-  walltime: "8:00:00"
+  walltime: "12:00:00"
   cpus: 4
   mem: 8G
   queue_preset: "DEFAULT"
@@ -53,7 +53,7 @@
   output:
     - {{ final_vcf_prefix }}.vep.full.vcf.gz
     - {{ final_vcf_prefix }}.vep.full.vcf.gz.tbi
-  walltime: "8:00:00"
+  walltime: "12:00:00"
   cpus: 4
   mem: 8G
   queue_preset: "DEFAULT"
