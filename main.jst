@@ -34,6 +34,11 @@
     {% set debug = False %}
 {% endif %}
 
+{# Setting strict to true will cause the tumor - normal pairings to be assayCode matched #}
+{% if strict is not defined %}
+    {% set strict = false %}
+{% endif %}
+
 {# Tasks contains switches for toggling many of the features #}
 {% if tasks is not defined %}
     {% set tasks = {} %}
