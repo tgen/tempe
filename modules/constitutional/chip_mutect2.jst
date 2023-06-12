@@ -7,6 +7,7 @@
 {%- set results_dir %}{{ sample.gltype }}/chip_calls/mutect2/{{ sample.name }}_{{ aligner }}{% endset %}
 {%- set temp_vcf %}{{ temp_dir }}/{{ sample.name }}.mutect2.chip.temp.vcf.gz{% endset %}
 {%- set all_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.mutect2.chip.all.vcf.gz{% endset %}
+{%- set pass_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.mutect2.chip.pass.vcf.gz{% endset %}
 
 {% for batch in constants.tempe.calling_intervals %}
 - name: chip_mutect2_{{ sample.name }}_{{ aligner }}_{{ loop.index }}
@@ -304,14 +305,39 @@
     
     bcftools index --tbi --force "{{ all_vcf }}"
 
+    bcftools filter \
+      --include 'FORMAT/DP>=100 &&
+        FORMAT/AD >=3 &&
+        FORMAT/AF < 0.4 && 
+        FORMAT/F1R2 > 1 && 
+        FORMAT/F2R1 >= 1 &&
+        (FORMAT/DP * FORMAT/AF)>=8 &&
+        INFO/MMQ >= 45 &&
+        INFO/MBQ >= 30 &&
+        TYPE="snps"' \
+      {{ all_vcf }} | \
+    bcftools filter \
+      --output-type z \
+      --exclude '(FILTER ~ "base_qual" || 
+        FILTER ~ "contamination" || 
+        FILTER ~ "map_qual" || 
+        FILTER ~ "multiallelic" || 
+        FILTER ~ "panel_of_normals" || 
+        FILTER ~ "slippage" || 
+        FILTER ~ "strand_bias" || 
+        FILTER ~ "strict_strand")' \
+      --output {{ pass_vcf }} \
+      -
+    
+    bcftools index --tbi --force "{{ pass_vcf }}"
 
-{{- annotate_vcfs(sample, temp_dir, results_dir, all_vcf, taskPrefix, aligner, 'mutect2', 'constitutional') }}
+{{- annotate_vcfs(sample, temp_dir, results_dir, pass_vcf, taskPrefix, aligner, 'mutect2', 'constitutional') }}
 
 {# We require the topmed and gnomad_genome annotations for chip filtering to work #}
 {% if tasks[taskPrefix+"_constitutional_annotate_vcfs_bcftools_topmed"]|default(false) and tasks[taskPrefix+"_constitutional_annotate_vcfs_bcftools_gnomad_genome"]|default(false) %}
 {% if tasks[taskPrefix+"_constitutional_annotate_vcfs_vep"]|default(false) %}
 
-{% set annotated_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.mutect2.chip.all.db.vep.pick.vcf.gz{% endset %}
+{% set annotated_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.mutect2.chip.pass.db.vep.pick.vcf.gz{% endset %}
 {% set filtered_annot_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.mutect2.chip.flt.db.vep.pick.vcf.gz{% endset %}
 {% set final_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.mutect2.chip.final.vcf.gz{% endset %}
 
@@ -348,16 +374,8 @@
     
     bcftools filter \
         --output-type z \
-        --include 'FORMAT/DP>=100 &&
-        FORMAT/AD >=3 &&
-        FORMAT/AF < 0.4 && 
-        FORMAT/F1R2 > 1 && 
-        FORMAT/F2R1 >= 1  &&
-        (FORMAT/DP * FORMAT/AF)>=8 &&
+        --include '(TOPMED_AC < 100 || TOPMED_AC = ".") && 
         (GNOMAD_GENOME_AC < 100 || GNOMAD_GENOME_AC  = ".") && 
-        (TOPMED_AC < 100 || TOPMED_AC = ".") && 
-        INFO/MMQ >= 45 &&
-        INFO/MBQ >= 30 &&
         (INFO/CSQ ~ "splice_acceptor_variant" ||
         INFO/CSQ ~ "splice_donor_variant" ||
         INFO/CSQ ~ "start_lost" ||
@@ -371,26 +389,10 @@
         INFO/CSQ ~ "inframe_insertion" ||
         INFO/CSQ ~ "disruptive_inframe_insertion" ||
         INFO/CSQ ~ "inframe_deletion" ||
-        INFO/CSQ ~ "disruptive_inframe_deletion") &&
-        TYPE="snps"' \
-        --output {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.mutect2.chip_annot.flt.vcf.gz \
+        INFO/CSQ ~ "disruptive_inframe_deletion")' \
+        --output {{ filtered_annot_vcf }} \
         {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.mutect2.chip_annot.vcf.gz
     
-    bcftools index --tbi --force {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.mutect2.chip_annot.flt.vcf.gz
-
-    bcftools filter \
-        --output-type z \
-        --exclude '(FILTER ~ "base_qual" || 
-        FILTER ~ "contamination" || 
-        FILTER ~ "map_qual" || 
-        FILTER ~ "multiallelic" || 
-        FILTER ~ "panel_of_normals" || 
-        FILTER ~ "slippage" || 
-        FILTER ~ "strand_bias" || 
-        FILTER ~ "strict_strand")' \
-        --output {{ filtered_annot_vcf }} \
-        {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.mutect2.chip_annot.flt.vcf.gz
-
     bcftools index --tbi --force {{ filtered_annot_vcf }}
 
     bcftools view \
