@@ -288,6 +288,8 @@
   output:
     - {{ all_vcf }}
     - {{ all_vcf }}.tbi
+    - {{ pass_vcf }}
+    - {{ pass_vcf }}.tbi
   cpu: 1
   mem: 4G
   queue_preset: "DEFAULT"
