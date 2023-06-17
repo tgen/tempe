@@ -1,3 +1,5 @@
+{% from 'utilities/remove_files.jst' import remove_files with context %}
+
 {% macro msisensor_pro(pair, normal_bam, tumor_bam, aligner) %}
 
 {% set temp_dir %}temp/{{ pair.gltype }}/metrics/msisensor_pro/{{ pair.name }}_{{ aligner }}{% endset %}
@@ -80,5 +82,9 @@
         -o {{ temp_dir }}/{{ pair.name }}_msisensor_pro_results
 
     mv {{ temp_dir }}/{{ pair.name }}_msisensor_pro_results {{ results_dir }}
+
+{% set task %}msisensor_pro_{{ pair.name }}_{{ aligner }}{% endset %}
+{% set directory %}{{ temp_dir }}{% endset %}
+{{- remove_files(directory,none,task) }}
 
 {% endmacro %}
