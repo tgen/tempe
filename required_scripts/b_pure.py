@@ -89,7 +89,7 @@ def run(args):
     logger.info(f'Input Arguments: {command}')
 
     if args.seg_res:
-        if args.seg_res.lower() == ('high' or 'low'):
+        if args.seg_res.lower() in ['high', 'low']:
             seg_resolution = 'PURITY_' + args.seg_res.upper() + '_RES'
 
         else:
