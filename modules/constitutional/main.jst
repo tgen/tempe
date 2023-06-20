@@ -1,3 +1,4 @@
+{% from 'utilities/prepare_tumor_only.jst' import prepare_tumor_only with context %}
 {% from 'modules/constitutional/gatk_haplotypecallergvcf.jst' import haplotypecallergvcf with context %}
 {% from 'modules/constitutional/gatk_genotypegvcf.jst' import genotypegvcf with context %}
 {% from 'modules/constitutional/freebayes.jst' import freebayes with context %}
@@ -17,6 +18,7 @@
 {%- macro constitutional_variant_calling(samples) %}
 
 {% set normSamples = {} %}
+{% set pairedNormSamples = {} %}
 
 {% if controlDataFiles is defined %}
 {% for file in controlDataFiles %}
@@ -35,6 +37,16 @@
 {% endfor %}
 {% endif %}
 
+{%- for sample in samples.values() if sample.gltype in ('exome', 'genome') and sample.subGroup|lower == 'constitutional' %}
+    {% for normal in normSamples.values() if normal.assayCode == sample.assayCode %}
+        {% set name %}{{ normal.name }}{% endset %}
+        {% if name not in pairedNormSamples %}
+            {% do pairedNormSamples.update({name: {}}) %}
+            {% do pairedNormSamples[name].update(normal) %}
+            {{- prepare_tumor_only(normal) }}
+        {% endif %}
+    {% endfor %}
+{% endfor %}
 
 {%- for sample in samples.values() if sample.gltype in ('exome', 'genome') %}
 
