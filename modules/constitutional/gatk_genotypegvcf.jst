@@ -5,7 +5,7 @@
 {%- macro genotypegvcf(sample, aligner='bwa', taskPrefix='Genome') %}
 
 {%- set bam %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
-{%- set temp_dir %}temp/{{ sample.gltype }}/constitutional_variant_calls/haplotypecaller/{{ sample.name }}_{{ aligner }}{% endset %}
+{%- set temp_dir %}temp/{{ sample.gltype }}/constitutional_variant_calls/genotypegvcf/{{ sample.name }}_{{ aligner }}{% endset %}
 {%- set results_dir %}{{ sample.gltype }}/constitutional_variant_calls/haplotypecaller/{{ sample.name }}_{{ aligner }}{% endset %}
 {%- set all_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.hc.all.vcf.gz{% endset %}
 {%- set pass_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.hc.pass.vcf.gz{% endset %}
@@ -177,6 +177,11 @@
 
     bcftools index --tbi --force "{{ pass_vcf }}"
 
+
+{# Remove the remaining files #}
+{% set directory %}{{ temp_dir }}{% endset %}
+{% set task %}haplotypecaller_bcftools_filter_variants_{{ sample.name }}_{{ aligner }}{% endset %}
+{{- remove_files(directory,none,task) }}
 
 {{- annotate_vcfs(sample, temp_dir, results_dir, pass_vcf, taskPrefix, aligner, 'hc', 'constitutional') }}
 {{- vcf_stats(pass_vcf, results_dir) }}
