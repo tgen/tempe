@@ -263,7 +263,7 @@
     mkdir -p {{ results_dir }}
     mkdir -p {{ temp_dir }}/temp_filter
     
-    {#Changed max-alt-allele-count from 2 to 1#}
+    {# Changed max-alt-allele-count from 2 to 1 #}
     gatk FilterMutectCalls \
       --tmp-dir {{ temp_dir }}/temp_filter/ \
       --java-options "-Xmx7G" \
@@ -281,6 +281,7 @@
 
 - name: chip_mutect2_filter_variants_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype }}, chip, snp_indel_caller, gatk_mutect2, {{ sample.name }}]
+  reset: predecessors
   input:
     - {{ temp_vcf }}
     - {{ temp_vcf }}.tbi
