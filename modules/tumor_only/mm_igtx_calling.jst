@@ -153,6 +153,7 @@
     - {{ constants.tempe.bwa_mem2_index }}
   output:
     - {{ results_dir }}/{{ tumor.name }}_Trinity_All_Clusters_sorted.bam
+    - {{ results_dir }}/{{ tumor.name }}_Trinity_All_Clusters_sorted.bam.bai
     - {{ temp_dir }}/{{ tumor.name }}_assembled_fastqs.tar.gz
   walltime: "24:00:00"
   cpus: 4
@@ -259,6 +260,9 @@
       samtools index -@ 4 {{ results_dir }}/{{ tumor.name }}_Trinity_All_Clusters_sorted.bam
 
       tar -czf {{ temp_dir }}/{{ tumor.name }}_assembled_fastqs.tar.gz {{ temp_dir }}/*.fastq.gz
+    else
+      touch {{ results_dir }}/{{ tumor.name }}_Trinity_All_Clusters_sorted.bam
+      touch {{ results_dir }}/{{ tumor.name }}_Trinity_All_Clusters_sorted.bam.bai
     fi
 
 
@@ -266,6 +270,7 @@
   tags: [{{ tumor.gltype }}, structural_caller, gammit, {{ tumor.name }}]
   input:
     - {{ results_dir }}/{{ tumor.name }}_Trinity_All_Clusters_sorted.bam
+    - {{ results_dir }}/{{ tumor.name }}_Trinity_All_Clusters_sorted.bam.bai
     - {{ temp_dir }}/{{ tumor.name }}_assembled_fastqs.tar.gz
   output:
     - {{ results_dir }}/{{ tumor.name }}_FilteredContigResults.txt
@@ -309,14 +314,12 @@
         --bam_path {{ results_dir }}
 
       mv {{ results_dir }}/DEX_IgTx_GA_Summary.txt {{ results_dir }}/{{ tumor.name }}_DEX_IgTx_GA_Summary.txt
-      if [ -f {{ results_dir }}/ContigResults.txt ]
-      then
-        mv {{ results_dir }}/ContigResults.txt {{ results_dir }}/{{ tumor.name }}_ContigResults.txt
-      fi
-      if [ -f {{ results_dir }}/FilteredContigResults.txt ]
-      then
-        mv {{ results_dir }}/FilteredContigResults.txt {{ results_dir }}/{{ tumor.name }}_FilteredContigResults.txt
-      fi
+      [ -f {{ results_dir }}/ContigResults.txt ] && \
+        mv {{ results_dir }}/ContigResults.txt {{ results_dir }}/{{ tumor.name }}_ContigResults.txt || \
+        touch {{ results_dir }}/{{ tumor.name }}_ContigResults.txt
+      [ -f {{ results_dir }}/FilteredContigResults.txt ] && \
+        mv {{ results_dir }}/FilteredContigResults.txt {{ results_dir }}/{{ tumor.name }}_FilteredContigResults.txt || \
+        touch {{ results_dir }}/{{ tumor.name }}_FilteredContigResults.txt
     fi
 
     if [ ! -f {{ results_dir }}/{{ tumor.name }}_DEX_IgTx_GA_Summary.txt ]
@@ -324,10 +327,6 @@
       echo "Specimen" > {{ results_dir }}/{{ tumor.name }}_DEX_IgTx_GA_Summary.txt
       echo "{{ tumor.name }}" >> {{ results_dir }}/{{ tumor.name }}_DEX_IgTx_GA_Summary.txt
     fi
-    {# Touching output files to ensure their existence, even if empty #}
-    touch {{ results_dir }}/{{ tumor.name }}_ContigResults.txt
-    touch {{ results_dir }}/{{ tumor.name }}_FilteredContigResults.txt
-    touch {{ results_dir }}/{{ tumor.name }}_Trinity_All_Clusters_sorted.bam
 
 
 {% endmacro %}
