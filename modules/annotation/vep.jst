@@ -7,7 +7,7 @@
     - {{ constants.tempe.vep_data }}
     - {{ constants.tempe.reference_fasta }}
   output: {{ final_vcf_prefix }}.vep.full.vcf
-  walltime: "12:00:00"
+  walltime: "8:00:00"
   cpus: 4
   mem: 8G
   queue_preset: "DEFAULT"
@@ -22,11 +22,11 @@
         --input_file "{{ input_vcf }}" \
         --format vcf \
         --output_file "{{ final_vcf_prefix }}.vep.full.vcf" \
+        --stats_file "{{ final_vcf_prefix }}.vep.full.stats.html" \
         --vcf \
         --vcf_info_field CSQ \
         --species homo_sapiens \
         --force_overwrite \
-        --no_stats \
         --cache \
         --dir_cache "{{ constants.tempe.vep_data }}" \
         --cache_version {{ constants.tempe.gene_model_version }} \
@@ -53,7 +53,7 @@
   output:
     - {{ final_vcf_prefix }}.vep.full.vcf.gz
     - {{ final_vcf_prefix }}.vep.full.vcf.gz.tbi
-  walltime: "12:00:00"
+  walltime: "8:00:00"
   cpus: 4
   mem: 8G
   queue_preset: "DEFAULT"
@@ -97,11 +97,11 @@
         --input_file "{{ input_vcf }}" \
         --format vcf \
         --output_file "{{ final_vcf_prefix }}.vep.pick.vcf" \
+        --stats_file "{{ final_vcf_prefix }}.vep.pick.stats.html" \
         --vcf \
         --vcf_info_field CSQ \
         --species homo_sapiens \
         --force_overwrite \
-        --no_stats \
         --cache \
         --dir_cache "{{ constants.tempe.vep_data }}" \
         --cache_version {{ constants.tempe.gene_model_version }} \
