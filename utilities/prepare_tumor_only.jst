@@ -33,8 +33,11 @@
     so we end up saving time if the files exist already
     #}
     {% for key, value in normal.items() %}
-    {% if key not in ['assayCode','name','rgsm'] %}
-    cp {{ value }} {{ tumor_only_temp }}
+    {% if key not in ['assayCode','name','rgsm','pathToBai'] %}
+    rsync --update {{ value }} {{ tumor_only_temp }}
+    {% if key == 'pathToBam' %}
+    rsync --update {{ value }}.bai {{ tumor_only_temp }}
+    {% endif %}
     {% endif %}
     {% endfor %}
 
