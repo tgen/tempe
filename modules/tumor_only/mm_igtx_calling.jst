@@ -297,7 +297,7 @@
     {% endfor %}
     EOF
     
-    if [ -f {{ results_dir }}/{{ tumor.name }}_Trinity_All_Clusters_sorted.bam ]
+    if [ -s {{ results_dir }}/{{ tumor.name }}_Trinity_All_Clusters_sorted.bam ]
     then
       tar -xzf {{ temp_dir }}/{{ tumor.name }}_assembled_fastqs.tar.gz
 
