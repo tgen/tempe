@@ -147,6 +147,7 @@
 
 - name: haplotypecaller_bcftools_filter_variants_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype}}, constitutional, genotype_hc_gvcf, gatk_GenotypeGVCFs, {{ sample.name }}]
+  reset: predecessors
   input:
     - {{ temp_dir }}/{{ sample.name }}.hc.fvt.vcf.gz
     {% if sample.gltype == 'exome' %}
