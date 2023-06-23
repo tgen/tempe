@@ -39,9 +39,13 @@
     {# We create an intersected bed that includes regions specifically from the probe region file. We keep #}
     {# original probe locations, but exclude regions that fall entirely outside of the input seg windows #}
     {% if studyDisease == "Multiple Myeloma" | default(false) %}
-    tail -n+2 {{ input_seg }} | cut -f2-4 | bedtools intersect -a {{ constants.tempe.fish_probe_locations }} -b stdin -wa > {{ output_dir }}/{{ cnvear_probes }}
+    tail -n+2 {{ input_seg }} | cut -f2-4 | \
+    bedtools intersect -a {{ constants.tempe.fish_probe_locations }} -b stdin -wa | \
+    sort -k1,1V -k2,2n -k3,3n -u > {{ output_dir }}/{{ cnvear_probes }}
     {% else %}
-    tail -n+2 {{ input_seg }} | cut -f2-4 | bedtools intersect -a {{ constants.tempe.cnvear_locations }} -b stdin -wa > {{ output_dir }}/{{ cnvear_probes }}
+    tail -n+2 {{ input_seg }} | cut -f2-4 | \
+    bedtools intersect -a {{ constants.tempe.cnvear_locations }} -b stdin -wa | \
+    sort -k1,1V -k2,2n -k3,3n -u > {{ output_dir }}/{{ cnvear_probes }}
     {% endif %}
     
     cnvear.py \
