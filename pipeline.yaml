@@ -31,8 +31,8 @@ constants:
       container: google/deepvariant:1.4.0-gpu
       digest: 15ce18108b7d52e3a124b798bffddbe02af4b0c1df52dc9055cf9ba924e630a7
     dle:
-      container: /home/tgenref/containers/dle_0.1.5.sif
-      digest: notarealdigest
+      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/discordant_loci_extractor:0.1.5-23061612
+      digest: 57f4a7151bbc3b6aa4103f696efa32d2b415a56ae635a874517709bc4b8fe030
     expansion_hunter:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/expansion_hunter:4.0.2-23052209
       digest: fcc47f20135fddc0f556b8273863d5c3fad4cd9688e1b3e6d5a3ea7c66b50107
@@ -73,8 +73,8 @@ constants:
       container: /home/tgenref/containers/manta_v1.6.0-tgen.sif
       digest: notarealdigest
     msisensor:
-      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/msisensor:1.1.a
-      digest: 91da19fc70e7b51bfe7868531d79e121579e2741b2ef5acf1575ca5384254a3e
+      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/msisensor:1.1.a-23061614
+      digest: d72fb7fc2c1a03f4302b75bc47e449c98d70f296ea237deb8de860b6e9eafda5
     mutation_burden:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/mutation-burden:1.2.4-23051714
       digest: fcb0e12a1402ac4153633b9f276a5c8906c6c7fc6f8e61d79392d3b3b105c2c9
@@ -82,8 +82,8 @@ constants:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/octopus:0.7.4-v1
       digest: 4bb49879ead70887250836ce499665eadc1de90cbdfcb7906eea46cdd50ed9f2
     pairoscope:
-      container: /home/tgenref/containers/pairoscope_0.4.2.sif
-      digest: notarealdigest
+      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/pairoscope:0.4.2-23062208
+      digest: efbf18b3b379fb95daa041116444eac2d4b675864f357bf3f95d0b6e8414227e
     python3:
       container: python:3.7.2-slim
       digest: 78320634b63efb52f591a7d69d5a50076ce76e7b72c4b45c1e4ddad90c39870a
@@ -115,8 +115,8 @@ constants:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/sigprofiler:0.0.24-23060209
       digest: 99412ce71dc012154034ec9397cf803a4977a4fd9645ceea6fcf4268a909d19b
     snpsniffer:
-      container: ghcr.io/tgen/jetstream_containers/snpsniffer:7.0.0
-      digest: cafd6b4b27614bf7a5460dd9812bdf5bf7bdc8c8971f1f0fa6d0b9e7b8a6dc9a
+      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/snpsniffer:7.0.0-23062312
+      digest: b0d4fabde7e1066f2f149472c30e3be7957b2894e9f7fbd400c5861cffb21b06
     star_fusion:
       container: trinityctat/starfusion:1.11.0
       digest: a3f1bfbb3a7a3b501ecdd1cec4325d00516b73b504afac274d351d20deee44e4
@@ -127,14 +127,14 @@ constants:
       container: quay.io/biocontainers/subread:2.0.0--hed695b0_0
       digest: 97b2f544c6a8a1b209febcc23616fd77c46bdbb1d4f3005012456a380ca43d99
     transparser:
-      container: /home/tgenref/containers/transparser_1.0.1.sif
-      digest: notarealdigest
+      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/transparser:1.0.1-23061312
+      digest: 309eb8aedb3f7f2eaa164f6612781c130e14b7924ec73c2f23e5bcfdbc6f03bc
     vardict:
       container: quay.io/biocontainers/vardict-java:1.7.0--0
       digest: c9ed2254dc3b0b215fa30e1344990d798439fea47cfa7b2c22e089e1290b926b
     vcfmerger:
-      container: ghcr.io/tgen/jetstream_containers/vcfmerger2:0.9.4
-      digest: 54b068b9dde256e0617379bc772268ff291f570fef68d495a540a7d49b2f155a
+      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/vcfmerger2:0.9.4-23062312
+      digest: f08463b5c163b5b96a3d5a790087b4882b87159a8ba760fffd23c2efbfb9b3c9
     vep:
       container: ensemblorg/ensembl-vep:release_107.0
       digest: f252df581820048dbc90229d38fbc7b94738743bd9ebc23ffcc533245e9ab0e5
