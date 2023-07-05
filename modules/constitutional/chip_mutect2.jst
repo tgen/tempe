@@ -1,6 +1,17 @@
 {% from 'modules/annotation/main.jst' import annotate_vcfs with context %}
 
-{% macro chip_mutect2(sample, aligner='bwa', taskPrefix='Exome') %}
+{% macro chip_mutect2(sample, aligner='bwa', taskPrefix='Exome', control=none) %}
+
+{#
+We should use a PON if provided, else default to using the 1000g PON
+Task control to ensure
+#}
+
+{% if control is not none %}
+{%- set panel_of_normals %}{{ control.mutect2Pon }}{% endset %}
+{% else %}
+{%- set panel_of_normals %}{{ constants.tempe.somatic_GRCh38_1000g_pon }}{% endset %}
+{% endif %}
 
 {%- set normal_bam %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
 {%- set temp_dir %}temp/{{ sample.gltype }}/chip_calls/mutect2/{{ sample.name }}_{{ aligner }}{% endset %}
@@ -45,7 +56,7 @@
       --tmp-dir {{ temp_dir }}/temp_mutect2_{{ loop.index }}/ \
       --reference {{ constants.tempe.reference_fasta }} \
       --germline-resource {{ constants.tempe.gnomad_genome_mutect_germlinereference }} \
-      --panel-of-normals {{ constants.tempe.somatic_GRCh38_1000g_pon }} \
+      --panel-of-normals {{ panel_of_normals }} \
       --f1r2-tar-gz {{ temp_dir }}/{{ loop.index }}.mutect2.chip.f1r2.tar.gz \
       {% for interval in batch %}
        -L "{{ interval.contig }}:{{ interval.start }}-{{ interval.stop }}" \
