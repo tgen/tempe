@@ -60,7 +60,7 @@
         {% set taskPrefix = 'Exome' %}
         
         {%- if sample.subGroup|lower != 'tumor' %}
-            {%- if tasks[taskPrefix+"_constitutional_snp_indel_caller_mutect2"]|default(true) %}
+            {%- if tasks[taskPrefix+"_constitutional_snp_indel_caller_chip_mutect2"]|default(false) %}
                 {{- chip_mutect2(sample, aligner, taskPrefix=taskPrefix) }}
             {% endif %}
         {% endif %}
