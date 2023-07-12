@@ -16,6 +16,16 @@ import logging
 from subprocess import call
 
 log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
+# create a generic formatter
+formatter = logging.Formatter('%(levelname)s %(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+
+# create stream handler for printing to standard output
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+
+# add the handler to the logger ; Allow to manage differently and customize some logs
+log.addHandler(stream_handler)
 
 # Variables
 
