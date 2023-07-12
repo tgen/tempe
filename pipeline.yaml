@@ -130,8 +130,8 @@ constants:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/transparser:1.0.1-23061312
       digest: 309eb8aedb3f7f2eaa164f6612781c130e14b7924ec73c2f23e5bcfdbc6f03bc
     vardict:
-      container: quay.io/biocontainers/vardict-java:1.7.0--0
-      digest: c9ed2254dc3b0b215fa30e1344990d798439fea47cfa7b2c22e089e1290b926b
+      container: quay.io/biocontainers/vardict-java:1.8.3--hdfd78af_0 
+      digest: 4069c082c97470bce4a07f228dbf74b6ea3fc5c4eaa93ba76d2826a496ca3c44 
     vcfmerger:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/vcfmerger2:0.9.4-23062312
       digest: f08463b5c163b5b96a3d5a790087b4882b87159a8ba760fffd23c2efbfb9b3c9
