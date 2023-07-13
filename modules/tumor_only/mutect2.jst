@@ -72,6 +72,7 @@
 - name: tumor_only_mutect2_GetPileupSummaries_{{ pair.name }}_{{ aligner }}_{{ loop.index }}
   tags: [{{ pair.gltype }}, tumor_only, snp_indel_caller, gatk_mutect2, {{ pair.name }}]
   input:
+    - {{ normal_bam }}
     - {{ tumor_bam }}
     - {{ constants.tempe.reference_fasta }}
     - {{ constants.tempe.gnomad_genome_mutect_contamination }}
