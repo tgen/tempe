@@ -31,8 +31,8 @@ constants:
       container: google/deepvariant:1.4.0-gpu
       digest: 15ce18108b7d52e3a124b798bffddbe02af4b0c1df52dc9055cf9ba924e630a7
     dle:
-      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/discordant_loci_extractor:0.1.5-23063015
-      digest: 57f4a7151bbc3b6aa4103f696efa32d2b415a56ae635a874517709bc4b8fe030
+      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/discordant_loci_extractor:0.1.5-23071417
+      digest: d2924ef4a9e2549ce5b36e604e6476280a82e46f3c3d6695cca74dd2f0c09151
     expansion_hunter:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/expansion_hunter:4.0.2-23060916
       digest: fcc47f20135fddc0f556b8273863d5c3fad4cd9688e1b3e6d5a3ea7c66b50107
@@ -115,8 +115,8 @@ constants:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/sigprofiler:0.0.24-23063010
       digest: 99412ce71dc012154034ec9397cf803a4977a4fd9645ceea6fcf4268a909d19b
     snpsniffer:
-      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/snpsniffer:7.0.0-23063010
-      digest: b0d4fabde7e1066f2f149472c30e3be7957b2894e9f7fbd400c5861cffb21b06
+      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/snpsniffer:7.0.0-23071417
+      digest: 4afc0ade2594c13b1e8cdac8f6d3e9f8e46ecaabf1d22ce816cb30846736f975
     star_fusion:
       container: trinityctat/starfusion:1.11.0
       digest: a3f1bfbb3a7a3b501ecdd1cec4325d00516b73b504afac274d351d20deee44e4
@@ -130,11 +130,11 @@ constants:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/transparser:1.0.1-23063010
       digest: 309eb8aedb3f7f2eaa164f6612781c130e14b7924ec73c2f23e5bcfdbc6f03bc
     vardict:
-      container: quay.io/biocontainers/vardict-java:1.8.3--hdfd78af_0 
-      digest: 4069c082c97470bce4a07f228dbf74b6ea3fc5c4eaa93ba76d2826a496ca3c44 
+      container: quay.io/biocontainers/vardict-java:1.8.3--hdfd78af_0
+      digest: 4069c082c97470bce4a07f228dbf74b6ea3fc5c4eaa93ba76d2826a496ca3c44
     vcfmerger:
-      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/vcfmerger2:0.9.4-23063010
-      digest: f08463b5c163b5b96a3d5a790087b4882b87159a8ba760fffd23c2efbfb9b3c9
+      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/vcfmerger2:0.9.4-23071417
+      digest: f66eb14d4aebfd117150d49bee9e439cbc05872d2741e8ead0d907fa5f57ada6
     vep:
       container: ensemblorg/ensembl-vep:release_107.0
       digest: f252df581820048dbc90229d38fbc7b94738743bd9ebc23ffcc533245e9ab0e5
