@@ -115,8 +115,8 @@ constants:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/sigprofiler:0.0.24-23063010
       digest: 99412ce71dc012154034ec9397cf803a4977a4fd9645ceea6fcf4268a909d19b
     snpsniffer:
-      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/snpsniffer:7.0.0-23071712
-      digest: 57e0ba2fae3d6591a7958accee524440df95e24f11d196dca8afbca67655efb0
+      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/snpsniffer:7.0.0-23071714
+      digest: ee7033dec601502235cfc7d11f7055a3a5056ced468cc9b87e65073cab236979 
     star_fusion:
       container: trinityctat/starfusion:1.11.0
       digest: a3f1bfbb3a7a3b501ecdd1cec4325d00516b73b504afac274d351d20deee44e4
@@ -133,8 +133,8 @@ constants:
       container: quay.io/biocontainers/vardict-java:1.8.3--hdfd78af_0
       digest: 4069c082c97470bce4a07f228dbf74b6ea3fc5c4eaa93ba76d2826a496ca3c44
     vcfmerger:
-      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/vcfmerger2:0.9.4-23071417
-      digest: f66eb14d4aebfd117150d49bee9e439cbc05872d2741e8ead0d907fa5f57ada6
+      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/vcfmerger2:0.9.4-23071716
+      digest: 4edcf4665b67e7fedd4047f7f489f16115e1b8c40a4ff74468db016ae5a7ad9f
     vep:
       container: ensemblorg/ensembl-vep:release_107.0
       digest: f252df581820048dbc90229d38fbc7b94738743bd9ebc23ffcc533245e9ab0e5
