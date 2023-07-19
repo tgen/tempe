@@ -250,6 +250,18 @@
       --tags-to-revcomp Consensus \
       --output {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.uns.bam
 
+    fgbio -Xmx8g --compression 0 FilterConsensusReads \
+      --input {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.uns.bam \
+      --output /dev/stdout \ 
+      --ref {{ constants.tempe.reference_fasta }} \
+      --min-reads 1 \
+      --min-base-quality 45 \
+      --max-base-error-rate 0.2 | \
+      samtools sort \
+      --threads 10 \
+      -o {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.filtered.bam \
+      --write-index
+
     samtools sort \
       --threads 10 \
       -o {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam \
