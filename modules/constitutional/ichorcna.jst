@@ -175,10 +175,10 @@
     #' @param cores  Number of cores to use for EM. 
     #}
     cat <<EOF > {{ temp_dir }}/runIchorCNA.R
-    run_ichorCNA(tumor_wig = {{ wig }}, 
+    run_ichorCNA(tumor_wig = "{{ wig }}", 
             normal_wig = NULL, 
-            gcWig = ${EXTDATA}/gc_hg38_1000kb.wig, 
-            mapWig = ${EXTDATA}/map_hg38_1000kb.wig, 
+            gcWig = "${EXTDATA}/gc_hg38_1000kb.wig", 
+            mapWig = "${EXTDATA}/map_hg38_1000kb.wig", 
             repTimeWig = NULL, 
             normal_panel=NULL, 
             sex = NULL, 
@@ -187,11 +187,11 @@
             centromere = NULL, 
             minMapScore = 0.9, 
             flankLength = 1e5, 
-            normal= c(0.25,0.5,0.6,0.7,0.8,0.9), 
+            normal= "c(0.25,0.5,0.6,0.7,0.8,0.9)", 
             estimatePloidy = TRUE, 
             maxFracCNASubclone = 0.7,
             normal.init = "c(0.5, 0.5)", 
-            scStates = c(1,3), 
+            scStates = "c(1,3)", 
             scPenalty = 0.1, 
             normal2IgnoreSC = 1.0,
             coverage = NULL, 
