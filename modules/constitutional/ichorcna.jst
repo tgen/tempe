@@ -175,6 +175,7 @@
     #' @param cores  Number of cores to use for EM. 
     #}
     cat <<EOF > {{ temp_dir }}/runIchorCNA.R
+    library(ichorCNA)
     run_ichorCNA(tumor_wig = "{{ wig }}", 
             normal_wig = NULL, 
             gcWig = "${EXTDATA}/gc_hg38_1000kb.wig", 
@@ -220,7 +221,7 @@
             plotFileType = "pdf", 
             plotYLim = "c(-2,2)", 
             outDir = "{{ temp_dir }}", 
-            cores = 1)'
+            cores = 1)
     EOF
 
     Rscript {{ temp_dir }}/runIchorCNA.R
