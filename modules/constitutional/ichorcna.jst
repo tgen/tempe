@@ -94,10 +94,7 @@
     #}
     EXTDATA=$(Rscript <(echo "cat(system.file('extdata/', package='ichorCNA'))"))
 
-    {#
-    # The ichorCNA launcher script does not currently get installed with
-    # the rest of the package, so this path is hard coded in constants.yaml
-    #}
+    {# This is the old method
     runIchorCNA.R \
       --id "{{ sample.name}}.{{ aligner }}.ichorCNA" \
       --WIG "{{ wig }}" \
@@ -127,6 +124,106 @@
       --gcWig ${EXTDATA}/gc_hg38_1000kb.wig \
       --mapWig ${EXTDATA}/map_hg38_1000kb.wig \
       --centromere ${EXTDATA}/GRCh38.GCA_000001405.2_centromere_acen.txt
+    #}
+
+    {#
+    #' @param tumor_wig Path to tumor WIG file. Required.
+    #' @param normal_wig  Path to normal WIG file. 
+    #' @param gcWig  Path to GC-content WIG file; Required.
+    #' @param mapWig  Path to mappability score WIG file. 
+    #' @param repTimeWig  Path to replication timing WIG file. 
+    #' @param normal_panel  Median corrected depth from panel of normals. 
+    #' @param sex  User specified gender: male or female 
+    #' @param exons.bed  Path to bed file containing exon regions. 
+    #' @param id  Patient ID. 
+    #' @param centromere  File containing Centromere locations; if not provided then will use hg19 version from ichorCNA package. 
+    #' @param minMapScore  Include bins with a minimum mappability score of this value. 
+    #' @param flankLength  Length of region flanking centromere to remove. 
+    #' @param normal  Initial normal contamination; can be more than one value if additional normal initializations are desired. 
+    #' @param normal.init  Specific initialization of normal contamination for multiple samples. 
+    #' @param scStates  Subclonal states to consider. 
+    #' @param scPenalty  Penalty for subclonal state transitions, 0.1 penalizes subclonal states by ~10 percent. 
+    #' @param normal2IgnoreSC  Ignore subclonal analysis when normal proportion is greater than this value. 
+    #' @param coverage  PICARD sequencing coverage. 
+    #' @param likModel  Likelihood model to use: "t" or "gaussian". Use "gaussian" for faster runtimes. 
+    #' @param lambda  Initial Student's t precision; must contain 4 values (e.g. c(1500,1500,1500,1500)); if not provided then will automatically use based on variance of data. 
+    #' @param lambdaScaleHyperParam  Hyperparameter (scale) for Gamma prior on Student's-t precision. 
+    #' @param kappa  Initial state distribution")
+    #' @param ploidy  Initial tumour ploidy; can be more than one value if additional ploidy initializations are desired. 
+    #' @param maxCN  Total clonal CN states. 
+    #' @param estimateNormal  Estimate normal. 
+    #' @param estimateScPrevalence  Estimate subclonal prevalence. 
+    #' @param estimatePloidy  Estimate tumour ploidy. 
+    #' @param maxFracCNASubclone Exclude solutions with fraction of subclonal events greater than this value. 
+    #' @param maxFracGenomeSubclone Exclude solutions with subclonal genome fraction greater than this value. 
+    #' @param minSegmentBins Minimum number of bins for largest segment threshold required to estimate tumor fraction if below this threshold, then will be assigned zero tumor fraction.
+    #' @param altFracThreshold  Minimum proportion of bins altered required to estimate tumor fraction; if below this threshold, then will be assigned zero tumor fraction. 
+    #' @param chrNormalize  Specify chromosomes to normalize GC/mappability biases. 
+    #' @param chrTrain  Specify chromosomes to estimate params. 
+    #' @param chrs  Specify chromosomes to analyze. 
+    #' @param genomeBuild  Geome build.
+    #' @param genomeStyle  NCBI or UCSC chromosome naming convention; use UCSC if desired output is to have "chr" string. 
+    #' @param normalizeMaleX  If male, then normalize chrX by median. 
+    #' @param fracReadsInChrYForMale  Threshold for fraction of reads in chrY to assign as male. 
+    #' @param includeHOMD  If FALSE, then exclude HOMD state; Useful when using large bins (e.g. 1Mb). 
+    #' @param txnE  Self-transition probability; Increase to decrease number of segments. 
+    #' @param txnStrength  Transition pseudo-counts; Exponent should be the same as the number of decimal places of `txnE`. 
+    #' @param multSampleTxnStrength Strength of same state transition between multiple samples. 
+    #' @param plotFileType  File format for output plots. 
+    #' @param plotYLim  Ylim to use for chromosome plots. 
+    #' @param outDir  Output Directory.
+    #' @param cores  Number of cores to use for EM. 
+    #}
+    cat <<EOF > {{ temp_dir }}/runIchorCNA.R
+    run_ichorCNA(tumor_wig = {{ wig }}, 
+            normal_wig = NULL, 
+            gcWig = ${EXTDATA}/gc_hg38_1000kb.wig, 
+            mapWig = ${EXTDATA}/map_hg38_1000kb.wig, 
+            repTimeWig = NULL, 
+            normal_panel=NULL, 
+            sex = NULL, 
+            exons.bed=NULL, 
+            id = "{{ sample.name}}.{{ aligner }}.ichorCNA", 
+            centromere = NULL, 
+            minMapScore = 0.9, 
+            flankLength = 1e5, 
+            normal= c(0.25,0.5,0.6,0.7,0.8,0.9), 
+            estimatePloidy = TRUE, 
+            maxFracCNASubclone = 0.7,
+            normal.init = "c(0.5, 0.5)", 
+            scStates = c(1,3), 
+            scPenalty = 0.1, 
+            normal2IgnoreSC = 1.0,
+            coverage = NULL, 
+            likModel = "t", 
+            lambda = NULL, 
+            lambdaScaleHyperParam = 3,
+            kappa = 50, 
+            ploidy = "c(2,3)", 
+            maxCN = 7, 
+            estimateNormal = TRUE, 
+            estimateScPrevalence = TRUE, 
+            maxFracGenomeSubclone = 0.5, 
+            minSegmentBins = 50, 
+            altFracThreshold = 0.05,
+            chrNormalize = "c('chr1','chr2','chr3','chr4','chr5','chr6','chr7','chr8','chr9','chr10','chr11','chr12','chr13','chr14','chr15','chr16','chr17','chr18','chr19','chr20','chr21','chr22')", 
+            chrTrain = "c('chr1','chr2','chr3','chr4','chr5','chr6','chr7','chr8','chr9','chr10','chr11','chr12','chr13','chr14','chr15','chr16','chr17','chr18','chr19','chr20','chr21','chr22')", 
+            chrs = "c('chr1','chr2','chr3','chr4','chr5','chr6','chr7','chr8','chr9','chr10','chr11','chr12','chr13','chr14','chr15','chr16','chr17','chr18','chr19','chr20','chr21','chr22','chrX')",
+            genomeBuild = "hg38", 
+            genomeStyle = "UCSC", 
+            normalizeMaleX = FALSE, 
+            fracReadsInChrYForMale = 0.001,
+            includeHOMD = FALSE, 
+            txnE = 0.9999999, 
+            txnStrength = 1e7, 
+            multSampleTxnStrength = 1,
+            plotFileType = "pdf", 
+            plotYLim = "c(-2,2)", 
+            outDir = "{{ temp_dir }}", 
+            cores = 1)'
+    EOF
+
+    Rscript {{ temp_dir }}/runIchorCNA.R
 
     {# Creating json for stats2lims #}
     tumor_frac=$(grep "Tumor Fraction:" {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA.params.txt | awk '{ print $3 }')
