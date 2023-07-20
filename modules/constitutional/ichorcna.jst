@@ -243,13 +243,13 @@
     mv "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA.RData" "{{ results_dir }}/"
     mv "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA.seg.txt" "{{ results_dir }}/"
     mv "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA/{{ sample.name }}.{{ aligner }}.ichorCNA_bias.pdf" "{{ results_dir }}/"
-    mv "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA/{{ sample.name }}.{{ aligner }}.ichorCNA_correct.pdf" "{{ results_dir }}/"
     {% for contig in constants.tempe.calling_contigs %}
     {# Stopping at chrX #}
     {% if loop.index < 24 %}
     mv {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA/{{ sample.name }}.{{ aligner }}.ichorCNA_CNA_chr{{ contig.contig }}.pdf {{ results_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA_CNA_{{ contig.contig }}.pdf
     {% endif %}
     {% endfor %}
+    mv "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA/{{ sample.name }}.{{ aligner }}.ichorCNA_genomeWideCorrection.pdf" "{{ results_dir }}/"
     mv "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA/{{ sample.name }}.{{ aligner }}.ichorCNA_genomeWide_all_sols.pdf" "{{ results_dir }}/"
     mv "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA/{{ sample.name }}.{{ aligner }}.ichorCNA_genomeWide.pdf" "{{ results_dir }}/"
     mv "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.ichorCNA/{{ sample.name }}.{{ aligner }}.ichorCNA_tpdf.pdf" "{{ results_dir }}/"
