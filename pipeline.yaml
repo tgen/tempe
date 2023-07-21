@@ -127,14 +127,14 @@ constants:
       container: quay.io/biocontainers/subread:2.0.0--hed695b0_0
       digest: 97b2f544c6a8a1b209febcc23616fd77c46bdbb1d4f3005012456a380ca43d99
     transparser:
-      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/transparser:1.0.1-23063010
-      digest: 309eb8aedb3f7f2eaa164f6612781c130e14b7924ec73c2f23e5bcfdbc6f03bc
+      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/transparser:1.0.1-23072017
+      digest: 8266ddcc3a82248d3295df824f67c6d6447de08e0c2618b2576fd0b99ff33ed9
     vardict:
       container: quay.io/biocontainers/vardict-java:1.8.3--hdfd78af_0
       digest: 4069c082c97470bce4a07f228dbf74b6ea3fc5c4eaa93ba76d2826a496ca3c44
     vcfmerger:
-      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/vcfmerger2:0.9.4-23071822
-      digest: 1ab471bdc9833657c29082be9b939cdd9e2588d48ae4682be440b8d503c6477e
+      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/vcfmerger2:0.9.4-23072016
+      digest: 6c1d9f2be2af6b62e156016d56cfe9d6eb6be63bf3cc907f18f03ef0647ec038
     vep:
       container: ensemblorg/ensembl-vep:release_107.0
       digest: f252df581820048dbc90229d38fbc7b94738743bd9ebc23ffcc533245e9ab0e5
