@@ -112,6 +112,20 @@
 
 {% endfor %}
 
+{# mm_igtx_manta is an exclusion from the behavior of setting `strict` #}
+{% for pair in pairs %}
+    {% if pair.gltype in 'exome' %}
+        {% set taskPrefix = 'Exome' %}
+    {% elif pair.gltype in 'genome' %}
+        {% set taskPrefix = 'Genome' %}
+    {% endif %}
+    {% for aligner in pair.tumor.aligners %}
+        {% if tasks[taskPrefix+"_disease_specific_multiple_myeloma"]|default(false) %}
+            {{- mm_igtx_manta(pair, aligner) }}
+        {% endif %}
+    {% endfor %}
+{% endfor %}
+
 {% if strict and somatic_pairs | length > 0 %}
 
 {% else %}
@@ -133,10 +147,6 @@
 
         {% if tasks[taskPrefix+"_tumor_only_structural_caller_manta"]|default(false) %}
             {{- manta_tumor_only(pair, aligner) }}
-        {% endif %}
-
-        {% if tasks[taskPrefix+"_disease_specific_multiple_myeloma"]|default(false) %}
-            {{- mm_igtx_manta(pair, aligner) }}
         {% endif %}
 
         {% if tasks[taskPrefix+"_tumor_only_snp_indel_caller_strelka2"]|default(false) %}
