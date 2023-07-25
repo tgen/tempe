@@ -157,11 +157,6 @@
 ### Based on testing and getting most value from the approach I suggest using UMI correction with
 # single read family collapsing to maximize coverage and read accuracy
 
-#### This is the streamlined steps to produce such a result...
-
-##################################
-## Corrected UMIs - With Single Read Error Correction #}
-
 - name: fgbio_consensus_reads_{{ sample.name }}
   tags: [{{ sample.gltype }}, alignment, dna_alignment, {{ aligner }}, umi, {{ sample.name }}]
   reset: predecessors
@@ -194,21 +189,30 @@
       --min-map-q 20 \
       --output {{ temp_dir }}/{{ sample.rgsm }}_UMI_{{ aligner }}_gd.bam
 
-    {# Collapse single read families (review parameters) #}
-    fgbio --tmp-dir {{ temp_dir }}/fgbio_tmp \
-      --compression 1 \
+    {% if tasks[sample.gltype|capitalize+"_alignment_umi_collapse_simplex"]|default(true) %}
+    {# Collapse single read families - Simplex #}
+    fgbio --tmp-dir {{ temp_dir }}/fgbio_tmp --compression 1 \
       CallMolecularConsensusReads \
       --input {{ temp_dir }}/{{ sample.rgsm }}_UMI_{{ aligner }}_gd.bam \
       --threads 4 \
       --min-reads 1 \
       --tag MI \
       --error-rate-pre-umi 45 \
-      --error-rate-post-umi 40 \
-      --min-input-base-quality 10 \
+      --error-rate-post-umi 30 \
+      --min-input-base-quality 30 \
       --output {{ temp_dir }}/{{ sample.rgsm }}_con_uBAM.bam
-
-    {# Used by IDT
-    #--error-rate-post-umi 30 \ #}
+    {% elif tasks[sample.gltype|capitalize+"_alignment_umi_collapse_duplex"]|default(false) %}
+    {# Collapse combined read families - Duplex #}
+    fgbio --tmp-dir {{ temp_dir }}/fgbio_tmp --compression 1 \
+      CallDuplexConsensusReads \
+      --threads 4 \
+      --tag MI \
+      --input {{ temp_dir }}/{{ sample.rgsm }}_UMI_{{ aligner }}_gd.bam  \
+      --output {{ temp_dir }}/{{ sample.rgsm }}_con_uBAM.bam \
+      --error-rate-pre-umi 45 \
+      --error-rate-post-umi 30 \
+      --min-input-base-quality 30
+    {% endif %}
 
 - name: bwa_mem_umi_collapsed_{{ sample.name }}
   tags: [{{ sample.gltype }}, alignment, dna_alignment, {{ aligner }}, umi, {{ sample.name }}]
@@ -240,7 +244,7 @@
       -Y \
       -K 100000000 \
       -p \
-      -t 10 \
+      -t 10 \`
       {{ constants.tempe.bwa_mem2_index }} \
       /dev/stdin |\
     fgbio --compression 1 --async-io ZipperBams \
@@ -250,24 +254,34 @@
       --tags-to-revcomp Consensus \
       --output {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.uns.bam
 
-    fgbio -Xmx8g --compression 0 FilterConsensusReads \
+    {% if tasks[sample.gltype|capitalize+"_alignment_umi_filter_consensus"]|default(false)  %}
+    fgbio -Xmx8g --compression 0 \
+      FilterConsensusReads \
       --input {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.uns.bam \
       --output /dev/stdout \ 
       --ref {{ constants.tempe.reference_fasta }} \
-      --min-reads 1 \
-      --min-base-quality 45 \
-      --max-base-error-rate 0.2 | \
+      {% if tasks[sample.gltype|capitalize+"_alignment_umi_collapse_simplex"]|default(true) %}
+      --min-reads 3 \
+      --min-base-quality 40 \
+      --max-no-call-fraction 0.1 \
+      {% elif tasks[sample.gltype|capitalize+"_alignment_umi_collapse_duplex"]|default(false) %}
+      --min-reads 2 1 1 \
+      --min-base-quality 50 \
+      --max-no-call-fraction 0.05 \
+      --require-single-strand-agreement true \
+      {% endif %}
+      --max-base-error-rate 0.1 | \
       samtools sort \
       --threads 10 \
-      -o {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.filtered.bam \
+      -o {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam \
       --write-index
-
+    {% else %}
     samtools sort \
       --threads 10 \
       -o {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam \
       --write-index \
       {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.uns.bam
-
+    {% endif %}
 
 {% if tasks[sample.gltype|capitalize+"_alignment_base_recalibration_gatk"]|default(false) %}
   {{- baserecalibration(sample, aligner) }}
