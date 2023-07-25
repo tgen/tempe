@@ -155,7 +155,7 @@
 ### There are lots of options for collapsing needs and still could use a duplex workflow
 
 ### Based on testing and getting most value from the approach I suggest using UMI correction with
-# single read family collapsing to maximize coverage and read accuracy
+# single read family collapsing to maximize coverage and read accuracy #}
 
 - name: fgbio_consensus_reads_{{ sample.name }}
   tags: [{{ sample.gltype }}, alignment, dna_alignment, {{ aligner }}, umi, {{ sample.name }}]
@@ -219,7 +219,7 @@
   reset: predecessors
   input:
     - {{ temp_dir }}/{{ sample.rgsm }}_con_uBAM.bam
-    - {{ constants.tempe.bwa_mem2_index }} 
+    - {{ constants.tempe.bwa_mem2_index }}
     - {{ constants.tempe.reference_fasta }}
   output:
     - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam
