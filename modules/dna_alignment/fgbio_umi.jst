@@ -198,8 +198,8 @@
       --min-reads 1 \
       --tag MI \
       --error-rate-pre-umi 45 \
-      --error-rate-post-umi 30 \
-      --min-input-base-quality 30 \
+      --error-rate-post-umi 40 \
+      --min-input-base-quality 10 \
       --output {{ temp_dir }}/{{ sample.rgsm }}_con_uBAM.bam
     {% elif tasks[sample.gltype|capitalize+"_alignment_umi_collapse_duplex"]|default(false) %}
     {# Collapse combined read families - Duplex #}
@@ -210,8 +210,8 @@
       --input {{ temp_dir }}/{{ sample.rgsm }}_UMI_{{ aligner }}_gd.bam  \
       --output {{ temp_dir }}/{{ sample.rgsm }}_con_uBAM.bam \
       --error-rate-pre-umi 45 \
-      --error-rate-post-umi 30 \
-      --min-input-base-quality 30
+      --error-rate-post-umi 10 \
+      --min-input-base-quality 10
     {% endif %}
 
 - name: bwa_mem_umi_collapsed_{{ sample.name }}
@@ -244,7 +244,7 @@
       -Y \
       -K 100000000 \
       -p \
-      -t 10 \`
+      -t 10 \
       {{ constants.tempe.bwa_mem2_index }} \
       /dev/stdin |\
     fgbio --compression 1 --async-io ZipperBams \
@@ -261,7 +261,7 @@
       --output /dev/stdout \ 
       --ref {{ constants.tempe.reference_fasta }} \
       {% if tasks[sample.gltype|capitalize+"_alignment_umi_collapse_simplex"]|default(true) %}
-      --min-reads 3 \
+      --min-reads 1 \
       --min-base-quality 40 \
       --max-no-call-fraction 0.1 \
       {% elif tasks[sample.gltype|capitalize+"_alignment_umi_collapse_duplex"]|default(false) %}
