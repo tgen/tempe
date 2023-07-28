@@ -184,7 +184,9 @@
 
 {# project level quality control #}
 {% if samples|length > 1 %}
-{{- snpsniffer_summary(samples) }}
+  {% if Exome_quality_control_genotype_concordance_snpSniffer or Genome_quality_control_genotype_concordance_snpSniffer |default(false) %}
+    {{- snpsniffer_summary(samples) }}
+  {% endif %}
 {% endif %}
 
 {# Finalize after running all other tasks #}
