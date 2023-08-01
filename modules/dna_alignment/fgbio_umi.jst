@@ -21,7 +21,7 @@
     - temp/fastqs/{{ fastq.basename }}
     {% endfor %}
     - {{ umi_options.umi_files }}
-  output: 
+  output:
     - {{ temp_dir }}/{{ rgid }}/{{ sample.rgid }}_UMI_uBAM.bam
     - {{ results_dir }}/stats/{{ sample.rgsm }}_UMIcorr_{{ aligner }}.txt
   cpus: 4
@@ -76,7 +76,7 @@
   reset: predecessors
   input:
     {% for rgid in sample.read_groups %}
-    - {{ temp_dir }}/{{ rgid }}/{{ sample.rgid }}_UMI_uBAM.bam 
+    - {{ temp_dir }}/{{ rgid }}/{{ sample.rgid }}_UMI_uBAM.bam
     {% endfor %}
   output:
     - {{ temp_dir }}/{{ sample.rgsm }}_UMI_uBAM.bam
@@ -114,12 +114,12 @@
   reset: predecessors
   input:
     - {{ temp_dir }}/{{ sample.rgsm }}_UMI_uBAM.bam
-    - {{ constants.tempe.bwa_mem2_index }} 
+    - {{ constants.tempe.bwa_mem2_index }}
     - {{ constants.tempe.reference_fasta }}
   output:
     - {{ temp_dir }}/{{ sample.rgsm }}_UMI_{{ aligner }}.bam
-  cpus: 10
-  mem: 60G
+  cpus: 20
+  mem: 80G
   walltime: "4:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.fgbio.container }}
@@ -135,7 +135,7 @@
       -Y \
       -K 100000000 \
       -p \
-      -t 10 \
+      -t 19 \
       {{ constants.tempe.bwa_mem2_index }} \
       /dev/stdin |\
     fgbio --compression 1 --async-io ZipperBams \
@@ -176,12 +176,21 @@
     set -o pipefail
 
     {# Group Reads by UMI (This does not need to be sort, it sorts by UMI, then 5' end, then those with matching 3' are tagged) #}
+    {# Defaults:
+      --raw-tag RX - The tag containing the raw UMI.
+      --assign-tag MI - The output tag for UMI grouping.
+      --edits 1 - The allowable number of edits between UMIs.
+      --min-map-q 1 - Minimum mapping quality for mapped reads | Best Practice Doc suggests min-map-q of 20
+    #}
     fgbio --tmp-dir {{ temp_dir }}/fgbio_tmp \
       --compression 1 --async-io \
       GroupReadsByUmi \
       --input {{ temp_dir }}/{{ sample.rgsm }}_UMI_{{ aligner }}.bam \
-      --strategy paired \
-      --allow-inter-contig true \
+      {% if tasks[sample.gltype|capitalize+"_alignment_umi_collapse_simplex"]|default(true) %}
+      --strategy {{ group_reads_strategy|default("adjacency") }} \
+      {% elif tasks[sample.gltype|capitalize+"_alignment_umi_collapse_duplex"]|default(false) %}
+      --strategy {{ group_reads_strategy|default("paired") }} \
+      {% endif %}
       --family-size-histogram {{ results_dir }}/stats/{{ sample.rgsm }}_UMIcorr_{{ aligner }}_gd_hist.txt \
       --raw-tag RX \
       --assign-tag MI \
@@ -197,21 +206,20 @@
       --threads 4 \
       --min-reads 1 \
       --tag MI \
-      --error-rate-pre-umi 45 \
-      --error-rate-post-umi 40 \
-      --min-input-base-quality 10 \
+      --error-rate-pre-umi {{ error_rate_pre_umi|default("45") }} \
+      --error-rate-post-umi {{ error_rate_post_umi|default("40") }} \
+      --min-input-base-quality {{ min_input_base_quality|default("10") }} \
       --output {{ temp_dir }}/{{ sample.rgsm }}_con_uBAM.bam
     {% elif tasks[sample.gltype|capitalize+"_alignment_umi_collapse_duplex"]|default(false) %}
     {# Collapse combined read families - Duplex #}
     fgbio --tmp-dir {{ temp_dir }}/fgbio_tmp --compression 1 \
       CallDuplexConsensusReads \
       --threads 4 \
-      --tag MI \
       --input {{ temp_dir }}/{{ sample.rgsm }}_UMI_{{ aligner }}_gd.bam  \
       --output {{ temp_dir }}/{{ sample.rgsm }}_con_uBAM.bam \
-      --error-rate-pre-umi 45 \
-      --error-rate-post-umi 10 \
-      --min-input-base-quality 10
+      --error-rate-pre-umi {{ error_rate_pre_umi|default("45") }} \
+      --error-rate-post-umi {{ error_rate_post_umi|default("10") }} \
+      --min-input-base-quality {{ min_input_base_quality|default("10") }}
     {% endif %}
 
 - name: bwa_mem_umi_collapsed_{{ sample.name }}
@@ -222,9 +230,9 @@
     - {{ constants.tempe.bwa_mem2_index }}
     - {{ constants.tempe.reference_fasta }}
   output:
-    - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam
-  cpus: 10
-  mem: 60G
+    - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.bam
+  cpus: 20
+  mem: 80G
   walltime: "4:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.fgbio.container }}
@@ -244,44 +252,86 @@
       -Y \
       -K 100000000 \
       -p \
-      -t 10 \
+      -t 19 \
       {{ constants.tempe.bwa_mem2_index }} \
       /dev/stdin |\
-    fgbio --compression 1 --async-io ZipperBams \
+    fgbio --compression 0 --async-io ZipperBams \
       --unmapped  {{ temp_dir }}/{{ sample.rgsm }}_con_uBAM.bam \
       --ref {{ constants.tempe.reference_fasta }} \
       --tags-to-reverse Consensus \
-      --tags-to-revcomp Consensus \
-      --output {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.uns.bam
+      --tags-to-revcomp Consensus |\
+    samtools fixmate \
+      --threads 19 \
+      -m \
+      - \
+      {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.uns.bam
 
     {% if tasks[sample.gltype|capitalize+"_alignment_umi_filter_consensus"]|default(false)  %}
-    fgbio -Xmx8g --compression 0 \
+    fgbio --compression 0 \
       FilterConsensusReads \
       --input {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.uns.bam \
-      --output /dev/stdout \ 
+      --output /dev/stdout \
       --ref {{ constants.tempe.reference_fasta }} \
       {% if tasks[sample.gltype|capitalize+"_alignment_umi_collapse_simplex"]|default(true) %}
-      --min-reads 1 \
-      --min-base-quality 40 \
-      --max-no-call-fraction 0.1 \
+      --min-reads {{ filter_min_reads|default("1") }} \
+      --min-base-quality {{ filter_min_base_quality|default("40") }} \
+      --max-no-call-fraction {{ filter_max_no_call_fraction|default("0.1") }} \
       {% elif tasks[sample.gltype|capitalize+"_alignment_umi_collapse_duplex"]|default(false) %}
-      --min-reads 2 1 1 \
-      --min-base-quality 50 \
-      --max-no-call-fraction 0.05 \
+      --min-reads {{ filter_min_reads|default("2 1 1") }} \
+      --min-base-quality {{ filter_min_base_quality|default("50") }} \
+      --max-no-call-fraction {{ filter_max_no_call_fraction|default("0.05") }} \
       --require-single-strand-agreement true \
       {% endif %}
       --max-base-error-rate 0.1 | \
       samtools sort \
-      --threads 10 \
-      -o {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam \
+      --threads 19 \
+      -o {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.bam \
       --write-index
     {% else %}
     samtools sort \
-      --threads 10 \
-      -o {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam \
+      --threads 19 \
+      -o {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.bam \
       --write-index \
       {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.uns.bam
     {% endif %}
+
+- name: samtools_markdup_{{ sample.name }}_{{ aligner }}
+  tags: [{{ sample.gltype }}, alignment, mark_duplicates, samtools, {{ sample.name }}]
+  reset: predecessors
+  methods: Duplicate reads for {{ sample.name }} were marked with samtools markdup.
+  input: {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.bam
+  output:
+    - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam
+    - {{ results_dir }}/stats/{{ sample.name }}.{{ aligner }}.bam.samtools.markdup.json
+  walltime: "96:00:00"
+  cpus: 20
+  mem: 20G
+  queue_preset: "DEFAULT-LONG"
+  container: {{ constants.tools.bwa_mem2_samtools.container }}
+  digest: {{ constants.tools.bwa_mem2_samtools.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    {#
+    # If this task was interrupted previously, temp files may exist
+    # that will cause errors with samtools markdup. Here, we purge any
+    # existing temp files before making the directory again.
+    #}
+    rm -r "{{ temp_dir }}/markdup_temp/{{ sample.name }}" || true
+    mkdir -p "{{ temp_dir }}/markdup_temp/{{ sample.name }}"
+    mkdir -p "{{ results_dir }}/stats/"
+
+    samtools markdup \
+      --json \
+      --barcode-tag RX \
+      -S \
+      -f {{ results_dir }}/stats/{{ sample.name }}.{{ aligner }}.bam.samtools.markdup.json \
+      --threads 20 \
+      --write-index \
+      -T {{ temp_dir }}/markdup_temp/{{ sample.name }} \
+      {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.bam \
+      {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam
 
 {% if tasks[sample.gltype|capitalize+"_alignment_base_recalibration_gatk"]|default(false) %}
   {{- baserecalibration(sample, aligner) }}
