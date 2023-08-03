@@ -3,7 +3,7 @@
 {% from 'modules/dna_alignment/pb_fq2bam.jst' import fq2bam with context %}
 {% from 'modules/dna_alignment/split_fastq.jst' import split_fastqs with context %}
 {% from 'modules/qc/main.jst' import bam_qc with context %}
-
+{% from 'utilities/remove_files.jst' import remove_files with context %}
 
 {% macro dna_alignment(samples) %}
 
