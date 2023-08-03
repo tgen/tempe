@@ -96,12 +96,6 @@ constants:
     R:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/tempe/testing/r_with_modules:4.1.2-23052213
       digest: 138790a23400006f66c9506d9da956405e5f7a829d6c536d621ed71fc3630caa
-    thred:
-      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/thred:1.1.0-23060916
-      digest: 3068b7af7d12722a6b6de4ee9b76605b8c01e6001fd92cbe95017f532c5d2477
-    trinity_bwa_samtools:
-      container: /home/tgenref/containers/trinity_with_bwa_2.8.6.sif
-      digest: notarealdigest
     salmon:
       container: combinelab/salmon:1.9.0
       digest: 9c6fdc2e99967684fcc913d5ab5e9323169a7ec51da8f0068cb2cc0a94c84796
@@ -126,9 +120,15 @@ constants:
     subread:
       container: quay.io/biocontainers/subread:2.0.0--hed695b0_0
       digest: 97b2f544c6a8a1b209febcc23616fd77c46bdbb1d4f3005012456a380ca43d99
+    thred:
+      container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/thred:1.1.0-23060916
+      digest: 3068b7af7d12722a6b6de4ee9b76605b8c01e6001fd92cbe95017f532c5d2477
     transparser:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/transparser:1.0.1-23072100
       digest: 344ca1df3964cfc79b9a129538a74b4b37588760255e7f27d5646c27e893f5c3
+    trinity_bwa_samtools:
+      container: /home/tgenref/containers/trinity_with_bwa_2.8.6.sif
+      digest: notarealdigest
     vardict:
       container: quay.io/biocontainers/vardict-java:1.8.3--hdfd78af_0
       digest: 4069c082c97470bce4a07f228dbf74b6ea3fc5c4eaa93ba76d2826a496ca3c44
