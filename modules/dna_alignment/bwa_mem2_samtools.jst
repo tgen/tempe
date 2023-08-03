@@ -236,13 +236,12 @@
     {# No long options available for the following:
       -c           Combine @RG headers with colliding IDs [alter IDs to be distinct]
       -f           Overwrite the output BAM if exist
-      -l INT       Compression level, from 0 to 9 [-1]
     #}
     samtools merge \
       --threads 16 \
       -c \
       -f \
-      -u \
+      --write-index \
       {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam \
       {% for rglb, rg in sample.read_groups.values() | groupby('rglb') %}
       {% if not loop.last %}

@@ -7,6 +7,9 @@
   cpus: 6
   walltime: "4:00:00"
   queue_preset: "DATA-MOVER"
+  {% if fastq.fileType == "fasterq" %}
+  runner_preset: "PETAGENE"
+  {% endif %}
   container: {{ constants.tools.base.container }}
   digest: {{ constants.tools.base.digest }}
   cmd: |
