@@ -42,6 +42,7 @@
   cmd: |
     set -eu
     set -o pipefail
+
     {% if files_to_remove == 'null' %}
     rm -r {{ directory }}
     {% else %}
