@@ -56,9 +56,6 @@
   mem: 80G
   walltime: "24:00:00"
   queue_preset: "DEFAULT"
-  {% if "fasterq" in r1fqlist|join(',') %}
-  runner_preset: "PETAGENE"
-  {% endif %}
   container: {{ constants.tools.star_fusion.container }}
   digest: {{ constants.tools.star_fusion.digest }}
   cmd: |

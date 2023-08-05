@@ -28,9 +28,6 @@
   mem: 2G
   walltime: "4:00:00"
   queue_preset: "DEFAULT"
-  {% if fastq.fileType == "fasterq" %}
-  runner_preset: "PETAGENE"
-  {% endif %}
   container: {{ constants.tools.samtools.container }}
   digest: {{ constants.tools.samtools.digest }}
   cmd: |

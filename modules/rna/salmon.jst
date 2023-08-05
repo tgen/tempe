@@ -43,9 +43,6 @@
   mem: 32G
   walltime: "24:00:00"
   queue_preset: "DEFAULT"
-  {% if "fasterq" in r1fqlist|join(',') %}
-  runner_preset: "PETAGENE"
-  {% endif %}
   container: {{ constants.tools.salmon.container }}
   digest: {{ constants.tools.salmon.digest }}
   cmd: |

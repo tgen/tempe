@@ -17,10 +17,6 @@
 
     mkdir -p temp/fastqs/
 
-    {% if fastq.fileType == "fasterq" %}
-    rsync "{{ fastq.fastqPath|replace(".fastq.gz",".fasterq") }}" "temp/fastqs/"
-    {% else %}
-    rsync "{{ fastq.fastqPath }}" "temp/fastqs/"
-    {% endif %}
+    rsync --copy-links "{{ fastq.fastqPath }}" "temp/fastqs/"
 
 {% endmacro %}

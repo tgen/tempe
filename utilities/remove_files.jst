@@ -34,9 +34,6 @@
   cpus: 1
   mem: 2G
   queue_preset: "DEFAULT"
-  {% if "fasterq" in files_to_remove|join(',') %}
-  runner_preset: "PETAGENE"
-  {% endif %}
   container: {{ constants.tools.base.container }}
   digest: {{ constants.tools.base.digest }}
   cmd: |
