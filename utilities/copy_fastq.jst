@@ -17,6 +17,11 @@
 
     mkdir -p temp/fastqs/
 
-    rsync --copy-links "{{ fastq.fastqPath }}" "temp/fastqs/"
+    {% if fastq.fileType == "fasterq" %}
+    # petasuite is available because we inject it into the container at runtime
+    petasuite --md5match --decompress {{ fastq.fastqPath|replace(".fastq.gz",".fasterq") }} --dstpath "temp/fastqs/"
+    {% else %}
+    rsync "{{ fastq.fastqPath }}" "temp/fastqs/"
+    {% endif %}
 
 {% endmacro %}
