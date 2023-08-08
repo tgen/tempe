@@ -13,6 +13,12 @@
 {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
 {% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
 
+{#
+We are correcting the UMIs below, and this results in excluding some reads with unfixable UMIs. In testing
+we used --rejects to output these excluded reads and confirm that overall all reads are accounted for - no
+other weird filters are in place
+#}
+
 - name: create_uBAM_{{ r1fastq.basename | replace(".", "_") }}
   tags: [{{ sample.gltype }}, alignment, dna_alignment, {{ aligner }}, umi, {{ sample.name }}]
   reset: predecessors
@@ -68,9 +74,6 @@
 
 {% endfor %}
 
-{## Need a process to merge uBAM together if there are multiple FASTQ
-## If uBAM are merged then we should have a chunk process to produce 50M chunks (uBAM interleaved so 100M) for alignment
-#}
 - name: merge_uBAM_{{ sample.name }}
   tags: [{{ sample.gltype }}, alignment, dna_alignment, {{ aligner }}, umi, {{ sample.name }}]
   reset: predecessors
@@ -102,12 +105,6 @@
       {{ temp_dir }}/{{ rgid }}/{{ sample.rgid }}_UMI_uBAM.bam
       {% endif %}
     {% endfor %}
-
-{# Align reads
-## output is queryname file as it seems like this is needed for best optical duplicate determination by picard markdup
-## because fgbio ultimately sorts by UMI then location 5' and 3' not clear sorted output helps
-### All this should be tested in profiling optimization
-## For speed should move to bwa-mem2 #}
 
 - name: bwa_mem_merge_umi_alignment_{{ sample.name }}
   tags: [{{ sample.gltype }}, alignment, dna_alignment, {{ aligner }}, umi, {{ sample.name }}]
@@ -152,7 +149,6 @@
 # Doing read collapsing on the single reads in testing allowed read correction on ~50% of reads
 ### This is capture kit and depth dependent but was 800-2000x
 # This is very lossy so final reads are mix of collapsed and singletons
-### There are lots of options for collapsing needs and still could use a duplex workflow
 
 ### Based on testing and getting most value from the approach I suggest using UMI correction with
 # single read family collapsing to maximize coverage and read accuracy #}
@@ -180,7 +176,7 @@
       --raw-tag RX - The tag containing the raw UMI.
       --assign-tag MI - The output tag for UMI grouping.
       --edits 1 - The allowable number of edits between UMIs.
-      --min-map-q 1 - Minimum mapping quality for mapped reads | Best Practice Doc suggests min-map-q of 20
+      --min-map-q 1 - Minimum mapping quality for mapped reads
     #}
     fgbio --tmp-dir {{ temp_dir }}/fgbio_tmp \
       --compression 1 --async-io \
@@ -194,8 +190,8 @@
       --family-size-histogram {{ results_dir }}/stats/{{ sample.rgsm }}_UMIcorr_{{ aligner }}_gd_hist.txt \
       --raw-tag RX \
       --assign-tag MI \
-      --edits 1 \
-      --min-map-q 20 \
+      --edits {{ group_reads_edits|default("1") }} \
+      --min-map-q {{ group_reads_min_map_q|default("1") }} \
       --output {{ temp_dir }}/{{ sample.rgsm }}_UMI_{{ aligner }}_gd.bam
 
     {% if tasks[sample.gltype|capitalize+"_alignment_umi_collapse_simplex"]|default(true) %}
@@ -274,7 +270,7 @@
       --ref {{ constants.tempe.reference_fasta }} \
       {% if tasks[sample.gltype|capitalize+"_alignment_umi_collapse_simplex"]|default(true) %}
       --min-reads {{ filter_min_reads|default("1") }} \
-      --min-base-quality {{ filter_min_base_quality|default("40") }} \
+      --min-base-quality {{ filter_min_base_quality|default("30") }} \
       --max-no-call-fraction {{ filter_max_no_call_fraction|default("0.1") }} \
       {% elif tasks[sample.gltype|capitalize+"_alignment_umi_collapse_duplex"]|default(false) %}
       --min-reads {{ filter_min_reads|default("2 1 1") }} \
@@ -285,53 +281,15 @@
       --max-base-error-rate 0.1 | \
       samtools sort \
       --threads 19 \
-      -o {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.bam \
+      -o {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam \
       --write-index
     {% else %}
     samtools sort \
       --threads 19 \
-      -o {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.bam \
+      -o {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam \
       --write-index \
       {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.uns.bam
     {% endif %}
-
-- name: samtools_markdup_{{ sample.name }}_{{ aligner }}
-  tags: [{{ sample.gltype }}, alignment, mark_duplicates, samtools, {{ sample.name }}]
-  reset: predecessors
-  methods: Duplicate reads for {{ sample.name }} were marked with samtools markdup.
-  input: {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.bam
-  output:
-    - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam
-    - {{ results_dir }}/stats/{{ sample.name }}.{{ aligner }}.bam.samtools.markdup.json
-  walltime: "96:00:00"
-  cpus: 20
-  mem: 20G
-  queue_preset: "DEFAULT-LONG"
-  container: {{ constants.tools.bwa_mem2_samtools.container }}
-  digest: {{ constants.tools.bwa_mem2_samtools.digest }}
-  cmd: |
-    set -eu
-    set -o pipefail
-
-    {#
-    # If this task was interrupted previously, temp files may exist
-    # that will cause errors with samtools markdup. Here, we purge any
-    # existing temp files before making the directory again.
-    #}
-    rm -r "{{ temp_dir }}/markdup_temp/{{ sample.name }}" || true
-    mkdir -p "{{ temp_dir }}/markdup_temp/{{ sample.name }}"
-    mkdir -p "{{ results_dir }}/stats/"
-
-    samtools markdup \
-      --json \
-      --barcode-tag RX \
-      -S \
-      -f {{ results_dir }}/stats/{{ sample.name }}.{{ aligner }}.bam.samtools.markdup.json \
-      --threads 20 \
-      --write-index \
-      -T {{ temp_dir }}/markdup_temp/{{ sample.name }} \
-      {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.bam \
-      {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam
 
 {% if tasks[sample.gltype|capitalize+"_alignment_base_recalibration_gatk"]|default(false) %}
   {{- baserecalibration(sample, aligner) }}
