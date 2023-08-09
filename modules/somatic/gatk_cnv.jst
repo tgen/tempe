@@ -465,7 +465,7 @@
     gatk --java-options "-Xmx12g" CreateReadCountPanelOfNormals \
       --tmp-dir {{ temp_dir }}/temp3/ \
       --input {{ temp_dir }}/{{ pair.normal.name }}.{{ aligner }}.counts.hdf5 \
-      --minimum-interval-median-percentile 0.0 \
+      --minimum-interval-median-percentile 1E-30 \
       --annotated-intervals {{ temp_dir }}/anno_preprocessed.interval_list \
       --output {{ temp_dir }}/cnv.pon.hdf5
 
