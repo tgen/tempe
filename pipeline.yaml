@@ -63,9 +63,6 @@ constants:
     lancet:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/lancet:1.1.x-v1
       digest: 6d43c6574a7932f7811285cd7b6dabd2d42fe4ce6ae1c68c0923993049e54375
-    lumosvar2:
-      container: /home/tgenref/containers/lumosvar2_1.1.sif
-      digest: notarealdigest
     manta:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/external/manta:1.6.0-v1
       digest: 2b560ca068daf2632a7a3da38b82811c28b3f0214685c44f6a0e76b961eb393b
