@@ -7,7 +7,10 @@
 
 {% set temp_dir %}temp/{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}{% endset %}
 {% set results_dir %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}{% endset %}
-{% set umi_options = constants.tempe.umi_options[sample.assayCode] | default(constants.tempe.umi_options.unknown) %}
+{% set umi_options = constants.tempe.umi_options %}
+{% if task_variables.umi_alignment is defined %}
+  {% do umi_options.update(task_variables.umi_alignment) %}
+{% endif %}
 
 {% for rgid, rg in sample.read_groups.items() %}
 {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
@@ -51,7 +54,7 @@ other weird filters are in place
       FastqToBam \
         --input {% for fastq in [r1fastq, r2fastq] %}temp/fastqs/{{ fastq.basename }} {% endfor %} \
         --read-structure {{ umi_options.read_structure }} \
-        --umi-tag {{ umi_options.umi_tag }} \
+        --umi-tag RX \
         --sample {{ sample.rgsm }} \
         --library {{ sample.rglb }} \
         --read-group-id {{ sample.rgid }} \
@@ -67,7 +70,7 @@ other weird filters are in place
         --output {{ temp_dir }}/{{ rgid }}/{{ sample.rgid }}_UMI_uBAM.bam \
         --max-mismatches {{ umi_options.max_mismatches }} \
         --min-distance {{ umi_options.min_distance }} \
-        --umi-tag {{ umi_options.umi_tag }} \
+        --umi-tag RX \
         --umi-files {{ umi_options.umi_files }} \
         --dont-store-original-umis \
         --metrics {{ results_dir }}/stats/{{ sample.rgsm }}_UMIcorr_{{ aligner }}.txt
@@ -182,10 +185,14 @@ other weird filters are in place
       --compression 1 --async-io \
       GroupReadsByUmi \
       --input {{ temp_dir }}/{{ sample.rgsm }}_UMI_{{ aligner }}.bam \
-      {% if tasks[sample.gltype|capitalize+"_alignment_umi_collapse_simplex"]|default(true) %}
-      --strategy {{ group_reads_strategy|default("adjacency") }} \
-      {% elif tasks[sample.gltype|capitalize+"_alignment_umi_collapse_duplex"]|default(false) %}
-      --strategy {{ group_reads_strategy|default("paired") }} \
+      {% if tasks[sample.gltype|capitalize+"_alignment_umi_collapse_duplex"]|default(false) %}
+      {# For duplex the grouping strategy must be paired #}
+      --strategy "paired" \
+      {% else %}
+      {# We default to paired, though adjacency is another recommended option - we default to paired #}
+      {# since at a future state we may want to filter duplicates some complex UMI related duplicates #}
+      {# In testing about 3% of reads are part of a duplicate set #}
+      --strategy {{ umi_options.group_reads_strategy|default("paired") }} \
       {% endif %}
       --family-size-histogram {{ results_dir }}/stats/{{ sample.rgsm }}_UMIcorr_{{ aligner }}_gd_hist.txt \
       --raw-tag RX \
@@ -194,7 +201,20 @@ other weird filters are in place
       --min-map-q {{ group_reads_min_map_q|default("1") }} \
       --output {{ temp_dir }}/{{ sample.rgsm }}_UMI_{{ aligner }}_gd.bam
 
-    {% if tasks[sample.gltype|capitalize+"_alignment_umi_collapse_simplex"]|default(true) %}
+    {# We are currently forced to generate consensus reads, either via simplex or duplex collapsing #}
+    {# here we default to simplex unless duplex was activated, this avoids the potential for both tasks #}
+    {# being enabled and then the collapsing would be combined and IO no longer makes sense #}
+    {% if tasks[sample.gltype|capitalize+"_alignment_umi_collapse_duplex"]|default(false) %}
+    {# Collapse combined read families - Duplex #}
+    fgbio --tmp-dir {{ temp_dir }}/fgbio_tmp --compression 1 \
+      CallDuplexConsensusReads \
+      --threads 4 \
+      --input {{ temp_dir }}/{{ sample.rgsm }}_UMI_{{ aligner }}_gd.bam  \
+      --output {{ temp_dir }}/{{ sample.rgsm }}_con_uBAM.bam \
+      --error-rate-pre-umi {{ umi_options.error_rate_pre_umi|default("45") }} \
+      --error-rate-post-umi {{ umi_options.error_rate_post_umi|default("10") }} \
+      --min-input-base-quality {{ umi_options.min_input_base_quality|default("10") }}
+    {% else %}
     {# Collapse single read families - Simplex #}
     fgbio --tmp-dir {{ temp_dir }}/fgbio_tmp --compression 1 \
       CallMolecularConsensusReads \
@@ -202,20 +222,10 @@ other weird filters are in place
       --threads 4 \
       --min-reads 1 \
       --tag MI \
-      --error-rate-pre-umi {{ error_rate_pre_umi|default("45") }} \
-      --error-rate-post-umi {{ error_rate_post_umi|default("40") }} \
-      --min-input-base-quality {{ min_input_base_quality|default("10") }} \
+      --error-rate-pre-umi {{ umi_options.error_rate_pre_umi|default("45") }} \
+      --error-rate-post-umi {{ umi_options.error_rate_post_umi|default("40") }} \
+      --min-input-base-quality {{ umi_options.min_input_base_quality|default("10") }} \
       --output {{ temp_dir }}/{{ sample.rgsm }}_con_uBAM.bam
-    {% elif tasks[sample.gltype|capitalize+"_alignment_umi_collapse_duplex"]|default(false) %}
-    {# Collapse combined read families - Duplex #}
-    fgbio --tmp-dir {{ temp_dir }}/fgbio_tmp --compression 1 \
-      CallDuplexConsensusReads \
-      --threads 4 \
-      --input {{ temp_dir }}/{{ sample.rgsm }}_UMI_{{ aligner }}_gd.bam  \
-      --output {{ temp_dir }}/{{ sample.rgsm }}_con_uBAM.bam \
-      --error-rate-pre-umi {{ error_rate_pre_umi|default("45") }} \
-      --error-rate-post-umi {{ error_rate_post_umi|default("10") }} \
-      --min-input-base-quality {{ min_input_base_quality|default("10") }}
     {% endif %}
 
 - name: bwa_mem_umi_collapsed_{{ sample.name }}
@@ -226,7 +236,7 @@ other weird filters are in place
     - {{ constants.tempe.bwa_mem2_index }}
     - {{ constants.tempe.reference_fasta }}
   output:
-    - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.bam
+    - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam
   cpus: 20
   mem: 80G
   walltime: "4:00:00"
@@ -269,13 +279,13 @@ other weird filters are in place
       --output /dev/stdout \
       --ref {{ constants.tempe.reference_fasta }} \
       {% if tasks[sample.gltype|capitalize+"_alignment_umi_collapse_simplex"]|default(true) %}
-      --min-reads {{ filter_min_reads|default("1") }} \
-      --min-base-quality {{ filter_min_base_quality|default("30") }} \
-      --max-no-call-fraction {{ filter_max_no_call_fraction|default("0.1") }} \
+      --min-reads {{ umi_options.filter_min_reads|default("1") }} \
+      --min-base-quality {{ umi_options.filter_min_base_quality|default("30") }} \
+      --max-no-call-fraction {{ umi_options.filter_max_no_call_fraction|default("0.1") }} \
       {% elif tasks[sample.gltype|capitalize+"_alignment_umi_collapse_duplex"]|default(false) %}
-      --min-reads {{ filter_min_reads|default("2 1 1") }} \
-      --min-base-quality {{ filter_min_base_quality|default("50") }} \
-      --max-no-call-fraction {{ filter_max_no_call_fraction|default("0.05") }} \
+      --min-reads {{ umi_options.filter_min_reads|default("2 1 1") }} \
+      --min-base-quality {{ umi_options.filter_min_base_quality|default("50") }} \
+      --max-no-call-fraction {{ umi_options.filter_max_no_call_fraction|default("0.05") }} \
       --require-single-strand-agreement true \
       {% endif %}
       --max-base-error-rate 0.1 | \
