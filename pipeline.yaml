@@ -180,11 +180,6 @@ constants:
       stats2lims: uploadStats2Lims.py
       sigprofiler: sigprofiler.py
       verifybamid_plot: verifybamid_plot.R
-    umi_options:
-      umi_files: /home/tgenref/assay_files/twist_umi_adaptor_system/known_umi_sequences.txt
-      max_mismatches: 1
-      min_distance: 2
-      read_structure: "5M2S+T 5M2S+T"
     gatk_known_sites:
       - /home/tgenref/homo_sapiens/grch38_hg38/public_databases/broad_resource_bundle/Homo_sapiens_assembly38.dbsnp138.vcf
       - /home/tgenref/homo_sapiens/grch38_hg38/public_databases/broad_resource_bundle/Homo_sapiens_assembly38.known_indels.vcf.gz
@@ -264,6 +259,21 @@ constants:
         featurecounts: "2"
         tophat: "-fr-firststrand"
         collectrnaseqmetrics: "SECOND_READ_TRANSCRIPTION_STRAND"
+    umi_options:
+      correct_umi_umi_files: /home/tgenref/assay_files/twist_umi_adaptor_system/known_umi_sequences.txt
+      correct_umi_max_mismatches: 1
+      correct_umi_min_distance: 2
+      correct_umi_read_structure: "5M2S+T 5M2S+T"
+      group_reads_edits: 1
+      group_reads_min_map_q: 1
+      group_reads_strategy: "paired"
+      consensus_error_rate_pre_umi: 45
+      consensus_error_rate_post_umi: 40
+      consensus_min_input_base_quality: 10
+      filter_min_reads: 1
+      filter_min_base_quality: 30
+      filter_max_no_call_fraction: 0.1
+      filter_max_base_error_rate: 0.1
     snpSniffer_sites: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/snpSniffer/positions_387_hg38_ucsc.txt
     snpSniffer_database: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/snpSniffer/databaseV5_hg38_ucsc.ini
     vep_data: /home/tgenref/homo_sapiens/grch38_hg38/tool_specific_resources/vep/v103/

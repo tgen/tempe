@@ -49,11 +49,16 @@ other weird filters are in place
 
     {# Extract UMI from reads and create uBAM (Step 1 - One step with fgbio)
     ## Need read structure to be dynamic by UMI kit and reads performed #}
+    ## Defaults, unless submitter updated these in the config:
+    # --read-structure {{ constants.tempe.umi_options.correct_umi_read_structure }}
+    # --max-mismatches {{ constants.tempe.umi_options.correct_umi_max_mismatches }}
+    # --min-distance {{ constants.tempe.umi_options.correct_umi_min_distance }}
+    # --umi-files {{ constants.tempe.umi_options.correct_umi_umi_files }}
     fgbio --tmp-dir {{ temp_dir }}/{{ rgid }}/fgbio_tmp \
       --compression 0 \
       FastqToBam \
         --input {% for fastq in [r1fastq, r2fastq] %}temp/fastqs/{{ fastq.basename }} {% endfor %} \
-        --read-structure {{ umi_options.read_structure }} \
+        --read-structure {{ umi_options.correct_umi_read_structure }} \
         --umi-tag RX \
         --sample {{ sample.rgsm }} \
         --library {{ sample.rglb }} \
@@ -68,10 +73,10 @@ other weird filters are in place
         CorrectUmis \
         --input /dev/stdin \
         --output {{ temp_dir }}/{{ rgid }}/{{ sample.rgid }}_UMI_uBAM.bam \
-        --max-mismatches {{ umi_options.max_mismatches }} \
-        --min-distance {{ umi_options.min_distance }} \
+        --max-mismatches {{ umi_options.correct_umi_max_mismatches }} \
+        --min-distance {{ umi_options.correct_umi_min_distance }} \
         --umi-tag RX \
-        --umi-files {{ umi_options.umi_files }} \
+        --umi-files {{ umi_options.correct_umi_umi_files }} \
         --dont-store-original-umis \
         --metrics {{ results_dir }}/stats/{{ sample.rgsm }}_UMIcorr_{{ aligner }}.txt
 
@@ -175,12 +180,10 @@ other weird filters are in place
     set -o pipefail
 
     {# Group Reads by UMI (This does not need to be sort, it sorts by UMI, then 5' end, then those with matching 3' are tagged) #}
-    {# Defaults:
-      --raw-tag RX - The tag containing the raw UMI.
-      --assign-tag MI - The output tag for UMI grouping.
-      --edits 1 - The allowable number of edits between UMIs.
-      --min-map-q 1 - Minimum mapping quality for mapped reads
-    #}
+    ## Defaults, unless submitter updated these in the config:
+    # --strategy {{ constants.tempe.umi_options.group_reads_strategy }}
+    # --edits {{ constants.tempe.umi_options.group_reads_edits }}
+    # --min-map-q {{ constants.tempe.umi_options.group_reads_min_map_q }}
     fgbio --tmp-dir {{ temp_dir }}/fgbio_tmp \
       --compression 1 --async-io \
       GroupReadsByUmi \
@@ -197,13 +200,17 @@ other weird filters are in place
       --family-size-histogram {{ results_dir }}/stats/{{ sample.rgsm }}_UMIcorr_{{ aligner }}_gd_hist.txt \
       --raw-tag RX \
       --assign-tag MI \
-      --edits {{ group_reads_edits|default("1") }} \
-      --min-map-q {{ group_reads_min_map_q|default("1") }} \
+      --edits {{ umi_options.group_reads_edits }} \
+      --min-map-q {{ umi_options.group_reads_min_map_q }} \
       --output {{ temp_dir }}/{{ sample.rgsm }}_UMI_{{ aligner }}_gd.bam
 
     {# We are currently forced to generate consensus reads, either via simplex or duplex collapsing #}
     {# here we default to simplex unless duplex was activated, this avoids the potential for both tasks #}
     {# being enabled and then the collapsing would be combined and IO no longer makes sense #}
+    ## Defaults, unless submitter updated these in the config:
+    # --error-rate-pre-umi {{ constants.tempe.umi_options.consensus_error_rate_pre_umi }}
+    # --error-rate-post-umi {{ constants.tempe.umi_options.consensus_error_rate_post_umi }}
+    # --min-input-base-quality {{ constants.tempe.umi_options.consensus_min_input_base_quality }}
     {% if tasks[sample.gltype|capitalize+"_alignment_umi_collapse_duplex"]|default(false) %}
     {# Collapse combined read families - Duplex #}
     fgbio --tmp-dir {{ temp_dir }}/fgbio_tmp --compression 1 \
@@ -211,9 +218,9 @@ other weird filters are in place
       --threads 4 \
       --input {{ temp_dir }}/{{ sample.rgsm }}_UMI_{{ aligner }}_gd.bam  \
       --output {{ temp_dir }}/{{ sample.rgsm }}_con_uBAM.bam \
-      --error-rate-pre-umi {{ umi_options.error_rate_pre_umi|default("45") }} \
-      --error-rate-post-umi {{ umi_options.error_rate_post_umi|default("10") }} \
-      --min-input-base-quality {{ umi_options.min_input_base_quality|default("10") }}
+      --error-rate-pre-umi {{ umi_options.consensus_error_rate_pre_umi }} \
+      --error-rate-post-umi {{ umi_options.consensus_error_rate_post_umi }} \
+      --min-input-base-quality {{ umi_options.consensus_min_input_base_quality }}
     {% else %}
     {# Collapse single read families - Simplex #}
     fgbio --tmp-dir {{ temp_dir }}/fgbio_tmp --compression 1 \
@@ -222,9 +229,9 @@ other weird filters are in place
       --threads 4 \
       --min-reads 1 \
       --tag MI \
-      --error-rate-pre-umi {{ umi_options.error_rate_pre_umi|default("45") }} \
-      --error-rate-post-umi {{ umi_options.error_rate_post_umi|default("40") }} \
-      --min-input-base-quality {{ umi_options.min_input_base_quality|default("10") }} \
+      --error-rate-pre-umi {{ umi_options.consensus_error_rate_pre_umi }} \
+      --error-rate-post-umi {{ umi_options.consensus_error_rate_post_umi }} \
+      --min-input-base-quality {{ umi_options.consensus_min_input_base_quality }} \
       --output {{ temp_dir }}/{{ sample.rgsm }}_con_uBAM.bam
     {% endif %}
 
@@ -273,22 +280,23 @@ other weird filters are in place
       {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.uns.bam
 
     {% if tasks[sample.gltype|capitalize+"_alignment_umi_filter_consensus"]|default(false)  %}
+    ## Defaults, unless submitter updated these in the config:
+    # --min-reads {{ constants.tempe.umi_options.filter_min_reads }}
+    # --min-base-quality {{ constants.tempe.umi_options.filter_min_base_quality }}
+    # --max-no-call-fraction {{ constants.tempe.umi_options.filter_max_no_call_fraction }}
+    # --max-base-error-rate {{ constants.tempe.umi_options.filter_max_base_error_rate }}
     fgbio --compression 0 \
       FilterConsensusReads \
       --input {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.uns.bam \
       --output /dev/stdout \
       --ref {{ constants.tempe.reference_fasta }} \
-      {% if tasks[sample.gltype|capitalize+"_alignment_umi_collapse_simplex"]|default(true) %}
-      --min-reads {{ umi_options.filter_min_reads|default("1") }} \
-      --min-base-quality {{ umi_options.filter_min_base_quality|default("30") }} \
-      --max-no-call-fraction {{ umi_options.filter_max_no_call_fraction|default("0.1") }} \
-      {% elif tasks[sample.gltype|capitalize+"_alignment_umi_collapse_duplex"]|default(false) %}
-      --min-reads {{ umi_options.filter_min_reads|default("2 1 1") }} \
-      --min-base-quality {{ umi_options.filter_min_base_quality|default("50") }} \
-      --max-no-call-fraction {{ umi_options.filter_max_no_call_fraction|default("0.05") }} \
+      {% if tasks[sample.gltype|capitalize+"_alignment_umi_collapse_duplex"]|default(false) %}
       --require-single-strand-agreement true \
       {% endif %}
-      --max-base-error-rate 0.1 | \
+      --min-reads {{ umi_options.filter_min_reads }} \
+      --min-base-quality {{ umi_options.filter_min_base_quality }} \
+      --max-no-call-fraction {{ umi_options.filter_max_no_call_fraction }} \
+      --max-base-error-rate {{ umi_options.filter_max_base_error_rate }} | \
       samtools sort \
       --threads 19 \
       -o {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam \
