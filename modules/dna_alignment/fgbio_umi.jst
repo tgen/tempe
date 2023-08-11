@@ -7,7 +7,8 @@
 
 {% set temp_dir %}temp/{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}{% endset %}
 {% set results_dir %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}{% endset %}
-{% set umi_options = constants.tempe.umi_options %}
+{% set umi_options = {} %}
+{% do umi_options.update(constants.tempe.umi_options) %}
 {% if task_variables.umi_alignment is defined %}
   {% do umi_options.update(task_variables.umi_alignment) %}
 {% endif %}
@@ -29,7 +30,7 @@ other weird filters are in place
     {% for fastq in [r1fastq, r2fastq] %}
     - temp/fastqs/{{ fastq.basename }}
     {% endfor %}
-    - {{ umi_options.umi_files }}
+    - {{ umi_options.correct_umi_umi_files }}
   output:
     - {{ temp_dir }}/{{ rgid }}/{{ sample.rgid }}_UMI_uBAM.bam
     - {{ results_dir }}/stats/{{ sample.rgsm }}_UMIcorr_{{ aligner }}.txt
