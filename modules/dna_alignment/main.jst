@@ -56,19 +56,11 @@
     {% set files_to_remove = [] %}
     {% for rgid, rg in sample.read_groups.items() %}
       {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
-      {% if r1fastq.fileType == "fasterq" %}
-        {% do r1fastq.update({"path": "temp/fastqs/" + r1fastq.basename|replace(".fastq.gz",".fasterq")}) %}
-      {% else %}
-        {% do r1fastq.update({"path": "temp/fastqs/" + r1fastq.basename}) %}
-      {% endif %}
+      {% do r1fastq.update({"path": "temp/fastqs/" + r1fastq.basename}) %}
       {% do files_to_remove.append(r1fastq.path) %}
 
       {% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
-      {% if r2fastq.fileType == "fasterq" %}
-        {% do r2fastq.update({"path": "temp/fastqs/" + r2fastq.basename|replace(".fastq.gz",".fasterq")}) %}
-      {% else %}
-        {% do r2fastq.update({"path": "temp/fastqs/" + r2fastq.basename}) %}
-      {% endif %}
+      {% do r2fastq.update({"path": "temp/fastqs/" + r2fastq.basename}) %}
       {% do files_to_remove.append(r2fastq.path) %}
     {% endfor %}
 
