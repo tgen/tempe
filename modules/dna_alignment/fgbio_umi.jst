@@ -89,7 +89,7 @@ other weird filters are in place
   reset: predecessors
   input:
     {% for rgid in rg %}
-    - {{ temp_dir }}/{{ rgid }}/{{ sample.rgid }}_UMI_uBAM.bam
+    - {{ temp_dir }}/{{ rgid.rgid }}/{{ sample.rgid }}_UMI_uBAM.bam
     {% endfor %}
   output:
     - {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.UMI_uBAM.bam
@@ -110,9 +110,9 @@ other weird filters are in place
       {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.UMI_uBAM.bam \
     {% for rgid in rg %}
       {% if not loop.last %}
-      {{ temp_dir }}/{{ rgid }}/{{ sample.rgid }}_UMI_uBAM.bam \
+      {{ temp_dir }}/{{ rgid.rgid }}/{{ sample.rgid }}_UMI_uBAM.bam \
       {% else %}
-      {{ temp_dir }}/{{ rgid }}/{{ sample.rgid }}_UMI_uBAM.bam
+      {{ temp_dir }}/{{ rgid.rgid }}/{{ sample.rgid }}_UMI_uBAM.bam
       {% endif %}
     {% endfor %}
 

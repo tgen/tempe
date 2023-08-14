@@ -31,8 +31,10 @@
     #}
     {% if 'bwa' in sample.aligners %}
       {% if sample.umiType != "" | default(false) %}
-        {% set task %}merge_uBAM_{{ sample.name }}{% endset %}
+        {% for rglb, rg in sample.read_groups.values() | groupby('rglb') %}
+        {% set task %}merge_uBAM_{{ sample.name }}_{{ rglb }}{% endset %}
         {% do task_list.append(task) %}
+        {% endfor %}
         {{- fgbio_bwa_mem(sample, aligner='bwa') }}
       {% else %}
         {% for rglb, rg in sample.read_groups.values() | groupby('rglb') %}
