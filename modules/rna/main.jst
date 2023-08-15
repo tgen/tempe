@@ -34,6 +34,8 @@
     {% if tasks.RNA_transcriptome_fusion_caller_STAR_Fusion|default(false) %}
       {% set task %}star_fusion_alignment_{{ sample.name }}{% endset %}
       {% do task_list.append(task) %}
+      {% set task %}star_fusion_{{ sample.name }}{% endset %}
+      {% do task_list.append(task) %}
       {{- star_fusion(sample) }}
     {% endif %}
 
