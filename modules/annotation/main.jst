@@ -1,6 +1,6 @@
 {% from 'modules/annotation/bcftools_annotate.jst' import bcftools_annotate with context %}
 {% from 'modules/annotation/vep.jst' import vep with context %}
-{% from 'utilities/variant_filtering.jst' import tumor_only_variant_filter with context %}
+{% from 'utilities/tumor_only_variant_filtering.jst' import tumor_only_variant_filter with context %}
 
 {% macro annotate_vcfs(sample_or_pair, temp_dir, results_dir, input_vcf, taskPrefix, aligner, variant_caller, analysis_type) %}
 

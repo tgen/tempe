@@ -1,92 +1,25 @@
-
-{% macro tumor_only_variant_filter(pair, input_vcf, temp_dir, variant_caller, origin) %}
-
-{% if input_vcf.endswith('.vcf') %}
-  {% set vcf_prefix = input_vcf.split('.')[:-1]|join('.') %}
-{% elif input_vcf.endswith('.vcf.gz') %}
-  {% set vcf_prefix = input_vcf.split('.')[:-2]|join('.') %}
-{% else %}
-  {{ raise('{} does not appear to be a vcf!'.format(input_vcf)) }}
-{% endif %}
-
-{% set output_vcf %}{{ vcf_prefix }}.flt.vcf.gz{% endset %}
-{# Checking if CC_filter is already defined, in preparation for allowing user defined filters #}
-{% if CC_filter is not defined %}
-  {% if variant_caller == 'merged' and pair.callers is defined and pair.callers|length > 1 %}
-    {% if pair.callers | length > 3 %}
-      {% set CC_filter %}INFO/CC>={{ pair.callers | length - 2 }}{% endset %}
-    {% else %}
-      {% set CC_filter %}INFO/CC>={{ pair.callers | length - 1 }}{% endset %}
-    {% endif %}
-  {% endif %}
-{% endif %}
-
-{% if COSMIC_Ratio_Threshold is not defined %}
-  {% set COSMIC_Ratio_Threshold = "0.10" %}
-{% else %}
-  {% if COSMIC_Ratio_Threshold is not number %}
-    {{ raise('The supplied COSMIC_Ratio_Threshold: {} is not a number'.format(COSMIC_Ratio_Threshold)) }}
-  {% elif COSMIC_Ratio_Threshold <= 0 or COSMIC_Ratio_Threshold >= 1 %}
-    {{ raise('The supplied COSMIC_Ratio_Threshold: {} is outside of the expected range of 0..1'.format(COSMIC_Ratio_Threshold)) }}
-  {% endif %}
-{% endif %}
-
-{# Ratios are capped in a range of 0-1, with 1 indicating an AC value of 0 #}
-{% set TOPMED_CNT_RATIO %}(INFO/COSMIC_CNT/(INFO/COSMIC_CNT + INFO/TOPMED_AC)>={{ COSMIC_Ratio_Threshold }}){% endset %}
-{% set TOPMED_NC_CNT_RATIO %}(INFO/COSMIC_NC_CNT/(INFO/COSMIC_NC_CNT + INFO/TOPMED_AC)>={{ COSMIC_Ratio_Threshold }}){% endset %}
-{% set GNOMAD_GENOME_CNT_RATIO %}(INFO/COSMIC_CNT/(INFO/COSMIC_CNT + INFO/GNOMAD_GENOME_AC)>={{ COSMIC_Ratio_Threshold }}){% endset %}
-{% set GNOMAD_GENOME_NC_CNT_RATIO %}(INFO/COSMIC_NC_CNT/(INFO/COSMIC_NC_CNT + INFO/GNOMAD_GENOME_AC)>={{ COSMIC_Ratio_Threshold }}){% endset %}
-{% set GNOMAD_EXOME_CNT_RATIO %}(INFO/COSMIC_CNT/(INFO/COSMIC_CNT + INFO/GNOMAD_EXOME_AC)>={{ COSMIC_Ratio_Threshold }}){% endset %}
-{% set GNOMAD_EXOME_NC_CNT_RATIO %}(INFO/COSMIC_NC_CNT/(INFO/COSMIC_NC_CNT + INFO/GNOMAD_EXOME_AC)>={{ COSMIC_Ratio_Threshold }}){% endset %}
-{% set INCLUDE_NON_DB %}(INFO/TOPMED==0 & INFO/GNOMAD_GENOME=0 & INFO/GNOMAD_EXOME=0){% endset %}
-{% set INCLUDE_FROM_RATIO %}({{ TOPMED_CNT_RATIO }} | {{ TOPMED_NC_CNT_RATIO }} | {{ GNOMAD_GENOME_CNT_RATIO }} | {{ GNOMAD_GENOME_NC_CNT_RATIO }} | {{ GNOMAD_EXOME_CNT_RATIO }} | {{ GNOMAD_EXOME_NC_CNT_RATIO }}){% endset%}
-
-- name: tumor_only_variant_filtering_{{ pair.name }}_{{ variant_caller }}_{{ origin }}
-  tags: [{{ pair.gltype }}, tumor_only, variant_filter, {{ variant_caller }}, {{ pair.name }}]
-  {% if temp_dir in input_vcf %}
-  reset: predecessors
-  {% endif %}
-  input: {{ input_vcf }}
-  output: {{ output_vcf }}
-  cpus: 4
-  mem: 8G
-  walltime: "4:00:00"
-  queue_preset: "DEFAULT"
-  container: {{ constants.tools.bcftools.container }}
-  digest: {{ constants.tools.bcftools.digest }}
-  cmd: |
-    set -eu
-    set -o pipefail
-
-    mkdir -p {{ temp_dir }}
-
-    {# Goal of the following filters - output likely somatic variants, e.g. remove germline variants
-      INCLUDE_NON_DB = Includes variants found in COSMIC, but not found in GNOMAD or TOPMED
-      INCLUDE_FROM_RATIO = Includes variants that meet the threshold for COSMIC_CNT/AC, indicating likely somatic
-    #}
-    bcftools view \
-      --threads 4 \
-      {% if variant_caller == 'merged' %}
-      --include '{{ CC_filter }} & ({{ INCLUDE_NON_DB }} | {{ INCLUDE_FROM_RATIO }})' \
-      {% else %}
-      --include '{{ INCLUDE_NON_DB }} | {{ INCLUDE_FROM_RATIO }}' \
-      {% endif %}
-      --output-file {{ output_vcf }} --output-type z \
-      {{ input_vcf }}
-
-    bcftools index --threads 4 --tbi --force {{ output_vcf }}
-
-{% endmacro %}
-
 {% macro filter_variants(pair, input_vcf, output_dir, output_vcf, task) %}
 
-{# Checking if CC_filter is already defined, in preparation for allowing user defined filters #}
-{% if CC_filter is not defined %}
-  {% if pair.callers is defined and pair.callers|length > 1 %}
-    {% if pair.callers | length > 3 %}
-      {% set CC_filter %}INFO/CC>={{ pair.callers | length - 2 }}{% endset %}
-    {% else %}
-      {% set CC_filter %}INFO/CC>={{ pair.callers | length - 1 }}{% endset %}
+{# Set filtering options to the default in the pipeline.yaml, we then override them if defined #}
+{% set variant_filtering_options = {} %}
+{% do variant_filtering_options.update(constants.tempe.somatic_variant_filtering_options) %}
+{% if task_variables is defined and task_variables.somatic_variant_filtering is defined %}
+  {% do variant_filtering_options.update(task_variables.somatic_variant_filtering) %}
+{% endif %}
+
+{% if variant_filtering_options.variants_to_include_filter is not defined %}
+  {% set variant_filtering_options.variants_to_include_filter = "" %}
+
+  {# Checking if CC_filter is already defined, in preparation for allowing user defined filters #}
+  {# This is not defined in the pipeline.yaml, since it is already dynamic, but we allow users to set the value #}
+  {% if variant_filtering_options.CC_filter is not defined %}
+    {% if variant_caller == 'merged' and pair.callers is defined and pair.callers|length > 1 %}
+      {% if pair.callers | length > 3 %}
+        {% set variant_filtering_options.CC_filter %}INFO/CC>={{ pair.callers | length - 2 }}{% endset %}
+      {% else %}
+        {% set variant_filtering_options.CC_filter %}INFO/CC>={{ pair.callers | length - 1 }}{% endset %}
+      {% endif %}
+      {% do variant_filtering_options.variants_to_include_filter.append(variant_filtering_options.CC_filter) %}
     {% endif %}
   {% endif %}
 {% endif %}
@@ -117,9 +50,7 @@
     mkdir -p {{ output_dir }}
 
     bcftools view \
-      {% if CC_filter is defined %}
-      --include "{{ CC_filter }}" \
-      {% endif %}
+      --include "{{ variant_filtering_options.variants_to_include_filter }}" \
       --output-file {{ output_vcf }} \
       --output-type {{ output_type }} \
       {{ input_vcf }}
@@ -130,3 +61,4 @@
     {% endif %}
 
 {% endmacro %}
+

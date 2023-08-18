@@ -230,7 +230,6 @@ constants:
     chip_genes_list: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/CHIP/chip_genes.bed
     mappability_track: /home/tgenref/homo_sapiens/grch38_hg38/public_databases/bismap/k100.umap.no_header.bed
     dj_window: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/bpure/dj_region_1kb_windowed.bed
-    rsem_index: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/tool_resources/rsem_1.3.3/hg38_tempe
     salmon_index: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/tool_resources/salmon_1.2.1-gompi-2019a/salmon_puff_75merPlus
     sex_check_targets: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/tgen_gender_check/chrx_common_dbSNPv152_snv_exons.bed
     sex_check_vcf: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/tgen_gender_check/chrx_common_dbSNPv152_snv_exons.vcf.gz
@@ -239,25 +238,16 @@ constants:
     starfusion_index: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/tool_resources/starFusion_gencode_v37/starFusion_Resources/ctat_genome_lib_build_dir
     strandedness_options:
       inward-unstranded-notapplicable:
-        rsem: "none"
         salmon: "IU"
-        htseq: "no"
         featurecounts: "0"
-        tophat: "-fr-unstranded"
         collectrnaseqmetrics: "NONE"
       inward-stranded-forward:
-        rsem: "forward"
         salmon: "ISF"
-        htseq: "yes"
         featurecounts: "1"
-        tophat: "-fr-secondstrand"
         collectrnaseqmetrics: "FIRST_READ_TRANSCRIPTION_STRAND"
       inward-stranded-reverse:
-        rsem: "reverse"
         salmon: "ISR"
-        htseq: "reverse"
         featurecounts: "2"
-        tophat: "-fr-firststrand"
         collectrnaseqmetrics: "SECOND_READ_TRANSCRIPTION_STRAND"
     umi_options:
       correct_umi_umi_files: /home/tgenref/assay_files/twist_umi_adaptor_system/known_umi_sequences.txt
@@ -274,6 +264,9 @@ constants:
       filter_min_base_quality: 30
       filter_max_no_call_fraction: 0.1
       filter_max_base_error_rate: 0.1
+    somatic_variant_filtering_options:
+    tumor_only_variant_filtering_options:
+      COSMIC_Ratio_Threshold: 0.10
     snpSniffer_sites: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/snpSniffer/positions_387_hg38_ucsc.txt
     snpSniffer_database: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/snpSniffer/databaseV5_hg38_ucsc.ini
     vep_data: /home/tgenref/homo_sapiens/grch38_hg38/tool_specific_resources/vep/v103/
@@ -294,9 +287,6 @@ constants:
       - 'disruptive_inframe_insertion'
       - 'inframe_deletion'
       - 'disruptive_inframe_deletion'
-    deepvariant_models:
-      exome: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/deepvariant_v1.4.0/DeepVariant-inception_v3-1.4.0+data-wes_standard/model.ckpt
-      genome: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/deepvariant_v1.4.0/DeepVariant-inception_v3-1.4.0+data-wgs_standard/model.ckpt
     sequence_groupings:
       # Sequence groupings for BQSR (same groups as found in the GATK WDL example).
       - ['chr1']
