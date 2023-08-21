@@ -52,13 +52,7 @@
   tags: [{{ sample_or_pair.gltype }}, annotate_vcfs, {{ analysis_type }}, {{ variant_caller }}, {{ sample_or_pair.name }}]
   input:
     - {{ final_vcf_prefix }}.vep.full.vcf
-    {% if sample_or_pair.tumor is defined %}
-    - {{ final_vcf_prefix }}.vep.full.maf
-    {% endif %}
   output:
-    {% if sample_or_pair.tumor is defined %}
-    - {{ final_vcf_prefix }}.vep.full.maf.gz
-    {% endif %}
     - {{ final_vcf_prefix }}.vep.full.vcf.gz
     - {{ final_vcf_prefix }}.vep.full.vcf.gz.tbi
   walltime: "8:00:00"
@@ -137,13 +131,7 @@
   tags: [{{ sample_or_pair.gltype }}, annotate_vcfs, {{ analysis_type }}, {{ variant_caller }}, {{ sample_or_pair.name }}]
   input:
     - {{ final_vcf_prefix }}.vep.pick.vcf
-    {% if sample_or_pair.tumor is defined %}
-    - {{ final_vcf_prefix }}.vep.pick.maf
-    {% endif %}
   output:
-    {% if sample_or_pair.tumor is defined %}
-    - {{ final_vcf_prefix }}.vep.pick.maf.gz
-    {% endif %}
     - {{ final_vcf_prefix }}.vep.pick.vcf.gz
     - {{ final_vcf_prefix }}.vep.pick.vcf.gz.tbi
   walltime: "8:00:00"
