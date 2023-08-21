@@ -24,8 +24,12 @@
   cmd: |
     set -eu
 
+    {% if input_vcf.endswith('.vcf.gz') %}
+    gunzip -c {{ input_vcf }} > {{ vcf_prefix }}.vcf
+    {% else %}
+
     vcf2maf.pl \
-      --input-vcf {{ input_vcf }} \
+      --input-vcf {{ vcf_prefix }}.vcf \
       --output-maf {{ vcf_prefix }}.maf \
       --tumor-id {{ pair.tumor.rgsm }} \
       --normal-id {{ pair.normal.rgsm }} \
@@ -33,6 +37,10 @@
       --ref-fasta {{ constants.tempe.reference_fasta }} \
       --ncbi-build GRCh38 \
       --retain-info CC,COSMIC,COSMIC_NC,GNOMAD_EXOME,GNOMAD_EXOME_AF,GNOMAD_GENOME,GNOMAD_GENOME_AF,TOPMED,TOPMED_AF,CLINVAR
+
+    {% if input_vcf.endswith('.vcf.gz') %}
+    rm {{ vcf_prefix }}.vcf
+    {% endif %}
 
 {% endmacro %}
 
