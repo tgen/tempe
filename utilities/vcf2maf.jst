@@ -12,6 +12,7 @@
   tags: [{{ pair.gltype }}, vcf2maf, {{ pair.name }}]
   input:
     - {{ input_vcf }}
+    - {{ constants.tempe.reference_fasta }}
   output:
     - {{ vcf_prefix }}.maf
   cpus: 1
