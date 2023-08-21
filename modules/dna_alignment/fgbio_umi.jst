@@ -86,7 +86,7 @@ other weird filters are in place
 
 {% for rglb, rg in sample.read_groups.values() | groupby('rglb') %}
 {% set post_umi_correction_readcount_json %}{{ results_dir }}/stats/{{ sample.rgsm }}_{{ rglb }}.fgbio_post_umi_correction_readcounts.json{% endset %}
-{% set post_consensus_readcount_json %}{{ results_dir }}/stats/{{ sample.rgsm }}_{{ rglb }}.fgbio_post_umi_consensus_readcounts.json{% endset %}
+{% set post_umi_consensus_readcount_json %}{{ results_dir }}/stats/{{ sample.rgsm }}_{{ rglb }}.fgbio_post_umi_consensus_readcounts.json{% endset %}
 - name: merge_uBAM_{{ sample.name }}_{{ rglb }}
   tags: [{{ sample.gltype }}, alignment, dna_alignment, {{ aligner }}, umi, {{ sample.name }}]
   reset: predecessors
