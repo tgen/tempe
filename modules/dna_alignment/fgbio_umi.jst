@@ -32,8 +32,8 @@ other weird filters are in place
     {% endfor %}
     - {{ umi_options.correct_umi_umi_files }}
   output:
-    - {{ temp_dir }}/{{ rgid }}/{{ sample.rgid }}_UMI_uBAM.bam
-    - {{ results_dir }}/stats/{{ sample.name }}_{{ sample.rgid }}.fgbio_umi_correction_metrics.txt
+    - {{ temp_dir }}/{{ rgid }}/{{ rg.rgid }}_UMI_uBAM.bam
+    - {{ results_dir }}/stats/{{ sample.name }}_{{ rg.rgid }}.fgbio_umi_correction_metrics.txt
   cpus: 4
   mem: 32G
   walltime: "4:00:00"
@@ -61,25 +61,25 @@ other weird filters are in place
         --input {% for fastq in [r1fastq, r2fastq] %}temp/fastqs/{{ fastq.basename }} {% endfor %} \
         --read-structure {{ umi_options.correct_umi_read_structure }} \
         --umi-tag RX \
-        --sample {{ sample.rgsm }} \
-        --library {{ sample.rglb }} \
-        --read-group-id {{ sample.rgid }} \
-        --platform {{ sample.rgpl }} \
-        --platform-unit {{ sample.rgpu }} \
-        --platform-model {{ sample.rgpm }} \
-        --sequencing-center {{ sample.rgcn }} \
+        --sample {{ rg.rgsm }} \
+        --library {{ rg.rglb }} \
+        --read-group-id {{ rg.rgid }} \
+        --platform {{ rg.rgpl }} \
+        --platform-unit {{ rg.rgpu }} \
+        --platform-model {{ rg.rgpm }} \
+        --sequencing-center {{ rg.rgcn }} \
         --output /dev/stdout | \
       fgbio --tmp-dir {{ temp_dir }}/{{ rgid }}/fgbio_tmp \
         --compression 1 --async-io \
         CorrectUmis \
         --input /dev/stdin \
-        --output {{ temp_dir }}/{{ rgid }}/{{ sample.rgid }}_UMI_uBAM.bam \
+        --output {{ temp_dir }}/{{ rgid }}/{{ rg.rgid }}_UMI_uBAM.bam \
         --max-mismatches {{ umi_options.correct_umi_max_mismatches }} \
         --min-distance {{ umi_options.correct_umi_min_distance }} \
         --umi-tag RX \
         --umi-files {{ umi_options.correct_umi_umi_files }} \
         --dont-store-original-umis \
-        --metrics {{ results_dir }}/stats/{{ sample.rgsm }}_{{ sample.rglb }}_{{ sample.rgid.split('-')[0] }}.fgbio_umi_correction_metrics.txt
+        --metrics {{ results_dir }}/stats/{{ rg.rgsm }}_{{ rg.rglb }}_{{ rg.rgid.split('-')[0] }}.fgbio_umi_correction_metrics.txt
 
 {% endfor %}
 
@@ -112,9 +112,9 @@ other weird filters are in place
       {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.UMI_uBAM.bam \
     {% for rgid in rg %}
       {% if not loop.last %}
-      {{ temp_dir }}/{{ rgid.rgid }}/{{ sample.rgid }}_UMI_uBAM.bam \
+      {{ temp_dir }}/{{ rgid.rgid }}/{{ rgid.rgid }}_UMI_uBAM.bam \
       {% else %}
-      {{ temp_dir }}/{{ rgid.rgid }}/{{ sample.rgid }}_UMI_uBAM.bam
+      {{ temp_dir }}/{{ rgid.rgid }}/{{ rgid.rgid }}_UMI_uBAM.bam
       {% endif %}
     {% endfor %}
 
@@ -226,6 +226,7 @@ other weird filters are in place
     fgbio --tmp-dir {{ temp_dir }}/fgbio_tmp --compression 1 \
       CallDuplexConsensusReads \
       --threads 4 \
+      --read-group-id {{ (rg|first).rgid }} \
       --input {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.group_by_umi.bam  \
       --output {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.con_uBAM.bam \
       --error-rate-pre-umi {{ umi_options.consensus_error_rate_pre_umi }} \
@@ -239,6 +240,7 @@ other weird filters are in place
       --threads 4 \
       --min-reads 1 \
       --tag MI \
+      --read-group-id {{ (rg|first).rgid }} \
       --error-rate-pre-umi {{ umi_options.consensus_error_rate_pre_umi }} \
       --error-rate-post-umi {{ umi_options.consensus_error_rate_post_umi }} \
       --min-input-base-quality {{ umi_options.consensus_min_input_base_quality }} \
