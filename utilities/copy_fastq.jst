@@ -5,6 +5,11 @@
   output: temp/fastqs/{{ fastq.basename }}
   retry: 2
   cpus: 6
+  {% if fastq.fileType == "fasterq" %}
+  mem: 32G
+  {% else %}
+  mem: 8G
+  {% endif %}
   walltime: "4:00:00"
   queue_preset: "DATA-MOVER"
   {% if fastq.fileType == "fasterq" %}
