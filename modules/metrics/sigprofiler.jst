@@ -9,7 +9,7 @@
 {% set filt_vcf %}{{ temp_vcf_dir }}/{{ vcf_prefix|basename }}.pass.vcf{% endset %}
 
 {% set task %}sigprofiler_{{ variant_caller }}_{{ pair.name }}_{{ aligner }}{% endset %}
-{{- filter_variants(pair, all_vcf, temp_vcf_dir, filt_vcf, task) }}
+{{- filter_variants(pair, all_vcf, temp_vcf_dir, filt_vcf, task, variant_caller) }}
 
 - name: sigprofiler_{{ variant_caller }}_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, mutational_signatures, sigprofiler, {{ pair.name }}]

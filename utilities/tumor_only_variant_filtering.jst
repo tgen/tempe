@@ -18,20 +18,22 @@
 {% endif %}
 
 {% if variant_filtering_options.variants_to_include_filter is not defined %}
-  {% set variant_filtering_options.variants_to_include_filter = [] %}
+  {% do variant_filtering_options.update({'variants_to_include_filter': []}) %}
 
   {# Checking if CC_filter is already defined, in preparation for allowing user defined filters #}
   {# This is not defined in the pipeline.yaml, since it is already dynamic, but we allow users to set the value #}
   {% if variant_filtering_options.CC_filter is not defined %}
     {% if variant_caller == 'merged' and pair.callers is defined and pair.callers|length > 1 %}
       {% if pair.callers | length > 3 %}
-        {% set variant_filtering_options.CC_filter %}INFO/CC>={{ pair.callers | length - 2 }}{% endset %}
+        {% set CC_filter %}INFO/CC>={{ pair.callers | length - 2 }}{% endset %}
       {% else %}
-        {% set variant_filtering_options.CC_filter %}INFO/CC>={{ pair.callers | length - 1 }}{% endset %}
+        {% set CC_filter %}INFO/CC>={{ pair.callers | length - 1 }}{% endset %}
       {% endif %}
-      {% do variant_filtering_options.variants_to_include_filter.append(variant_filtering_options.CC_filter) %}
     {% endif %}
+  {% else %}
+    {% set CC_filter = variant_filtering_options.CC_filter %}
   {% endif %}
+  {% do variant_filtering_options.variants_to_include_filter.append(CC_filter) %}
 
   {# This filter is partially dynamic, though more specifically it is very complex based on the number of annotation databases #}
   {% if variant_filtering_options.database_filter is not defined %}
@@ -52,9 +54,9 @@
     {% set INCLUDE_NON_DB %}(INFO/TOPMED==0 & INFO/GNOMAD_GENOME=0 & INFO/GNOMAD_EXOME=0){% endset %}
     {% set INCLUDE_FROM_RATIO %}({{ TOPMED_CNT_RATIO }} | {{ TOPMED_NC_CNT_RATIO }} | {{ GNOMAD_GENOME_CNT_RATIO }} | {{ GNOMAD_GENOME_NC_CNT_RATIO }} | {{ GNOMAD_EXOME_CNT_RATIO }} | {{ GNOMAD_EXOME_NC_CNT_RATIO }}){% endset%}
     {% if variant_caller == 'merged' %}
-    {% set variant_filtering_options.database_filter %} & ({{ INCLUDE_NON_DB }} | {{ INCLUDE_FROM_RATIO }}){% endset %}
+      {% set variant_filtering_options.database_filter %} & ({{ INCLUDE_NON_DB }} | {{ INCLUDE_FROM_RATIO }}){% endset %}
     {% else %}
-    {% set variant_filtering_options.database_filter %}({{ INCLUDE_NON_DB }} | {{ INCLUDE_FROM_RATIO }}){% endset %}
+      {% set variant_filtering_options.database_filter %}({{ INCLUDE_NON_DB }} | {{ INCLUDE_FROM_RATIO }}){% endset %}
     {% endif %}
     {% do variant_filtering_options.variants_to_include_filter.append(variant_filtering_options.database_filter) %}
   {% endif %}
