@@ -84,7 +84,8 @@ other weird filters are in place
 {% endfor %}
 
 {% for rglb, rg in sample.read_groups.values() | groupby('rglb') %}
-{% set readcount_json %}{{ results_dir }}/stats/{{ sample.rgsm }}_{{ rglb }}.fgbio_post_umi_correction_readcounts.json{% endset %}
+{% set post_umi_correction_readcount_json %}{{ results_dir }}/stats/{{ sample.rgsm }}_{{ rglb }}.fgbio_post_umi_correction_readcounts.json{% endset %}
+{% set post_consensus_readcount_json %}{{ results_dir }}/stats/{{ sample.rgsm }}_{{ rglb }}.fgbio_post_umi_consensus_readcounts.json{% endset %}
 - name: merge_uBAM_{{ sample.name }}_{{ rglb }}
   tags: [{{ sample.gltype }}, alignment, dna_alignment, {{ aligner }}, umi, {{ sample.name }}]
   reset: predecessors
@@ -94,7 +95,7 @@ other weird filters are in place
     {% endfor %}
   output:
     - {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.UMI_uBAM.bam
-    - {{ readcount_json }}
+    - {{ post_umi_correction_readcount_json }}
   cpus: 8
   mem: 16G
   walltime: "4:00:00"
@@ -120,7 +121,7 @@ other weird filters are in place
 
     {# Collecting count of reads post merging rgids - thus this is read counts post correction for the rglb #}
     RGLB_READCOUNTS=$(samtools view -c {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.UMI_uBAM.bam)
-    cat <<EOF > {{ readcount_json }}
+    cat <<EOF > {{ post_umi_correction_readcount_json }}
     {"SAMPLES": [{"LIBRARIES": [{"READGROUPS": [{}], "postUMICorrectionReadCount": "${RGLB_READCOUNTS}", "LB": "{{ rglb }}" }], "SM": "{{ sample.rgsm }}"}]}
     EOF
 
@@ -260,6 +261,7 @@ other weird filters are in place
     {% else %}
     - {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.md.bam
     {% endif %}
+    - {{ post_umi_consensus_readcount_json }}
   cpus: 20
   mem: 80G
   walltime: "4:00:00"
@@ -332,6 +334,12 @@ other weird filters are in place
       --write-index \
       {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.uns.bam
     {% endif %}
+
+    {# Collecting count of reads post merging rgids - thus this is read counts post correction for the rglb #}
+    RGLB_READCOUNTS=$(samtools view -c {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.md.bam)
+    cat <<EOF > {{ post_umi_consensus_readcount_json }}
+    {"SAMPLES": [{"LIBRARIES": [{"READGROUPS": [{}], "postUMIConsensusReadCount": "${RGLB_READCOUNTS}", "LB": "{{ rglb }}" }], "SM": "{{ sample.rgsm }}"}]}
+    EOF
 
 {% endfor %}
 
