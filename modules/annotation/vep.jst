@@ -1,8 +1,10 @@
+{% from 'utilities/vcf2maf.jst' import vcf2maf with context %}
+
 {% macro vep(sample_or_pair, results_dir, input_vcf, variant_caller, final_vcf_prefix, aligner, analysis_type) %}
 
 - name: vep_all_{{ variant_caller }}_{{ sample_or_pair.name }}_{{ aligner }}
   tags: [{{ sample_or_pair.gltype }}, annotate_vcfs, {{ analysis_type }}, {{ variant_caller }}, {{ sample_or_pair.name }}]
-  input: 
+  input:
     - {{ input_vcf }}
     - {{ constants.tempe.vep_data }}
     - {{ constants.tempe.reference_fasta }}
@@ -46,11 +48,22 @@
         --flag_pick_allele_gene \
         --pick_order canonical,appris,tsl,biotype,rank,ccds,length
 
+{% if sample_or_pair.tumor is defined %}
+{% set output_vcf %}{{ final_vcf_prefix }}.vep.full.vcf{% endset %}
+{{ vcf2maf(sample_or_pair, output_vcf, aligner, variant_caller, 'vep_all') }}
+{% endif %}
 
 - name: vep_all_bcftools_compress_{{ variant_caller }}_{{ sample_or_pair.name }}_{{ aligner }}
   tags: [{{ sample_or_pair.gltype }}, annotate_vcfs, {{ analysis_type }}, {{ variant_caller }}, {{ sample_or_pair.name }}]
-  input: {{ final_vcf_prefix }}.vep.full.vcf
+  input:
+    - {{ final_vcf_prefix }}.vep.full.vcf
+    {% if sample_or_pair.tumor is defined %}
+    - {{ final_vcf_prefix }}.vep.full.maf
+    {% endif %}
   output:
+    {% if sample_or_pair.tumor is defined %}
+    - {{ final_vcf_prefix }}.vep.full.maf.gz
+    {% endif %}
     - {{ final_vcf_prefix }}.vep.full.vcf.gz
     - {{ final_vcf_prefix }}.vep.full.vcf.gz.tbi
   walltime: "8:00:00"
@@ -73,7 +86,9 @@
     rm  "{{ final_vcf_prefix }}.vep.full.vcf"
 
     bcftools index --threads 4 --force --tbi "{{ final_vcf_prefix }}.vep.full.vcf.gz"
-
+    {% if sample_or_pair.tumor is defined %}
+    gzip {{ final_vcf_prefix }}.vep.full.maf
+    {% endif %}
 
 - name: vep_con_{{ variant_caller }}_{{ sample_or_pair.name }}_{{ aligner }}
   tags: [{{ sample_or_pair.gltype }}, annotate_vcfs, {{ analysis_type }}, {{ variant_caller }}, {{ sample_or_pair.name }}]
@@ -121,11 +136,22 @@
         --pick_allele_gene \
         --pick_order canonical,appris,tsl,biotype,rank,ccds,length
 
+{% if sample_or_pair.tumor is defined %}
+{% set output_vcf %}{{ final_vcf_prefix }}.vep.pick.vcf{% endset %}
+{{ vcf2maf(sample_or_pair, output_vcf, aligner, variant_caller) }}
+{% endif %}
 
 - name: vep_con_bcftools_compress_{{ variant_caller }}_{{ sample_or_pair.name }}_{{ aligner }}
   tags: [{{ sample_or_pair.gltype }}, annotate_vcfs, {{ analysis_type }}, {{ variant_caller }}, {{ sample_or_pair.name }}]
-  input: {{ final_vcf_prefix }}.vep.pick.vcf
+  input:
+    - {{ final_vcf_prefix }}.vep.pick.vcf
+    {% if sample_or_pair.tumor is defined %}
+    - {{ final_vcf_prefix }}.vep.pick.maf
+    {% endif %}
   output:
+    {% if sample_or_pair.tumor is defined %}
+    - {{ final_vcf_prefix }}.vep.pick.maf.gz
+    {% endif %}
     - {{ final_vcf_prefix }}.vep.pick.vcf.gz
     - {{ final_vcf_prefix }}.vep.pick.vcf.gz.tbi
   walltime: "8:00:00"
@@ -148,6 +174,8 @@
     rm "{{ final_vcf_prefix }}.vep.pick.vcf"
 
     bcftools index --threads 4 --force --tbi "{{ final_vcf_prefix }}.vep.pick.vcf.gz"
-
+    {% if sample_or_pair.tumor is defined %}
+    gzip {{ final_vcf_prefix }}.vep.pick.maf
+    {% endif %}
 
 {% endmacro %}

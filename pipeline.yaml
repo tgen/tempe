@@ -132,6 +132,9 @@ constants:
     vcfmerger:
       container: pbc-art-prd01.ad.tgen.org/hpc-virtual-containers/oci/testing/vcfmerger2:0.9.4-23072513
       digest: 319223f3a947260de4c369f6d1d2a29846f9bbe15f3e7022ad7bc32e5f9ca919
+    vcf2maf:
+      container: quay.io/biocontainers/vcf2maf:1.6.21--hdfd78af_0
+      digest: e33def318468ac924bdcc280c4aa8984865709d111cd0df9b0d82c7908b7dd07
     vep:
       container: ensemblorg/ensembl-vep:release_107.0
       digest: f252df581820048dbc90229d38fbc7b94738743bd9ebc23ffcc533245e9ab0e5
