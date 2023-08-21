@@ -32,11 +32,7 @@
       --inhibit-vep \
       --ref-fasta {{ constants.tempe.reference_fasta }} \
       --ncbi-build GRCh38 \
-      {% if variant_caller == 'merged' %}
       --retain-info CC,COSMIC,COSMIC_NC,GNOMAD_EXOME,GNOMAD_EXOME_AF,GNOMAD_GENOME,GNOMAD_GENOME_AF,TOPMED,TOPMED_AF,CLINVAR
-      {% else %}
-      --retain-info COSMIC,COSMIC_NC,GNOMAD_EXOME,GNOMAD_EXOME_AF,GNOMAD_GENOME,GNOMAD_GENOME_AF,TOPMED,TOPMED_AF,CLINVAR
-      {% endif %}
 
 {% endmacro %}
 

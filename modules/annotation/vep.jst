@@ -48,7 +48,7 @@
         --flag_pick_allele_gene \
         --pick_order canonical,appris,tsl,biotype,rank,ccds,length
 
-{% if sample_or_pair.tumor is defined %}
+{% if sample_or_pair.tumor is defined and variant_caller == 'merged' %}
 {% set output_vcf %}{{ final_vcf_prefix }}.vep.full.vcf{% endset %}
 {{ vcf2maf(sample_or_pair, output_vcf, aligner, variant_caller, 'vep_all') }}
 {% endif %}
@@ -136,7 +136,7 @@
         --pick_allele_gene \
         --pick_order canonical,appris,tsl,biotype,rank,ccds,length
 
-{% if sample_or_pair.tumor is defined %}
+{% if sample_or_pair.tumor is defined and variant_caller == 'merged' %}
 {% set output_vcf %}{{ final_vcf_prefix }}.vep.pick.vcf{% endset %}
 {{ vcf2maf(sample_or_pair, output_vcf, aligner, variant_caller, 'vep_con') }}
 {% endif %}
