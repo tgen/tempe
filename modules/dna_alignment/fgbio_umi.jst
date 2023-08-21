@@ -1,7 +1,8 @@
 {% from 'utilities/read_group_line.jst' import read_group_line with context %}
 {% from 'utilities/remove_files.jst' import remove_files with context %}
-{% from 'modules/dna_alignment/gatk_baserecalibration.jst' import baserecalibration, nobaserecalibration with context %}
 {% from 'utilities/bam_to_cram.jst' import bam_to_cram with context %}
+{% from 'modules/qc/stats2lims.jst' import stats2lims with context %}
+{% from 'modules/dna_alignment/gatk_baserecalibration.jst' import baserecalibration, nobaserecalibration with context %}
 
 {% macro fgbio_bwa_mem(sample, aligner) %}
 
@@ -91,7 +92,7 @@ other weird filters are in place
   reset: predecessors
   input:
     {% for rgid in rg %}
-    - {{ temp_dir }}/{{ rgid.rgid }}/{{ sample.rgid }}_UMI_uBAM.bam
+    - {{ temp_dir }}/{{ rgid.rgid }}/{{ rgid.rgid }}_UMI_uBAM.bam
     {% endfor %}
   output:
     - {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.UMI_uBAM.bam
@@ -124,6 +125,9 @@ other weird filters are in place
     cat <<EOF > {{ post_umi_correction_readcount_json }}
     {"SAMPLES": [{"LIBRARIES": [{"READGROUPS": [{}], "postUMICorrectionReadCount": "${RGLB_READCOUNTS}", "LB": "{{ rglb }}" }], "SM": "{{ sample.rgsm }}"}]}
     EOF
+
+{% set task %}{{ sample.name }}_{{ aligner }}_fgbio_post_umi_correction_readcount{% endset %}
+{{- stats2lims(sample.gltype, sample.name, task, post_umi_correction_readcount_json, "fgbio_umi") }}
 
 - name: bwa_mem_merge_umi_alignment_{{ sample.name }}_{{ rglb }}
   tags: [{{ sample.gltype }}, alignment, dna_alignment, {{ aligner }}, umi, {{ sample.name }}]
@@ -340,6 +344,9 @@ other weird filters are in place
     cat <<EOF > {{ post_umi_consensus_readcount_json }}
     {"SAMPLES": [{"LIBRARIES": [{"READGROUPS": [{}], "postUMIConsensusReadCount": "${RGLB_READCOUNTS}", "LB": "{{ rglb }}" }], "SM": "{{ sample.rgsm }}"}]}
     EOF
+
+{% set task %}{{ sample.name }}_{{ aligner }}_fgbio_post_umi_consensus_readcount{% endset %}
+{{- stats2lims(sample.gltype, sample.name, task, post_umi_consensus_readcount_json, "fgbio_umi") }}
 
 {% endfor %}
 
