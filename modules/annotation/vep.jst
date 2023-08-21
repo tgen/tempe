@@ -138,7 +138,7 @@
 
 {% if sample_or_pair.tumor is defined %}
 {% set output_vcf %}{{ final_vcf_prefix }}.vep.pick.vcf{% endset %}
-{{ vcf2maf(sample_or_pair, output_vcf, aligner, variant_caller) }}
+{{ vcf2maf(sample_or_pair, output_vcf, aligner, variant_caller, 'vep_con') }}
 {% endif %}
 
 - name: vep_con_bcftools_compress_{{ variant_caller }}_{{ sample_or_pair.name }}_{{ aligner }}
