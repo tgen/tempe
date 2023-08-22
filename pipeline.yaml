@@ -1,6 +1,6 @@
 __pipeline__:
   name: tempe
-  main: main.jst
+  main: main.j2
   description: Rapid Human GRCh38 genomics suite
   version: optimized
   bin: required_scripts/
