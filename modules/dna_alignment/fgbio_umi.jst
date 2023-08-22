@@ -341,9 +341,9 @@ other weird filters are in place
 
     {# Collecting count of reads post merging rgids, aka read counts post correction per rglb #}
     {% if sample.read_groups.values() | groupby('rglb') | length == 1 %}
-    RGLB_READCOUNTS=$(samtools view -c {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam) \
+    RGLB_READCOUNTS=$(samtools view -c {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam)
     {% else %}
-    RGLB_READCOUNTS=$(samtools view -c {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.md.bam) \
+    RGLB_READCOUNTS=$(samtools view -c {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.md.bam)
     {% endif %}
     cat <<EOF > {{ post_umi_consensus_readcount_json }}
     {"SAMPLES": [{"LIBRARIES": [{"READGROUPS": [{}], "postUMIConsensusReadCount": "${RGLB_READCOUNTS}", "LB": "{{ rglb }}" }], "SM": "{{ sample.rgsm }}"}]}
