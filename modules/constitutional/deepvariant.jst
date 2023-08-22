@@ -28,8 +28,8 @@
   mem: 4G
   walltime: "24:00:00"
   queue_preset: "DEFAULT"
-  container: {{ constants.tools.deepvariant_cpu.container }}
-  digest: {{ constants.tools.deepvariant_cpu.digest }}
+  container: {{ constants.tools.deepvariant.container }}
+  digest: {{ constants.tools.deepvariant.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -72,8 +72,8 @@
   mem: 40G
   walltime: "24:00:00"
   queue_preset: "DEEPVARIANT"
-  container: {{ constants.tools.deepvariant_gpu.container }}
-  digest: {{ constants.tools.deepvariant_gpu.digest }}
+  container: {{ constants.tools.deepvariant.container }}
+  digest: {{ constants.tools.deepvariant.digest }}
   cmd: |
     set -eu
     set -o pipefail
@@ -108,8 +108,8 @@
   mem: {{ sample.total_reads|assignbin(read_bins, memory_bins) }}
   walltime: "24:00:00"
   queue_preset: "DEFAULT"
-  container: {{ constants.tools.deepvariant_cpu.container }}
-  digest: {{ constants.tools.deepvariant_cpu.digest }}
+  container: {{ constants.tools.deepvariant.container }}
+  digest: {{ constants.tools.deepvariant.digest }}
   cmd: |
     set -eu
     set -o pipefail

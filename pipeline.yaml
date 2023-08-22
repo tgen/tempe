@@ -24,7 +24,7 @@ constants:
     cnvear:
       container: ghcr.io/tgen/containers/cnvear:0.1.7
       digest: 4a857e23b484ed0c32de5fb9356d427cd52ea141a797d443f453c457ab852ad2
-    deepvariant_gpu:
+    deepvariant:
       container: google/deepvariant:1.5.0-gpu
       digest: 312af65c01d27e4fc8bb34a4c933ca708bd24d2e7d8ac3076c9c7c078afa20e9
     dle:
