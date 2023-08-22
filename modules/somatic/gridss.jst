@@ -31,13 +31,33 @@
       {{ normal_bam }} \
       {{ tumor_bam }}
 
-    java -jar /opt/gridss/gripss_v2.3.5.jar \
+
+- name: gripss_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, somatic, structural_caller, gridss, {{ pair.name }}]
+  input:
+    - {{ constants.tempe.reference_fasta }}
+    - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.gridss.sv.vcf.gz
+  output:
+    - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.gripss.somatic.vcf.gz
+    - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.gripss.somatic.filtered.vcf.gz
+  cpus: 8
+  mem: 32G
+  walltime: "24:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.gripss.container }}
+  digest: {{ constants.tools.gripss.digest }}
+  cmd: |
+    set -eu
+
+    gripss \
       -sample {{ pair.tumor.rgsm }} \
       -reference {{ pair.normal.rgsm }} \
       -ref_genome_version 38 \
-      -ref_genome {{ constants.tempe.bwa_index }} \
-      -vcf {{ results_dir }}/{{ pair.name }}.{{ aligner }}.gridss.sv.vcf.gz\
+      -ref_genome {{ constants.tempe.reference_fasta }} \
+      -vcf {{ results_dir }}/{{ pair.name }}.{{ aligner }}.gridss.sv.vcf.gz \
       -output_dir {{ results_dir }}/
 
+    mv {{ results_dir }}/{{ pair.tumor.rgsm }}.gripss.filtered.vcf.gz {{ results_dir }}/{{ pair.name }}.{{ aligner }}.gripss.somatic.vcf.gz
+    mv {{ results_dir }}/{{ pair.tumor.rgsm }}.gripss.somatic.filtered.vcf.gz {{ results_dir }}/{{ pair.name }}.{{ aligner }}.gripss.somatic.filtered.vcf.gz
 
 {% endmacro %}
