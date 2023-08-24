@@ -2,7 +2,7 @@ __pipeline__:
   name: tempe
   main: main.j2
   description: Rapid Human GRCh38 genomics suite
-  version: optimized
+  version: development
   bin: required_scripts/
 constants:
   tools:
@@ -67,7 +67,7 @@ constants:
       container: ghcr.io/tgen/containers/manta:1.60-23080709
       digest: 7e6358fe88ded40920082499eb52e211158070e586920d61d8a0cacb821a14f2
     manta_tgen:
-      container: /home/tgenref/containers/manta_v1.6.0-tgen.sif
+      container: /home/tgenref/containers/manta_tgen_1.6.0.sif
       digest: notarealdigest
     msisensor:
       container: ghcr.io/tgen/containers/msisensor:1.1.a-23080815
@@ -100,8 +100,8 @@ constants:
       container: ghcr.io/tgen/containers/samtools:1.17-23080815
       digest: 859ff54d83f5dfd7b3ae2b3841f689efe4aa41ede9fb5f8df49bf648058ae0e3
     samtools_with_python:
-      container: ghcr.io/tgen/containers/samtools_python:1.17-3.7.16-23082100
-      digest: c00a646b76d0ef2e514c1feee2e3b3995d4b38965e44c0e21dce30ea50cd7438
+      container: artifactory.tgen.org/hpc-virtual-containers/oci/testing/samtools_python:1.17-3.7.16-23082208
+      digest: 301353a5f80dc89324bf95029b2b72b8bd49b95450bae1e3c67fffabb7fb4671
     sigprofiler:
       container: ghcr.io/tgen/containers/sigprofiler:0.0.24-23080710
       digest: 42bcc6ed2d229cc39d39b476d2f76bec4b3a42a6cccf04c4ef18cd868496fa16
@@ -124,8 +124,8 @@ constants:
       container: ghcr.io/tgen/containers/transparser:1.0.1-23080810
       digest: 2d9fdfd5700368ebe0f2512c154f18d7df3f9118c897eb46c117dc69eda2411d
     trinity_bwa_samtools:
-      container: /home/tgenref/containers/trinity_with_bwa_2.8.6.sif
-      digest: notarealdigest
+      container: artifactory.tgen.org/hpc-virtual-containers/oci/testing/trinity_bwa_mem2:2.8.6-23082323
+      digest: a09bada5a2b6a3ebc20212b4e57e871583056ebc00ffcb7b57e74f65c241ea57
     vardict:
       container: quay.io/biocontainers/vardict-java:1.8.3--hdfd78af_0
       digest: 4069c082c97470bce4a07f228dbf74b6ea3fc5c4eaa93ba76d2826a496ca3c44
