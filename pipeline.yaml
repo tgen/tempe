@@ -34,8 +34,8 @@ constants:
       container: ghcr.io/tgen/containers/expansion_hunter:4.0.2-23080316
       digest: 079db962be053c674c9e6673961b61a11342a8d7826d66dbaefe75902c60dbcb
     fgbio:
-      container: ghcr.io/tgen/containers/fgbio:2.0.2-23080709
-      digest: b1d25f5a421a256ec3ce7bfc1273534635622ced68b568264ae35a4bf43471b1
+      container: artifactory.tgen.org/hpc-virtual-containers/oci/testing/fgbio:2.0.2-23082313
+      digest: 5476e038b7828e65ac3362e7a6b858c1a8bdf2451a42842de94217e04514f0bc
     finalize:
       container: quay.io/biocontainers/multiqc:1.13--pyhdfd78af_0
       digest: db913f47894a386040d76ae5f46b19149a71377f5107327d15ec89d3a1ec3f5f
