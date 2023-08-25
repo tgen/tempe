@@ -203,7 +203,7 @@ other weird filters are in place
       --compression 1 --async-io \
       GroupReadsByUmi \
       --input {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.UMI_{{ aligner }}.bam \
-      {% if tasks[sample.gltype|capitalize+"_alignment_umi_collapse_duplex"]|default(false) %}
+      {% if tasks[sample.gltype|capitalize+"_alignment_dna_alignment_umi_collapse_duplex"]|default(false) %}
       {# For duplex the grouping strategy must be paired #}
       --strategy "paired" \
       {% else %}
@@ -226,7 +226,7 @@ other weird filters are in place
     # --error-rate-pre-umi {{ constants.tempe.umi_options.consensus_error_rate_pre_umi }}
     # --error-rate-post-umi {{ constants.tempe.umi_options.consensus_error_rate_post_umi }}
     # --min-input-base-quality {{ constants.tempe.umi_options.consensus_min_input_base_quality }}
-    {% if tasks[sample.gltype|capitalize+"_alignment_umi_collapse_duplex"]|default(false) %}
+    {% if tasks[sample.gltype|capitalize+"_alignment_dna_alignment_umi_collapse_duplex"]|default(false) %}
     {# Collapse combined read families - Duplex #}
     fgbio --tmp-dir {{ temp_dir }}/fgbio_tmp --compression 1 \
       CallDuplexConsensusReads \
@@ -301,7 +301,7 @@ other weird filters are in place
       - \
       {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.uns.bam
 
-    {% if tasks[sample.gltype|capitalize+"_alignment_umi_filter_consensus"]|default(false)  %}
+    {% if tasks[sample.gltype|capitalize+"_alignment_dna_alignment_umi_filter_consensus"]|default(false)  %}
     ## Defaults, unless submitter updated these in the config:
     # --min-reads {{ constants.tempe.umi_options.filter_min_reads }}
     # --min-base-quality {{ constants.tempe.umi_options.filter_min_base_quality }}
@@ -312,7 +312,7 @@ other weird filters are in place
       --input {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.uns.bam \
       --output /dev/stdout \
       --ref {{ constants.tempe.reference_fasta }} \
-      {% if tasks[sample.gltype|capitalize+"_alignment_umi_collapse_duplex"]|default(false) %}
+      {% if tasks[sample.gltype|capitalize+"_alignment_dna_alignment_umi_collapse_duplex"]|default(false) %}
       --require-single-strand-agreement true \
       {% endif %}
       --min-reads {{ umi_options.filter_min_reads }} \
