@@ -67,8 +67,8 @@ constants:
       container: ghcr.io/tgen/containers/manta:1.60-23080709
       digest: 7e6358fe88ded40920082499eb52e211158070e586920d61d8a0cacb821a14f2
     manta_tgen:
-      container: /home/tgenref/containers/manta_tgen_1.6.0.sif
-      digest: notarealdigest
+      container: artifactory.tgen.org/hpc-virtual-containers/oci/testing/manta_tgen:1.6.0-23082515
+      digest: e5fb7e3186d20b3d339eb7b8d3b890c20f3f401fd70465f55f914a43096daff1
     msisensor:
       container: ghcr.io/tgen/containers/msisensor:1.1.a-23080815
       digest: 304ae1828f574c5d5d8866d0530f35aa6c819fa17e3b7742b2539edde3b930c8
