@@ -31,9 +31,11 @@
       {% endif %}
     {% endif %}
   {% else %}
-    {% set CC_filter = variant_filtering_options.CC_filter %}
+    {% set CC_filter %}{{ variant_filtering_options.CC_filter }}{% endset %}
   {% endif %}
-  {% do variant_filtering_options.variants_to_include_filter.append(CC_filter) %}
+  {% if CC_filter is defined %}
+    {% do variant_filtering_options.variants_to_include_filter.append(CC_filter) %}
+  {% endif %}
 
   {# This filter is partially dynamic, though more specifically it is very complex based on the number of annotation databases #}
   {% if variant_filtering_options.database_filter is not defined %}
@@ -54,12 +56,14 @@
     {% set INCLUDE_NON_DB %}(INFO/TOPMED==0 & INFO/GNOMAD_GENOME=0 & INFO/GNOMAD_EXOME=0){% endset %}
     {% set INCLUDE_FROM_RATIO %}({{ TOPMED_CNT_RATIO }} | {{ TOPMED_NC_CNT_RATIO }} | {{ GNOMAD_GENOME_CNT_RATIO }} | {{ GNOMAD_GENOME_NC_CNT_RATIO }} | {{ GNOMAD_EXOME_CNT_RATIO }} | {{ GNOMAD_EXOME_NC_CNT_RATIO }}){% endset%}
     {% if variant_caller == 'merged' %}
-      {% set variant_filtering_options.database_filter %} & ({{ INCLUDE_NON_DB }} | {{ INCLUDE_FROM_RATIO }}){% endset %}
+      {% set DB_filter %} & ({{ INCLUDE_NON_DB }} | {{ INCLUDE_FROM_RATIO }}){% endset %}
     {% else %}
-      {% set variant_filtering_options.database_filter %}({{ INCLUDE_NON_DB }} | {{ INCLUDE_FROM_RATIO }}){% endset %}
+      {% set DB_filter %}({{ INCLUDE_NON_DB }} | {{ INCLUDE_FROM_RATIO }}){% endset %}
     {% endif %}
-    {% do variant_filtering_options.variants_to_include_filter.append(variant_filtering_options.database_filter) %}
+  {% else %}
+    {% set DB_filter %}{{ variant_filtering_options.database_filter }}{% endset %}
   {% endif %}
+  {% do variant_filtering_options.variants_to_include_filter.append(DB_filter) %}
 {% endif %}
 
 - name: tumor_only_variant_filtering_{{ pair.name }}_{{ variant_caller }}_{{ origin }}
