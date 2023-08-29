@@ -12,9 +12,9 @@
 
 {# Set filtering options to the default in the pipeline.yaml, we then override them if defined #}
 {% set variant_filtering_options = {} %}
-{% do variant_filtering_options.update(constants.tempe.tumor_only_variant_filtering_options) %}
-{% if task_variables is defined and task_variables.tumor_only_variant_filtering is defined %}
-  {% do variant_filtering_options.update(task_variables.tumor_only_variant_filtering) %}
+{% do variant_filtering_options.update(constants.tempe.tumor_only_variant_filtering_options[pair.gltype]) %}
+{% if task_variables is defined and task_variables.tumor_only_variant_filtering[pair.gltype] is defined %}
+  {% do variant_filtering_options.update(task_variables.tumor_only_variant_filtering[pair.gltype]) %}
 {% endif %}
 
 {% if variant_filtering_options.variants_to_include_filter is not defined %}
