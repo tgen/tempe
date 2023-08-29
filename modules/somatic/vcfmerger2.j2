@@ -73,14 +73,21 @@
 
 {# Set filtering options to the default in the pipeline.yaml, we then override them if defined #}
 {% set variant_filtering_options = {} %}
-{% do variant_filtering_options.update(constants.tempe.somatic_variant_filtering_options) %}
-{% if task_variables is defined and task_variables.somatic_variant_filtering is defined %}
-  {% do variant_filtering_options.update(task_variables.somatic_variant_filtering) %}
+{% if pair.gltype == 'genome' %}
+  {% do variant_filtering_options.update(constants.tempe.somatic_variant_filtering_options.genome) %}
+  {% if task_variables is defined and task_variables.somatic_variant_filtering.genome is defined %}
+    {% do variant_filtering_options.update(task_variables.somatic_variant_filtering.genome) %}
+  {% endif %}
+{% elif pair.gltype == 'exome' %}
+  {% do variant_filtering_options.update(constants.tempe.somatic_variant_filtering_options.exome) %}
+  {% if task_variables is defined and task_variables.somatic_variant_filtering.exome is defined %}
+    {% do variant_filtering_options.update(task_variables.somatic_variant_filtering.exome) %}
+  {% endif %}
+{% else %}
+  {{ raise('A sample or pair with gltype other than genome or exome was passed to vcfmerger filter, this is not supported!') }}
 {% endif %}
-{% if loop.last %}
-  {% set log_msg %}vcfmerger2_filter is applying filter: --exclude {{ variant_filtering_options.vcfmerger_exclude_filter }}{% endset %}
-  {{ log(log_msg, level='WARNING') }}
-{% endif %}
+{% set log_msg %}vcfmerger2_filter_{{ caller }}_{{ pair.name }}_{{ aligner }} is applying filter: --exclude '{{ variant_filtering_options.vcfmerger_exclude_filter }}'{% endset %}
+{{ log(log_msg, level='WARNING') }}
 
 - name: vcfmerger2_filter_{{ caller }}_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, merge_vcfs, vcfMerger2, {{ pair.name }}]
