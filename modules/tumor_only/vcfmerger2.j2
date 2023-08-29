@@ -70,8 +70,12 @@
       --vcf "{{ unzipped_path }}" \
       -o "{{ prepped_path }}"
 
-{% if vcfmerger_exclude_filter is not defined %}
-{% set vcfmerger_exclude_filter %}(FMT/DP<10 | FMT/AR[0]>=0.02 | FMT/AR[1]<0.05){% endset %}
+
+{# Set filtering options to the default in the pipeline.yaml, we then override them if defined #}
+{% set variant_filtering_options = {} %}
+{% do variant_filtering_options.update(constants.tempe.tumor_only_variant_filtering_options) %}
+{% if task_variables is defined and task_variables.tumor_only_variant_filtering is defined %}
+  {% do variant_filtering_options.update(task_variables.tumor_only_variant_filtering) %}
 {% endif %}
 
 - name: tumor_only_vcfmerger2_filter_{{ caller }}_{{ pair.name }}_{{ aligner }}
@@ -91,7 +95,7 @@
 
     bcftools filter \
       --output-type v \
-      --exclude '{{ vcfmerger_exclude_filter }}' \
+      --exclude '{{ variant_filtering_options.vcfmerger_exclude_filter }}' \
       "{{ prepped_path }}" \
       > "{{ filtered_path }}"
 

@@ -268,11 +268,10 @@ constants:
       filter_max_no_call_fraction: 0.1
       filter_max_base_error_rate: 0.1
     somatic_variant_filtering_options:
-      # currently we do not have defaults to set other than CC but that is dynamic
-      # as a result we need to populate a dummy value here for now
-      foo: bar
+      vcfmerger_exclude_filter: "(FMT/DP<10 | FMT/AR[0]>=0.02 | FMT/AR[1]<0.05)"
     tumor_only_variant_filtering_options:
       COSMIC_Ratio_Threshold: 0.10
+      vcfmerger_exclude_filter: "(FMT/DP<10 | FMT/AR[0]>=0.02 | FMT/AR[1]<0.05)"
     snpSniffer_sites: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/snpSniffer/positions_387_hg38_ucsc.txt
     snpSniffer_database: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/snpSniffer/databaseV5_hg38_ucsc.ini
     vep_data: /home/tgenref/homo_sapiens/grch38_hg38/tool_specific_resources/vep/v103/
