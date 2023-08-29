@@ -34,7 +34,7 @@ constants:
       container: ghcr.io/tgen/containers/expansion_hunter:4.0.2-23080316
       digest: 079db962be053c674c9e6673961b61a11342a8d7826d66dbaefe75902c60dbcb
     fgbio:
-      container: artifactory.tgen.org/hpc-virtual-containers/oci/testing/fgbio:2.0.2-23082313
+      container: ghcr.io/tgen/containers/fgbio:2.0.2-23082819
       digest: 5476e038b7828e65ac3362e7a6b858c1a8bdf2451a42842de94217e04514f0bc
     finalize:
       container: quay.io/biocontainers/multiqc:1.13--pyhdfd78af_0
@@ -64,10 +64,10 @@ constants:
       container: ghcr.io/tgen/containers/lancet:1.1.x-23080709
       digest: acd89650b9389c748e1ec91eea7453301028b2a28a8059886793630096eeb74f
     manta:
-      container: ghcr.io/tgen/containers/manta:1.60-23080709
-      digest: 7e6358fe88ded40920082499eb52e211158070e586920d61d8a0cacb821a14f2
+      container: ghcr.io/tgen/containers/manta:1.6.0-23082819
+      digest: bf1d768c5a8c9f2d527fc9c9023638428be69744c4f67bf660400f06fc71f2fb
     manta_tgen:
-      container: artifactory.tgen.org/hpc-virtual-containers/oci/testing/manta_tgen:1.6.0-23082515
+      container: ghcr.io/tgen/containers/manta_tgen:1.6.0-23082819
       digest: e5fb7e3186d20b3d339eb7b8d3b890c20f3f401fd70465f55f914a43096daff1
     msisensor:
       container: ghcr.io/tgen/containers/msisensor:1.1.a-23080815
@@ -100,7 +100,7 @@ constants:
       container: ghcr.io/tgen/containers/samtools:1.17-23080815
       digest: 859ff54d83f5dfd7b3ae2b3841f689efe4aa41ede9fb5f8df49bf648058ae0e3
     samtools_with_python:
-      container: artifactory.tgen.org/hpc-virtual-containers/oci/testing/samtools_python:1.17-3.7.16-23082208
+      container: ghcr.io/tgen/containers/samtools_python:1.17-3.7.16-23082819
       digest: 301353a5f80dc89324bf95029b2b72b8bd49b95450bae1e3c67fffabb7fb4671
     sigprofiler:
       container: ghcr.io/tgen/containers/sigprofiler:0.0.24-23080710
@@ -124,7 +124,7 @@ constants:
       container: ghcr.io/tgen/containers/transparser:1.0.1-23080810
       digest: 2d9fdfd5700368ebe0f2512c154f18d7df3f9118c897eb46c117dc69eda2411d
     trinity_bwa_samtools:
-      container: artifactory.tgen.org/hpc-virtual-containers/oci/testing/trinity_bwa_mem2:2.8.6-23082323
+      container: ghcr.io/tgen/containers/trinity_bwa_mem2:2.8.6-23082819
       digest: a09bada5a2b6a3ebc20212b4e57e871583056ebc00ffcb7b57e74f65c241ea57
     vardict:
       container: quay.io/biocontainers/vardict-java:1.8.3--hdfd78af_0
