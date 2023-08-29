@@ -25,6 +25,8 @@
   {% endif %}
   {% do variant_filtering_options.variants_to_include_filter.append(CC_filter) %}
 {% endif %}
+{% set log_msg %}variant_filtering for {{ task }} is applying filter: --include "{{ variant_filtering_options.variants_to_include_filter|join('') }}"{% endset %}
+{{ log(log_msg, level='WARNING') }}
 
 {# Checking for output_vcf type, e.g. vcf.gz, vcf, bcf #}
 {% if output_vcf.endswith('vcf') %}

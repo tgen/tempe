@@ -77,6 +77,10 @@
 {% if task_variables is defined and task_variables.somatic_variant_filtering is defined %}
   {% do variant_filtering_options.update(task_variables.somatic_variant_filtering) %}
 {% endif %}
+{% if loop.last %}
+  {% set log_msg %}vcfmerger2_filter is applying filter: --exclude {{ variant_filtering_options.vcfmerger_exclude_filter }}{% endset %}
+  {{ log(log_msg, level='WARNING') }}
+{% endif %}
 
 - name: vcfmerger2_filter_{{ caller }}_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, somatic, merge_vcfs, vcfMerger2, {{ pair.name }}]
