@@ -20,6 +20,7 @@
   tags: [{{ pair.gltype }}, somatic, cna_caller, gatk, {{ pair.name }}]
   input:
     - {{ normal_bam }}
+    - {{ normal_bam }}.bai
     - {{ normal_bam_stats }}
     - {{ tumor_bam_stats }}
     - {{ normal_sex_check }}
@@ -289,6 +290,7 @@
   reset: gatk_call_cnv_step1_{{ pair.name }}_{{ aligner }}
   input:
     - {{ normal_bam }}
+    - {{ normal_bam }}.bai
     - {{ temp_dir }}/preprocessed_filt.interval_list
   output:
     - {{ temp_dir }}/{{ pair.normal.name }}.{{ aligner }}.counts.hdf5
@@ -321,6 +323,7 @@
   reset: gatk_call_cnv_step1_extract_hets_{{ pair.name }}_{{ aligner }}
   input:
     - {{ normal_bam }}
+    - {{ normal_bam }}.bai
     - {{ temp_dir }}/{{ pair.normal.name }}.{{ aligner }}.snps.vcf
     - {{ constants.tempe.reference_fasta }}
   output:
@@ -353,6 +356,7 @@
   reset: gatk_call_cnv_step1_{{ pair.name }}_{{ aligner }}
   input:
     - {{ tumor_bam }}
+    - {{ tumor_bam }}.bai
     - {{ temp_dir }}/preprocessed_filt.interval_list
   output:
     - {{ temp_dir }}/{{ pair.tumor.name }}.{{ aligner }}.counts.hdf5
@@ -385,6 +389,7 @@
   reset: gatk_call_cnv_step1_extract_hets_{{ pair.name }}_{{ aligner }}
   input:
     - {{ tumor_bam }}
+    - {{ tumor_bam }}.bai
     - {{ temp_dir }}/{{ pair.normal.name }}.{{ aligner }}.snps.vcf
     - {{ constants.tempe.reference_fasta }}
   output:

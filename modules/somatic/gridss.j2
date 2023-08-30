@@ -8,7 +8,9 @@
   tags: [{{ pair.gltype }}, somatic, structural_caller, gridss, {{ pair.name }}]
   input:
     - {{ normal_bam }}
+    - {{ normal_bam }}.bai
     - {{ tumor_bam }}
+    - {{ tumor_bam }}.bai
     - {{ constants.tempe.bwa_index }}
     - {{ constants.tempe.encode_denylist }}
   output:

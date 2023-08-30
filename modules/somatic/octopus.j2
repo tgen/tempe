@@ -15,7 +15,9 @@
   tags: [{{ pair.gltype }}, somatic, snp_indel_caller, octopus, {{ pair.name }}]
   input:
     - {{ normal_bam }}
+    - {{ normal_bam }}.bai
     - {{ tumor_bam }}
+    - {{ tumor_bam }}.bai
     - {{ constants.tempe.reference_fasta }}
     - {{ constants.tempe.denylist }}
   output:

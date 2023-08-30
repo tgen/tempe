@@ -16,7 +16,9 @@
   tags: [{{ pair.gltype }}, tumor_only, snp_indel_caller, lancet, {{ pair.name }}]
   input:
     - {{ normal_bam }}
+    - {{ normal_bam }}.bai
     - {{ tumor_bam }}
+    - {{ tumor_bam }}.bai
     - {{ constants.tempe.reference_fasta }}
   output: {{ temp_dir }}/{{ loop.index }}.lancet-uns.vcf
   cpus: 4

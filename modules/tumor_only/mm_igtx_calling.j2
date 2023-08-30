@@ -9,6 +9,7 @@
   tags: [{{ tumor.gltype }}, structural_caller, pairoscope, {{ tumor.name }}]
   input:
     - {{ tumor_bam }}
+    - {{ tumor_bam }}.bai
   output:
     - {{ results_dir }}/{{ tumor.name }}.{{ aligner }}_pairoscope_igtx.png
     - {{ results_dir }}/{{ tumor.name }}.{{ aligner }}_pairoscope_igtx_discordantTable.txt
@@ -87,6 +88,7 @@
   tags: [{{ tumor.gltype }}, structural_caller, gammit, {{ tumor.name }}]
   input: 
     - {{ tumor_bam }}
+    - {{ tumor_bam }}.bai
     - {{ constants.tempe.reference_fasta }}
   output: 
     - {{ results_dir }}/{{ tumor.name }}_list_of_fastqs.txt
@@ -344,7 +346,9 @@
   reset: prepare_tumor_only_{{ pair.normal.name }}
   input:
     - {{ normal_bam }}
+    - {{ normal_bam }}.bai
     - {{ tumor_bam }}
+    - {{ tumor_bam }}.bai
     - {{ constants.tempe.reference_fasta }}
   output:
     - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.candidateSmallIndels.vcf.gz
@@ -463,7 +467,9 @@
     - {{ temp_dir }}/results/variants/somaticSV.pass.vcf.gz
     - {{ temp_dir }}/results/variants/somaticSV.pass.vcf.gz.tbi
     - {{ tumor_bam }}
+    - {{ tumor_bam }}.bai
     - {{ normal_bam }}
+    - {{ normal_bam }}.bai
     - {{ summary_samtools_stats }}
   output:
     - {{ temp_dir }}/results/variants/somaticSV.pass.flag.vcf

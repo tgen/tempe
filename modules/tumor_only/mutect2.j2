@@ -16,7 +16,9 @@
   tags: [{{ pair.gltype }}, tumor_only, snp_indel_caller, gatk_mutect2, {{ pair.name }}]
   input:
     - {{ normal_bam }}
+    - {{ normal_bam }}.bai
     - {{ tumor_bam }}
+    - {{ tumor_bam }}.bai
     - {{ constants.tempe.reference_fasta }}
     - {{ constants.tempe.gnomad_genome_mutect_germlinereference }}
   output:
@@ -73,7 +75,9 @@
   tags: [{{ pair.gltype }}, tumor_only, snp_indel_caller, gatk_mutect2, {{ pair.name }}]
   input:
     - {{ normal_bam }}
+    - {{ normal_bam }}.bai
     - {{ tumor_bam }}
+    - {{ tumor_bam }}.bai
     - {{ constants.tempe.reference_fasta }}
     - {{ constants.tempe.gnomad_genome_mutect_contamination }}
   output: {{ temp_dir }}/{{ loop.index }}.tumor-pileups.table

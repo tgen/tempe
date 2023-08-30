@@ -41,6 +41,7 @@
   input: 
     - {{ gzipped_path }}
     - {{ bam }}
+    - {{ bam }}.bai
     - {{ constants.tempe.reference_fasta }}
   output: {{ prepped_path }}
   cpus: 4

@@ -30,6 +30,7 @@
   reset: prepare_tumor_only_{{ pair.normal.name }}
   input:
     - {{ tumor_bam }}
+    - {{ tumor_bam }}.bai
     - {{ cnvPon }}
     - {{ cnvIntervals }}
     {% if tumor_exome_bam is defined %}

@@ -61,7 +61,8 @@
   output:
     - {{ all_vcf }}
     - {{ all_vcf }}.tbi
-    - {{ temp_dir }}/results/realigned/realigned.S1.bam
+    - {{ results_dir }}/evidence/{{ sample.name }}.{{ aligner }}.strelka2.realigned.bam
+    - {{ results_dir }}/evidence/{{ sample.name }}.{{ aligner }}.strelka2.realigned.bam.bai
   cpus: 20
   mem: 20G
   walltime: "24:00:00"
@@ -101,44 +102,9 @@
     {# Move and rename the the vcfs out of their generic location #}
     mv "{{ temp_dir }}/results/variants/variants.vcf.gz" "{{ all_vcf }}"
     mv "{{ temp_dir }}/results/variants/variants.vcf.gz.tbi" "{{ all_vcf }}.tbi"
-
-
-- name: strelka2_save_evidence_{{ sample.name }}_{{ aligner }}
-  tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, strelka2, {{ sample.name }}]
-  reset: predecessors
-  input:
-    - {{ temp_dir }}/results/realigned/realigned.S1.bam
-    - {{ constants.tempe.reference_fasta }}
-  output:
-    {% if cram|default(true) %}
-    - {{ results_dir }}/evidence/{{ sample.name }}.{{ aligner }}.strelka2.realigned.cram
-    - {{ results_dir }}/evidence/{{ sample.name }}.{{ aligner }}.strelka2.realigned.cram.crai
-    {% else %}
-    - {{ results_dir }}/evidence/{{ sample.name }}.{{ aligner }}.strelka2.realigned.bam
-    - {{ results_dir }}/evidence/{{ sample.name }}.{{ aligner }}.strelka2.realigned.bam.bai
-    {% endif %}
-  cpus: 8
-  mem: 16G
-  queue_preset: "DEFAULT"
-  container: {{ constants.tools.samtools.container }}
-  digest: {{ constants.tools.samtools.digest }}
-  cmd: |
-    set -eu
-    set -o pipefail
-
-    {% if cram|default(true) %}
-    samtools view \
-      -C \
-      -@ 16 \
-      --reference {{ constants.tempe.reference_fasta }} \
-      -o {{ results_dir }}/evidence/{{ sample.name }}.{{ aligner }}.strelka2.realigned.cram \
-      {{ temp_dir }}/results/realigned/realigned.S1.bam
-
-    samtools index {{ results_dir }}/evidence/{{ sample.name }}.{{ aligner }}.strelka2.realigned.cram
-    {% else %}
     mv "{{ temp_dir }}/results/realigned/realigned.S1.bam" "{{ results_dir }}/evidence/{{ sample.name }}.{{ aligner }}.strelka2.realigned.bam"
     mv "{{ temp_dir }}/results/realigned/realigned.S1.bam.bai" "{{ results_dir }}/evidence/{{ sample.name }}.{{ aligner }}.strelka2.realigned.bam.bai"
-    {% endif %}
+
 
 - name: strelka2_filter_variants_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, strelka2, {{ sample.name }}]
@@ -172,10 +138,8 @@
 
     bcftools index --tbi --force "{{ pass_vcf }}"
 
-
 {{- annotate_vcfs(sample, temp_dir, results_dir, pass_vcf, taskPrefix, aligner, 'strelka2', 'constitutional') }}
 {{- vcf_stats(pass_vcf, results_dir) }}
 {{- vcf_stats(all_vcf, results_dir) }}
-
 
 {% endmacro %}

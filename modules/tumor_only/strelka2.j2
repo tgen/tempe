@@ -55,7 +55,9 @@
     - tumor_only_strelka2_build_call_regions_{{ pair.name }}_{{ aligner }}
   input:
     - {{ normal_bam }}
+    - {{ normal_bam }}.bai
     - {{ tumor_bam }}
+    - {{ tumor_bam }}.bai
     - {{ indel_candidates }}
     - {{ indel_candidates }}.tbi
     - {{ temp_dir }}/callRegions.bed.gz

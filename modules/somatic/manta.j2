@@ -12,7 +12,9 @@
   tags: [{{ pair.gltype }}, somatic, structural_caller, manta, {{ pair.name }}]
   input:
     - {{ normal_bam }}
+    - {{ normal_bam }}.bai
     - {{ tumor_bam }}
+    - {{ tumor_bam }}.bai
     - {{ constants.tempe.reference_fasta }}
   output: 
     - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.candidateSmallIndels.vcf.gz
@@ -130,7 +132,9 @@
     - {{ temp_dir }}/results/variants/somaticSV.pass.vcf.gz
     - {{ temp_dir }}/results/variants/somaticSV.pass.vcf.gz.tbi
     - {{ tumor_bam }}
+    - {{ tumor_bam }}.bai
     - {{ normal_bam }}
+    - {{ normal_bam }}.bai
     - {{ summary_samtools_stats }}
   output:
     - {{ temp_dir }}/results/variants/somaticSV.pass.flag.vcf
