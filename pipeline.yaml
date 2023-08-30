@@ -88,8 +88,8 @@ constants:
       container: ghcr.io/tgen/jetstream_containers/python:3.7.2-v1-with_modules
       digest: 030adca9dc79c97178d00b65ab2dbd30e1b83f6163cad8204c66dc10868393e2
     parabricks:
-      container: nvcr.io/nvidia/clara/clara-parabricks:4.1.1-1
-      digest: 7a44179fcaeb6422c52f9e1f8b966110ab3fd50a57f06793c74659ad38eedb66
+      container: nvcr.io/nvidia/clara/clara-parabricks:4.0.0-1
+      digest: 0170beef24131a23bb63bc36ec059e493df1f04a4a78f9d2c5df9bce1d5d9a35
     R:
       container: ghcr.io/tgen/containers/r_with_modules:4.1.2-23080815
       digest: 59b19f57dd510c520997df03ca5eaeb15a5c71db5637cdc834797964dd25a616
