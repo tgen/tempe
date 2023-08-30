@@ -35,7 +35,7 @@ constants:
       digest: 079db962be053c674c9e6673961b61a11342a8d7826d66dbaefe75902c60dbcb
     fgbio:
       container: ghcr.io/tgen/containers/fgbio:2.0.2-23082819
-      digest: 5476e038b7828e65ac3362e7a6b858c1a8bdf2451a42842de94217e04514f0bc
+      digest: c913496a731593eb173fe66a8b32d3071a4939f72a0403aecbe839ec6a29f94d
     finalize:
       container: quay.io/biocontainers/multiqc:1.13--pyhdfd78af_0
       digest: db913f47894a386040d76ae5f46b19149a71377f5107327d15ec89d3a1ec3f5f
@@ -65,10 +65,10 @@ constants:
       digest: acd89650b9389c748e1ec91eea7453301028b2a28a8059886793630096eeb74f
     manta:
       container: ghcr.io/tgen/containers/manta:1.6.0-23082819
-      digest: bf1d768c5a8c9f2d527fc9c9023638428be69744c4f67bf660400f06fc71f2fb
+      digest: 8413ec3da1e20da9f0cc9544722c7e9d30135f4ee0aa8092b67fc74c782913a3
     manta_tgen:
       container: ghcr.io/tgen/containers/manta_tgen:1.6.0-23082819
-      digest: e5fb7e3186d20b3d339eb7b8d3b890c20f3f401fd70465f55f914a43096daff1
+      digest: 01d5f283cecd53e2f8c5f96b2e39bf1190e59cb27b3b8ee54d2bf449ca78b3db
     msisensor:
       container: ghcr.io/tgen/containers/msisensor:1.1.a-23080815
       digest: 304ae1828f574c5d5d8866d0530f35aa6c819fa17e3b7742b2539edde3b930c8
@@ -101,7 +101,7 @@ constants:
       digest: 859ff54d83f5dfd7b3ae2b3841f689efe4aa41ede9fb5f8df49bf648058ae0e3
     samtools_with_python:
       container: ghcr.io/tgen/containers/samtools_python:1.17-3.7.16-23082819
-      digest: 301353a5f80dc89324bf95029b2b72b8bd49b95450bae1e3c67fffabb7fb4671
+      digest: 2eaadfb976fd23f3583c5ab35c536349243cfd6e015002434735667c6bd62ead
     sigprofiler:
       container: ghcr.io/tgen/containers/sigprofiler:0.0.24-23080710
       digest: 42bcc6ed2d229cc39d39b476d2f76bec4b3a42a6cccf04c4ef18cd868496fa16
@@ -125,7 +125,7 @@ constants:
       digest: 2d9fdfd5700368ebe0f2512c154f18d7df3f9118c897eb46c117dc69eda2411d
     trinity_bwa_samtools:
       container: ghcr.io/tgen/containers/trinity_bwa_mem2:2.8.6-23082819
-      digest: a09bada5a2b6a3ebc20212b4e57e871583056ebc00ffcb7b57e74f65c241ea57
+      digest: b1f0623882ed2ac3a404dfd252732ae92fb1b9526ae9b9e6d367f08424d61500
     vardict:
       container: quay.io/biocontainers/vardict-java:1.8.3--hdfd78af_0
       digest: 4069c082c97470bce4a07f228dbf74b6ea3fc5c4eaa93ba76d2826a496ca3c44
