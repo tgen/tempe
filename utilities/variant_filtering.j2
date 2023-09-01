@@ -1,0 +1,68 @@
+{% macro filter_variants(pair, input_vcf, output_dir, output_vcf, task, variant_caller) %}
+
+{# Set filtering options to the default in the pipeline.yaml, we then override them if defined #}
+{% set variant_filtering_options = {} %}
+{% do variant_filtering_options.update(constants.tempe.somatic_variant_filtering_options[pair.gltype]) %}
+{% if task_variables is defined and task_variables.somatic_variant_filtering[pair.gltype] is defined %}
+  {% do variant_filtering_options.update(task_variables.somatic_variant_filtering[pair.gltype]) %}
+{% endif %}
+
+{% if variant_filtering_options.variants_to_include_filter is not defined %}
+  {% do variant_filtering_options.update({'variants_to_include_filter': []}) %}
+
+  {# Checking if CC_filter is already defined, in preparation for allowing user defined filters #}
+  {# This is not defined in the pipeline.yaml, since it is already dynamic, but we allow users to set the value #}
+  {% if variant_filtering_options.CC_filter is not defined %}
+    {% if variant_caller == 'merged' and pair.callers is defined and pair.callers|length > 1 %}
+      {% if pair.callers | length > 3 %}
+        {% set CC_filter %}INFO/CC>={{ pair.callers | length - 2 }}{% endset %}
+      {% else %}
+        {% set CC_filter %}INFO/CC>={{ pair.callers | length - 1 }}{% endset %}
+      {% endif %}
+    {% endif %}
+  {% else %}
+    {% set CC_filter = variant_filtering_options.CC_filter %}
+  {% endif %}
+  {% do variant_filtering_options.variants_to_include_filter.append(CC_filter) %}
+{% endif %}
+{% set log_msg %}variant_filtering for {{ task }} is applying filter: --include "{{ variant_filtering_options.variants_to_include_filter|join('') }}"{% endset %}
+{{ log(log_msg, level='WARNING') }}
+
+{# Checking for output_vcf type, e.g. vcf.gz, vcf, bcf #}
+{% if output_vcf.endswith('vcf') %}
+  {% set output_type = 'v' %}
+{% elif output_vcf.endswith('bcf') %}
+  {% set output_type = 'b' %}
+{% else %}
+  {% set output_type = 'z' %}
+{% endif %}
+
+- name: variant_filtering_{{ pair.name }}_{{ task }}
+  tags: [{{ pair.gltype }}, somatic, variant_filter, {{ pair.name }}]
+  input: {{ input_vcf }}
+  output: {{ output_vcf }}
+  cpus: 1
+  mem: 4G
+  walltime: "4:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.bcftools.container }}
+  digest: {{ constants.tools.bcftools.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    mkdir -p {{ output_dir }}
+
+    bcftools view \
+      --include "{{ variant_filtering_options.variants_to_include_filter|join('') }}" \
+      --output-file {{ output_vcf }} \
+      --output-type {{ output_type }} \
+      {{ input_vcf }}
+
+    {# No need to index vcf if it isn't compressed #}
+    {% if output_type != 'v' %}
+    bcftools index --force {{ output_vcf }}
+    {% endif %}
+
+{% endmacro %}
+

@@ -1,0 +1,184 @@
+{% macro bcftools_annotate(sample_or_pair, temp_dir, input_vcf, taskPrefix, variant_caller, analysis_type, output_vcf, aligner) %}
+
+{% set output_bcf %}{{ temp_dir }}/{{ sample_or_pair.name }}.{{ aligner }}.{{ variant_caller }}.db.bcf{% endset %}
+
+- name: bcftools_annotate_{{ variant_caller }}_{{ sample_or_pair.name }}_{{ aligner }}
+  tags: [{{ sample_or_pair.gltype }}, {{ analysis_type }}, annotate_vcfs, {{ variant_caller }}, {{ sample_or_pair.name }}]
+  input: {{ input_vcf }}
+  output:
+    - {{ output_vcf }}
+    - {{ output_vcf }}.tbi
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_dbsnp"]|default(false) %}
+    - {{ constants.tempe.dbsnp }}
+    {% endif %}
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_gnomad_exome"]|default(false) %}
+    - {{ constants.tempe.gnomad_exome }}
+    {% endif %}
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_gnomad_genome"]|default(false) %}
+    - {{ constants.tempe.gnomad_genome }}
+    {% endif %}
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_cosmic_coding"]|default(false) %}
+    - {{ constants.tempe.cosmic_coding }}
+    {% endif %}
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_cosmic_noncoding"]|default(false) %}
+    - {{ constants.tempe.cosmic_noncoding }}
+    {% endif %}
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_clinvar"]|default(false) %}
+    - {{ constants.tempe.clinvar }}
+    {% endif %}
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_topmed"]|default(false) %}
+    - {{ constants.tempe.topmed }}
+    {% endif %}
+  walltime: "8:00:00"
+  cpus: 4
+  mem: 4G
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.bcftools.container }}
+  digest: {{ constants.tools.bcftools.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    mkdir -p "{{ temp_dir }}"
+
+    {#
+    # we need to convert whatever vcf type we are given into a bcf (bcftools loves bcfs)
+    # also create a temp bcf that we will use for all annotation runs
+    #}
+    bcftools view \
+      --threads 4 \
+      --output-type b \
+      --output-file "{{ output_bcf }}" \
+      "{{ input_vcf }}"
+
+    bcftools index --threads 4 --force "{{ output_bcf }}"
+
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_dbsnp"]|default(false) %}
+    {# annotate with dbsnp #}
+    bcftools annotate \
+      --threads 4 \
+      --annotations "{{ constants.tempe.dbsnp }}" \
+      --mark-sites DB \
+      --columns ID \
+      --output-type b \
+      --output "{{ temp_dir }}/tempout.bcf" \
+      "{{ output_bcf }}"
+
+    {# move tempout to tempin for next step #}
+    mv "{{ temp_dir }}/tempout.bcf" "{{ output_bcf }}"
+
+    bcftools index --threads 4 --force "{{ output_bcf }}"
+    {% endif %}
+
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_gnomad_exome"]|default(false) %}
+    {# annotate with gnomad exome #}
+    bcftools annotate \
+      --threads 4 \
+      --annotations "{{ constants.tempe.gnomad_exome }}" \
+      --mark-sites GNOMAD_EXOME \
+      --columns GNOMAD_EXOME_AC:=AC,GNOMAD_EXOME_AN:=AN,GNOMAD_EXOME_AF:=AF,GNOMAD_EXOME_n_alt_alleles:=n_alt_alleles \
+      --output-type b \
+      --output "{{ temp_dir }}/tempout.bcf" \
+      "{{ output_bcf }}"
+
+    {# move tempout to tempin for next step #}
+    mv "{{ temp_dir }}/tempout.bcf" "{{ output_bcf }}"
+
+    bcftools index --threads 4 --force "{{ output_bcf }}"
+    {% endif %}
+
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_gnomad_genome"]|default(false) %}
+    {# annotate with gnomad genome #}
+    bcftools annotate \
+      --threads 4 \
+      --annotations "{{ constants.tempe.gnomad_genome }}" \
+      --mark-sites GNOMAD_GENOME \
+      --columns GNOMAD_GENOME_AC:=AC,GNOMAD_GENOME_AN:=AN,GNOMAD_GENOME_AF:=AF,GNOMAD_GENOME_n_alt_alleles:=n_alt_alleles \
+      --output-type b \
+      --output "{{ temp_dir }}/tempout.bcf" \
+      "{{ output_bcf }}"
+
+    {# move tempout to tempin for next step #}
+    mv "{{ temp_dir }}/tempout.bcf" "{{ output_bcf }}"
+
+    bcftools index --threads 4 --force "{{ output_bcf }}"
+    {% endif %}
+
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_cosmic_coding"]|default(false) %}
+    {# annotate with cosmic #}
+    bcftools annotate \
+      --threads 4 \
+      --annotations "{{ constants.tempe.cosmic_coding }}" \
+      --mark-sites COSMIC \
+      --columns COSMIC_CNT:=CNT \
+      --output-type b \
+      --output "{{ temp_dir }}/tempout.bcf" \
+      "{{ output_bcf }}"
+
+    {# move tempout to tempin for next step #}
+    mv "{{ temp_dir }}/tempout.bcf" "{{ output_bcf }}"
+
+    bcftools index --threads 4 --force "{{ output_bcf }}"
+    {% endif %}
+
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_cosmic_noncoding"]|default(false) %}
+    {# annotate with cosmic_nc #}
+    bcftools annotate \
+      --threads 4 \
+      --annotations "{{ constants.tempe.cosmic_noncoding }}" \
+      --mark-sites COSMIC_NC \
+      --columns COSMIC_NC_CNT:=CNT \
+      --output-type b \
+      --output "{{ temp_dir }}/tempout.bcf" \
+      "{{ output_bcf }}"
+
+    {# move tempout to tempin for next step #}
+    mv "{{ temp_dir }}/tempout.bcf" "{{ output_bcf }}"
+
+    bcftools index --threads 4 --force "{{ output_bcf }}"
+    {% endif %}
+
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_clinvar"]|default(false) %}
+    {# annotate with clinvar #}
+    bcftools annotate \
+      --threads 4 \
+      --annotations "{{ constants.tempe.clinvar }}" \
+      --mark-sites CLINVAR \
+      --columns CLNDN,CLNDNINCL,CLNDISDB,CLNDISDBINCL,CLNHGVS,CLNREVSTAT,CLNSIG,CLNSIGCONF,CLNSIGINCL,CLNVC,CLNVCSO,CLNVI,CLNORIGIN:=ORIGIN \
+      --output-type b \
+      --output "{{ temp_dir }}/tempout.bcf" \
+      "{{ output_bcf }}"
+
+    {# move tempout to tempin for next step #}
+    mv "{{ temp_dir }}/tempout.bcf" "{{ output_bcf }}"
+
+    bcftools index --threads 4 --force "{{ output_bcf }}"
+    {% endif %}
+
+    {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_topmed"]|default(false) %}
+    {# annotate with topmed #}
+    bcftools annotate \
+      --threads 4 \
+      --annotations "{{ constants.tempe.topmed }}" \
+      --mark-sites TOPMED \
+      --columns TOPMED_AF:=AF,TOPMED_AN:=AN,TOPMED_AC:=AC,TOPMED_HET:=Het,TOPMED_HOM:=Hom \
+      --output-type b \
+      --output "{{ temp_dir }}/tempout.bcf" \
+      "{{ output_bcf }}"
+
+    {# move tempout to tempin for next step #}
+    mv "{{ temp_dir }}/tempout.bcf" "{{ output_bcf }}"
+
+    bcftools index --threads 4 --force "{{ output_bcf }}"
+    {% endif %}
+
+    {# convert back to vcf.gz for the average users #}
+    bcftools view \
+    --threads 4 \
+    --output-type z \
+    --output-file "{{ output_vcf }}" \
+    "{{ output_bcf }}"
+
+    bcftools index --threads 4 --tbi --force "{{ output_vcf }}"
+
+{% endmacro -%}

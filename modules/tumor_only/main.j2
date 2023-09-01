@@ -1,0 +1,183 @@
+{% from 'utilities/prepare_tumor_only.j2' import prepare_tumor_only with context %}
+{% from 'modules/tumor_only/strelka2.j2' import strelka2_tumor_only with context %}
+{% from 'modules/tumor_only/mutect2.j2' import mutect2_tumor_only with context %}
+{% from 'modules/tumor_only/lancet.j2' import lancet_tumor_only with context %}
+{% from 'modules/tumor_only/vardict.j2' import vardict_tumor_only with context %}
+{% from 'modules/tumor_only/octopus.j2' import octopus_tumor_only with context %}
+{% from 'modules/tumor_only/vcfmerger2.j2' import vcfmerger2_tumor_only with context %}
+{% from 'modules/tumor_only/gatk_cnv.j2' import gatk_cnv_tumor_only with context %}
+{% from 'modules/tumor_only/manta.j2' import manta_tumor_only with context %}
+{% from 'modules/tumor_only/deepvariant.j2' import deepvariant_tumor_only with context %}
+{% from 'modules/tumor_only/mm_igtx_calling.j2' import mm_igtx_pairoscope with context %}
+{% from 'modules/tumor_only/mm_igtx_calling.j2' import mm_igtx_manta with context %}
+{% from 'modules/tumor_only/mm_igtx_calling.j2' import mm_igtx_gammit with context %}
+{% from 'modules/tumor_only/mm_igtx_calling.j2' import mm_igtx_summarize with context %}
+
+
+{% macro tumor_only_variant_calling(samples) %}
+
+{% set normSamples = {} %}
+{% set pairedNormSamples = {} %}
+
+{% if controlDataFiles is defined %}
+{% for file in controlDataFiles %}
+
+    {% if file.rgsm is defined %}
+        {% set name %}{{ file.rgsm }}_{{ file.assayCode }}{% endset %}
+    {% else %}
+        {% set name %}{{ study }}_{{ file.assayCode }}{% endset %}
+    {% endif %}
+    {% do file.update({'name': name}) %}
+
+    {% if name not in normSamples %}
+        {% do normSamples.update({name: {}}) %}
+        {% do normSamples[name].update(file) %}
+    {% endif %}
+{% endfor %}
+{% endif %}
+
+{% set somatic_pairs = [] %}
+{% for tumor in samples.values() if tumor.subGroup|lower == 'tumor' and tumor.gltype in ('exome', 'genome') %}
+    {% for normal in samples.values() if normal.subGroup|lower == 'constitutional' and normal.gltype == tumor.gltype and normal.assayCode == tumor.assayCode %}
+        {% set pair_name = normal.name + '-' + tumor.name %}
+        {% do somatic_pairs.append({'name': pair_name, 'gltype': normal.gltype, 'normal': normal, 'tumor': tumor}) %}
+    {% endfor %}
+{% endfor %}
+
+{% set pairs = [] %}
+{% for tumor in samples.values() if tumor.subGroup|lower == 'tumor' and tumor.gltype in ('exome', 'genome') %}
+    {% if tasks['RNA_alignment_rna_alignment_STAR']|default(false) and tumor.dnaRnaMergeKey is defined %}
+        {% for rna in samples.values() if rna.dnaRnaMergeKey is defined and rna.dnaRnaMergeKey == tumor.dnaRnaMergeKey and rna.gltype == 'rna' %}
+            {% if 'rna_samples' not in tumor %}
+               {% do tumor.update({'rna_samples': []}) %}
+            {% endif %}
+            {% do tumor.rna_samples.append(rna) %}
+       {% endfor %}
+    {% endif %}
+
+    {% for normal in normSamples.values() if normal.assayCode == tumor.assayCode %}
+        {% if normal.rgsm != tumor.rgsm %}
+        {% set pair_name = tumor.name %}
+        {% do pairs.append({'name': pair_name, 'gltype': tumor.gltype, 'normal': normal, 'tumor': tumor}) %}
+        {% endif %}
+
+        {% set name %}{{ normal.name }}{% endset %}
+        {% if name not in pairedNormSamples %}
+            {% do pairedNormSamples.update({name: {}}) %}
+            {% do pairedNormSamples[name].update(normal) %}
+        {% endif %}
+    {% endfor %}
+{% endfor %}
+
+{% for normal in pairedNormSamples.values() %}
+    {{- prepare_tumor_only(normal) }}
+{% endfor %}
+
+{# Tasks that do not require a pair #}
+{% for tumor in samples.values() if tumor.subGroup|lower == 'tumor' and tumor.gltype in ('exome', 'genome') %}
+    {% if tumor.gltype in 'exome' %}
+        {% set taskPrefix = 'Exome' %}
+    {% elif tumor.gltype in 'genome' %}
+        {% set taskPrefix = 'Genome' %}
+    {% endif %}
+
+    {% if not tumor.aligners | length >= 1 %}
+      {{- sample_aligners_did_not_traverse_to_module }}
+    {% endif %}
+
+    {% for aligner in tumor.aligners %}
+
+        {%- if tasks[taskPrefix+"_tumor_only_snp_indel_caller_deepvariant"]|default(false) %}
+            {{- deepvariant_tumor_only(tumor, aligner, taskPrefix=taskPrefix) }}
+        {% endif %}
+
+        {# {% if tasks[taskPrefix+"_tumor_only_snp_indel_caller_gatk_mutect2"]|default(false) %}
+            {{- mutect2_tumor_only(tumor, aligner) }}
+        {% endif %} #}
+
+        {% if tasks[taskPrefix+"_disease_specific_multiple_myeloma"]|default(false) %}
+            {{- mm_igtx_gammit(tumor, aligner) }}
+        {% endif %}
+
+        {% if tasks[taskPrefix+"_disease_specific_multiple_myeloma"]|default(false) %}
+            {{- mm_igtx_pairoscope(tumor, aligner) }}
+        {% endif %}
+
+        {% if tasks[taskPrefix+"_disease_specific_multiple_myeloma"]|default(false) %}
+            {{- mm_igtx_summarize(tumor, aligner) }}
+        {% endif %}
+
+    {% endfor %}
+
+{% endfor %}
+
+{# mm_igtx_manta is an exclusion from the behavior of setting `strict` #}
+{% for pair in pairs %}
+    {% if pair.gltype in 'exome' %}
+        {% set taskPrefix = 'Exome' %}
+    {% elif pair.gltype in 'genome' %}
+        {% set taskPrefix = 'Genome' %}
+    {% endif %}
+    {% for aligner in pair.tumor.aligners %}
+        {% if tasks[taskPrefix+"_disease_specific_multiple_myeloma"]|default(false) %}
+            {{- mm_igtx_manta(pair, aligner) }}
+        {% endif %}
+    {% endfor %}
+{% endfor %}
+
+{% if strict and somatic_pairs | length > 0 %}
+
+{% else %}
+{% for pair in pairs %}{% do pair.update({'callers': []}) %}{% endfor %}
+
+{% for pair in pairs %}
+    {% if pair.gltype in 'exome' %}
+        {% set taskPrefix = 'Exome' %}
+    {% elif pair.gltype in 'genome' %}
+        {% set taskPrefix = 'Genome' %}
+    {% endif %}
+
+    {% for aligner in pair.tumor.aligners %}
+
+        {% if pair.normal.pathToBam is defined %}
+        {% if tasks[taskPrefix+"_tumor_only_snp_indel_caller_gatk_mutect2"]|default(false) %}
+            {{- mutect2_tumor_only(pair, aligner) }}
+        {% endif %}
+
+        {% if tasks[taskPrefix+"_tumor_only_structural_caller_manta"]|default(false) %}
+            {{- manta_tumor_only(pair, aligner) }}
+        {% endif %}
+
+        {% if tasks[taskPrefix+"_tumor_only_snp_indel_caller_strelka2"]|default(false) %}
+            {{- strelka2_tumor_only(pair, aligner) }}
+        {% endif %}
+
+        {% if tasks[taskPrefix+"_tumor_only_snp_indel_caller_lancet"]|default(false) %}
+            {{- lancet_tumor_only(pair, aligner) }}
+        {% endif %}
+
+        {% if tasks[taskPrefix+"_tumor_only_snp_indel_caller_VarDict"]|default(false) %}
+            {{- vardict_tumor_only(pair, aligner) }}
+        {% endif %}
+
+        {% if tasks[taskPrefix+"_tumor_only_snp_indel_caller_octopus"]|default(false) %}
+            {{- octopus_tumor_only(pair, aligner) }}
+        {% endif %}
+
+        {% if tasks[taskPrefix+"_tumor_only_merge_vcfs_vcfMerger2"]|default(false) %}
+            {{- vcfmerger2_tumor_only(pair, aligner, taskPrefix=taskPrefix) }}
+        {% endif %}
+        {% endif %}
+
+        {% if pair.normal.gatkCnvPon is defined %}
+        {% if tasks[taskPrefix+"_tumor_only_cna_caller_gatk"]|default(false) %}
+            {{- gatk_cnv_tumor_only(pair, aligner) }}
+        {% endif %}
+        {% endif %}
+
+    {% endfor %}
+
+{% endfor %}
+{% endif %}
+
+{% endmacro %}

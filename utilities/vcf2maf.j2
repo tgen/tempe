@@ -1,0 +1,46 @@
+{% macro vcf2maf(pair, input_vcf, aligner, variant_caller, vep_type) %}
+
+{% if input_vcf.endswith('.vcf') %}
+  {% set vcf_prefix = input_vcf.split('.')[:-1]|join('.') %}
+{% elif input_vcf.endswith('.vcf.gz') %}
+  {% set vcf_prefix = input_vcf.split('.')[:-2]|join('.') %}
+{% else %}
+  {{ raise('{} does not appear to be a vcf!'.format(input_vcf)) }}
+{% endif %}
+
+- name: vcf2maf_{{ vep_type }}_{{ variant_caller | lower }}_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, vcf2maf, {{ pair.name }}]
+  input:
+    - {{ input_vcf }}
+    - {{ constants.tempe.reference_fasta }}
+  output:
+    - {{ vcf_prefix }}.maf
+  cpus: 1
+  mem: 2G
+  walltime: "1:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.vcf2maf.container }}
+  digest: {{ constants.tools.vcf2maf.digest }}
+  cmd: |
+    set -eu
+
+    {% if input_vcf.endswith('.vcf.gz') %}
+    gunzip -c {{ input_vcf }} > {{ vcf_prefix }}.vcf
+    {% endif %}
+
+    vcf2maf.pl \
+      --input-vcf {{ vcf_prefix }}.vcf \
+      --output-maf {{ vcf_prefix }}.maf \
+      --tumor-id {{ pair.tumor.rgsm }} \
+      --normal-id {{ pair.normal.rgsm }} \
+      --inhibit-vep \
+      --ref-fasta {{ constants.tempe.reference_fasta }} \
+      --ncbi-build GRCh38 \
+      --retain-info CC,COSMIC,COSMIC_NC,GNOMAD_EXOME,GNOMAD_EXOME_AF,GNOMAD_GENOME,GNOMAD_GENOME_AF,TOPMED,TOPMED_AF,CLINVAR
+
+    {% if input_vcf.endswith('.vcf.gz') %}
+    rm {{ vcf_prefix }}.vcf
+    {% endif %}
+
+{% endmacro %}
+

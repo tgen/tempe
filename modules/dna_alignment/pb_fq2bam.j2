@@ -1,0 +1,157 @@
+# Aligns fastqs from a sample using Parabricks fq2BAM. This aligns all samples
+# in on large run. No need to split or merge. It will also run
+# mark duplicatese and BQSR if needed
+
+{% from 'utilities/read_group_line.j2' import read_group_line with context %}
+{% from 'utilities/remove_files.j2' import remove_files with context %}
+{% from 'modules/dna_alignment/gatk_baserecalibration.j2' import nobaserecalibration with context %}
+{% from 'utilities/bam_to_cram.j2' import bam_to_cram with context %}
+{% from 'modules/qc/stats2json.j2' import stats2json with context %}
+
+{% macro fq2bam(sample, opt_dup_distance, aligner) %}
+
+{% set temp_dir %}temp/{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}{% endset %}
+{% set results_dir %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}{% endset %}
+{% set md_metrics_temp %}{{ temp_dir }}/stats/{{ sample.name }}.{{ aligner }}.bam.md_metrics{% endset %}
+{% set md_metrics %}{{ results_dir }}/stats/{{ sample.name }}.{{ aligner }}.bam.md_metrics{% endset %}
+{% set md_metrics_json %}{{ md_metrics }}.json{% endset %}
+
+- name: fq2bam_{{ sample.name }}_{{ aligner }}
+  tags: [{{ sample.gltype }}, dna_alignment, fq2bam, {{ sample.name }}]
+  reset: predecessors
+  input:
+  {% for rgid, rg in sample.read_groups.items() %}
+    {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
+    {% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
+    - temp/fastqs/{{ r1fastq.basename }}
+    - temp/fastqs/{{ r2fastq.basename }}
+  {% endfor %}
+    - {{ constants.tempe.bwa_index }}
+    {% if tasks[sample.gltype|capitalize+"_alignment_base_recalibration_gatk"]|default(false) %}
+    {% for vcf in constants.tempe.gatk_known_sites %}
+    - {{ vcf }}
+    {% endfor %}
+    {% endif %}
+  output:
+    - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam
+    - {{ md_metrics }}
+    {% if tasks[sample.gltype|capitalize+"_alignment_base_recalibration_gatk"]|default(false) %}
+    - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.recal_data.table
+    {% endif %}
+  walltime: "24:00:00"
+  cpus: 16
+  mem: 96G
+  queue_preset: "PARABRICKS"
+  runner_preset: "PARABRICKS"
+  container: {{ constants.tools.parabricks.container }}
+  digest: {{ constants.tools.parabricks.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    gpus=${CUDA_VISIBLE_DEVICES/,/}
+
+    rm -r {{ temp_dir }}/{markdup_temp,stats} || true
+    mkdir -p {{ temp_dir }}/{markdup_temp,stats}
+    mkdir -p {{ results_dir }}/stats
+
+    {# documentation specifies that we should be able to specify the 
+    devices to use via --gpu-devices 0,1,n but it doesn't appear to 
+    be working. Disabling this code for now.
+    if [ -z ${GPU_DEVICE_ORDINAL} ]; then
+      # Assume we have the first GPU
+      GPU_DEVICE_ORDINAL=0
+    fi
+    #}
+
+    {# Enables some wider container compatibility #}
+    if ! command -v pbrun &> /dev/null
+    then
+      pbcmd=/parabricks/run_pipeline.py
+    else
+      pbcmd=pbrun
+    fi
+
+    $pbcmd fq2bam \
+    --num-gpus {{ '${#gpus}' }} \
+    --tmp-dir "{{ temp_dir }}/markdup_temp/" \
+    --ref "{{ constants.tempe.bwa_index }}" \
+    --bwa-options "-Y -K 100000000" \
+    {% for rgid, rg in sample.read_groups.items() %}
+      {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
+      {% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
+      --in-fq "temp/fastqs/{{ r1fastq.basename }}" "temp/fastqs/{{ r2fastq.basename }}" "{{ read_group_line(rg, format='bwa') }}" \
+    {% endfor %}
+    {% if tasks[sample.gltype|capitalize+"_alignment_base_recalibration_gatk"]|default(false) %}
+    --out-recal-file {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.recal_data.table \
+    {% for vcf in constants.tempe.gatk_known_sites %}
+    --knownSites "{{ vcf }}" \
+    {% endfor %}
+    {% endif %}
+    --out-duplicate-metrics "{{ md_metrics_temp }}" \
+    --optical-duplicate-pixel-distance {{ opt_dup_distance }} \
+    --out-bam "{{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam"
+
+    {# The md_metrics does not follow typical gatk structure, mainly missing the header and needs an extra new line at the EOF #}
+    cat <<EOF > {{ temp_dir }}/markdup_temp/{{ sample.name }}.md_metrics_header.txt
+    ## htsjdk.samtools.metrics.StringHeader
+    # MarkDuplicates --INPUT {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.bam --OUTPUT {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam --METRICS_FILE {{ md_metrics }} --OPTICAL_DUPLICATE_PIXEL_DISTANCE {{ opt_dup_distance }}
+    ## htsjdk.samtools.metrics.StringHeader
+    # Started on: $(date)
+
+    EOF
+
+    cat {{ temp_dir }}/markdup_temp/{{ sample.name }}.md_metrics_header.txt {{ md_metrics_temp }} > {{ md_metrics }}
+    echo >> {{ md_metrics }}
+
+
+{% set task %}{{ sample.name }}_{{ aligner }}{% endset %}
+{{- stats2json(sample.gltype, sample.name, task, md_metrics, md_metrics_json, "picard_mark_duplicates_metrics", sample=sample, sample_name=sample.name) }}
+
+{% if tasks[sample.gltype|capitalize+"_alignment_base_recalibration_gatk"]|default(false) %}
+
+- name: pbrun_applybqsr_{{ sample.name }}_{{ aligner }}
+  tags: [{{ sample.gltype }}, dna_alignment, fq2bam, {{ sample.name }}]
+  reset: predecessors
+  input:
+    - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam
+    - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.recal_data.table
+    - {{ constants.tempe.bwa_index }}
+  output:
+    - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.bam
+    - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.bam.bai
+  walltime: "24:00:00"
+  queue_preset: "PARABRICKS"
+  runner_preset: "PARABRICKS"
+  container: {{ constants.tools.parabricks.container }}
+  digest: {{ constants.tools.parabricks.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    gpus=${CUDA_VISIBLE_DEVICES/,/}
+
+    {# Enables some wider container compatibility #}
+    if ! command -v pbrun &> /dev/null
+    then
+      pbcmd=/parabricks/run_pipeline.py
+    else
+      pbcmd=pbrun
+    fi
+
+    $pbcmd applybqsr \
+      --num-gpus {{ '${#gpus}' }} \
+      --ref "{{ constants.tempe.bwa_index }}" \
+      --in-bam {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam \
+      --in-recal-file {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.recal_data.table  \
+      --out-bam {{ results_dir }}/{{ sample.name }}.{{ aligner }}.bam
+
+    samtools index -@ 10 "{{ results_dir }}/{{ sample.name }}.{{ aligner }}.bam"
+
+{% else %}
+  {{- nobaserecalibration(sample, aligner) }}
+{% endif %}
+{{- bam_to_cram(sample, aligner) }}
+
+
+{% endmacro %}

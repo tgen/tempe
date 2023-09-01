@@ -1,0 +1,57 @@
+{% from 'modules/rna/star_fusion.j2' import star_fusion with context %}
+{% from 'modules/rna/salmon.j2' import salmon with context %}
+{% from 'modules/rna/star_quant.j2' import star_quant with context %}
+{% from 'utilities/bam_to_cram.j2' import bam_to_cram with context %}
+{% from 'modules/qc/main.j2' import bam_qc with context %}
+{% from 'utilities/remove_files.j2' import remove_files with context %}
+
+{% macro rna_quant_and_fusion_detection(samples) %}
+
+{% for sample in samples.values() if sample.gltype == 'rna' %}
+    {% set task_list = [] %}
+    {% set platform = (sample.read_groups.values()|first).rgpm|default('') %}
+    {% if platform|lower in ['hiseq4000', 'novaseq6000', 'novaseqxplus'] %}
+      {% set opt_dup_distance = 2500 %}
+    {% else %}
+      {% set opt_dup_distance = 100 %}
+    {% endif %}
+
+    {% if tasks.RNA_transcriptome_quantify_expression_salmon_fastqs|default(false) %}
+      {% set task %}salmon_quant_cdna_{{ sample.name }}{% endset %}
+      {% do task_list.append(task) %}
+      {{- salmon(sample) }}
+    {% endif %}
+
+    {# in main we check {% if tasks.RNA_alignment_rna_alignment_STAR|default(false) %} #}
+    {% if 'star' in sample.aligners %}
+      {% set task %}star_quant_{{ sample.name }}{% endset %}
+      {% do task_list.append(task) %}
+      {{- star_quant(sample, opt_dup_distance) }}
+      {{- bam_to_cram(sample, aligner='star') }}
+      {{- bam_qc(sample, aligner='star') }}
+    {% endif %}
+
+    {% if tasks.RNA_transcriptome_fusion_caller_STAR_Fusion|default(false) %}
+      {% set task %}star_fusion_alignment_{{ sample.name }}{% endset %}
+      {% do task_list.append(task) %}
+      {% set task %}star_fusion_{{ sample.name }}{% endset %}
+      {% do task_list.append(task) %}
+      {{- star_fusion(sample) }}
+    {% endif %}
+
+    {% set files_to_remove = [] %}
+    {% for rgid, rg in sample.read_groups.items() %}
+      {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
+      {% do r1fastq.update({"path": "temp/fastqs/" + r1fastq.basename}) %}
+      {% do files_to_remove.append(r1fastq.path) %}
+
+      {% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
+      {% do r2fastq.update({"path": "temp/fastqs/" + r2fastq.basename}) %}
+      {% do files_to_remove.append(r2fastq.path) %}
+    {% endfor %}
+
+    {% set task_name %}{{ sample.name }}_rna_fastqs{% endset %}
+    {{- remove_files('temp/fastqs/', none, task_list, task_name, files_to_remove) }}
+{% endfor -%}
+
+{% endmacro -%}
