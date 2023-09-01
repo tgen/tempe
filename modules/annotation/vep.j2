@@ -45,8 +45,9 @@
         --uniprot \
         --domains \
         --canonical \
+        --mane \
         --flag_pick_allele_gene \
-        --pick_order canonical,appris,tsl,biotype,rank,ccds,length
+        --pick_order mane,canonical,appris,tsl,biotype,ccds,rank,length
 
 - name: vep_all_bcftools_compress_{{ variant_caller }}_{{ sample_or_pair.name }}_{{ aligner }}
   tags: [{{ sample_or_pair.gltype }}, annotate_vcfs, {{ analysis_type }}, {{ variant_caller }}, {{ sample_or_pair.name }}]
@@ -124,8 +125,9 @@
         --uniprot \
         --domains \
         --canonical \
+        --mane \
         --pick_allele_gene \
-        --pick_order canonical,appris,tsl,biotype,rank,ccds,length
+        --pick_order mane,canonical,appris,tsl,biotype,ccds,rank,length
 
 - name: vep_con_bcftools_compress_{{ variant_caller }}_{{ sample_or_pair.name }}_{{ aligner }}
   tags: [{{ sample_or_pair.gltype }}, annotate_vcfs, {{ analysis_type }}, {{ variant_caller }}, {{ sample_or_pair.name }}]
