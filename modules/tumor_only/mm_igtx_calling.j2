@@ -270,6 +270,7 @@
 
 - name: process_assembled_bam_{{ tumor.name }}
   tags: [{{ tumor.gltype }}, structural_caller, gammit, {{ tumor.name }}]
+  reset: predecessors
   input:
     - {{ results_dir }}/{{ tumor.name }}_Trinity_All_Clusters_sorted.bam
     - {{ results_dir }}/{{ tumor.name }}_Trinity_All_Clusters_sorted.bam.bai
