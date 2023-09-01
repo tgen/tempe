@@ -7,12 +7,12 @@
 {% endif %}
 
 {# Set thresholds to the default in the pipeline.yaml, we then override them if defined #}
-{% set copy_number_thresholds = {} %}
-{% do copy_number_thresholds.update(constants.tempe.copy_number_thresholds[sample_or_pair.gltype]) %}
-{% if task_variables is defined and task_variables.copy_number_thresholds[sample_or_pair.gltype] is defined %}
-  {% do copy_number_thresholds.update(task_variables.copy_number_thresholds[sample_or_pair.gltype]) %}
+{% set cnvear_copy_number_thresholds = {} %}
+{% do cnvear_copy_number_thresholds.update(constants.tempe.cnvear_copy_number_thresholds[sample_or_pair.gltype]) %}
+{% if task_variables is defined and task_variables.cnvear_copy_number_thresholds[sample_or_pair.gltype] is defined %}
+  {% do cnvear_copy_number_thresholds.update(task_variables.cnvear_copy_number_thresholds[sample_or_pair.gltype]) %}
 {% endif %}
-{% set log_msg %}cnvear_{{ input_tool | lower }}_{{ sample_or_pair.name }}_{{ aligner }} is using these thresholds: high_gain={{ copy_number_thresholds.high_gain }} , gain={{ copy_number_thresholds.gain }} , het_loss={{ copy_number_thresholds.het_loss }} , hom_loss={{ copy_number_thresholds.hom_loss }}'{% endset %}
+{% set log_msg %}cnvear_{{ input_tool | lower }}_{{ sample_or_pair.name }}_{{ aligner }} is using these thresholds: high_gain={{ cnvear_copy_number_thresholds.high_gain }} , gain={{ cnvear_copy_number_thresholds.gain }} , het_loss={{ cnvear_copy_number_thresholds.het_loss }} , hom_loss={{ cnvear_copy_number_thresholds.hom_loss }}'{% endset %}
 {{ log(log_msg, level='WARNING') }}
 
 {% set output_dir %}{{ input_seg | dirname }}{% endset %}
@@ -62,10 +62,10 @@
       --file-segments {{ input_seg }} \
       --input-copy-number-space 'LOG2' \
       --output-copy-number-space 'LOG2' \
-      --threshold_high_gain_call {{ copy_number_thresholds.high_gain }} \
-      --threshold_gain_call {{ copy_number_thresholds.gain }} \
-      --threshold_heterozygous_loss_call {{ copy_number_thresholds.het_loss }} \
-      --threshold_homozygous_loss_call {{ copy_number_thresholds.hom_loss }} \
+      --threshold_high_gain_call {{ cnvear_copy_number_thresholds.high_gain }} \
+      --threshold_gain_call {{ cnvear_copy_number_thresholds.gain }} \
+      --threshold_heterozygous_loss_call {{ cnvear_copy_number_thresholds.het_loss }} \
+      --threshold_homozygous_loss_call {{ cnvear_copy_number_thresholds.hom_loss }} \
       --seg-tool {{ input_tool }} \
       --samplename {{ sample_or_pair.name }} \
       --dir-out {{ output_dir }} \
