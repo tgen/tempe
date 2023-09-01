@@ -13,7 +13,7 @@
   {% for sample in samples.values() if sample.gltype in ['genome', 'exome'] %}
     {% set task_list = [] %}
     {% set platform = (sample.read_groups.values()|first).rgpm|default('') %}
-    {% if platform|lower in ['hiseq4000', 'novaseq6000'] %}
+    {% if platform|lower in ['hiseq4000', 'novaseq6000', 'novaseqxplus'] %}
       {% set opt_dup_distance = 2500 %}
     {% else %}
       {% set opt_dup_distance = 100 %}
