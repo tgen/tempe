@@ -139,43 +139,42 @@ MMRF_1499
 ## Required Software
 
 All tools are available as OCI images [here](https://github.com/orgs/tgen/packages)
-_Last Updated Dec 20th, 2022_  
+_Last Updated Aug 31st, 2023_  
 
-| Tool | Version Implemented |
-| :---: | :---: |
-| [bcftools](https://github.com/samtools/bcftools/releases) | [1.16](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fbcftools) |
-| [bedtools](https://github.com/arq5x/bedtools2/releases) | [2.29.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fbedtools) |
-| [bwa-mem2](https://github.com/lh3/bwa/releases) | [2.2.1](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fbwa_mem2_samtools) |
-| [deepvariant-cpu](https://github.com/google/deepvariant/releases) | [1.4.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fdeepvariant) |
-| [deepvariant-gpu](https://github.com/google/deepvariant/releases) | [1.4.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fdeepvariant) |
-| [expansion_hunter](https://github.com/Illumina/ExpansionHunter/releases) | [4.0.2](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fexpansion_hunter) |
-| [fgbio](https://github.com/fulcrumgenomics/fgbio/releases) | [2.0.2](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Ffgbio) |
-| [freebayes](https://github.com/ekg/freebayes/releases) | [1.3.6](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Ffreebayes) |
-| [gatk](https://github.com/broadinstitute/gatk//releases) | [4.1.8.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fgatk) |
-| [hmmcopyutils](https://github.com/shahcompbio/hmmcopy_utils) | [1.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fhmmcopy-utils) |
-| [htslib](https://github.com/samtools/htslib/releases) | [1.16](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fhtslib) |
-| [ichor](https://github.com/broadinstitute/ichorCNA/releases) | [0.2.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fichorcna) |
-| [lancet](https://github.com/nygenome/lancet/releases) | [1.1.x](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Flancet) |
-| [manta](https://github.com/Illumina/manta/releases) | [1.6.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fmanta) |
-| [msisensor](https://github.com/xjtu-omics/msisensor-pro) | [1.1.a](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fmsisensor) |
-| [multiQC](https://github.com/ewels/MultiQC/releases) | [1.13](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fmultiqc) |
-| [octopus](https://github.com/luntergroup/octopus/releases) | [0.7.4](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Foctopus) |
-| [python3](https://www.python.org/downloads/) | [3.7.2](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fpython) |
-| [parabricks](https://docs.nvidia.com/clara/#parabricks) | [4.0.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fclara-parabricks) |
-| [R](https://www.r-project.org/) | [3.6.1](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fr-with_modules) |
-| [thred](https://github.com/tgen/tHReD) | [1.1.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fthred) |
-| [salmon](https://github.com/COMBINE-lab/salmon/releases) | [1.9.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fsalmon) |
-| [sigprofiler](https://github.com/AlexandrovLab/SigProfilerAssignment/releases) | [0.0.21](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fsigprofiler) |
-| [samtools](https://github.com/samtools/samtools/releases) | [1.16.1](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fsamtools) |
-| [snpSniffer](https://github.com/tgen/snpSniffer/releases) | [7.0.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fsnpsniffer) |
-| [star-fusion](https://github.com/STAR-Fusion/STAR-Fusion/releases) | [1.11.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fstar_fusion) |
-| [strelka](https://github.com/Illumina/strelka/releases) | [2.9.10](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fstrelka) |
-| [subread](https://sourceforge.net/projects/subread/) | [2.0.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fsubread) |
-| [tgen_mutation_burden](https://github.com/tgen/tgen_mutation_burden/releases) | [1.2.4](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fmutation-burden) |
-| [vardictJava](https://github.com/AstraZeneca-NGS/VarDictJava/releases) | [1.7.9](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fvardict) |
-| [vcfmerger2](https://github.com/tgen/vcfMerger2/releases) | [0.9.3](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fvcfmerger2) |
-| [vep](https://github.com/Ensembl/ensembl-vep/releases) | [107.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fensembl-vep) |
-| [verifybamid2](https://github.com/Griffan/VerifyBamID/releases) | [2.0.1](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fverify-bam-id2) |
+| Tool | Version Implemented | Current Version |
+| :---: | :---: | :---: |
+| [bcftools](https://github.com/samtools/bcftools/releases) | [1.17](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fbcftools) | [1.18](https://github.com/samtools/bcftools/releases/tag/1.18) |
+| [bedtools](https://github.com/arq5x/bedtools2/releases) | [2.29.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fbedtools) | [2.31.0](https://github.com/arq5x/bedtools2/releases/tag/v2.31.0) |
+| [bwa-mem2](https://github.com/bwa-mem2/bwa-mem2) | [2.2.1](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fbwa_mem2_samtools) | [2.2.1](https://github.com/bwa-mem2/bwa-mem2/releases/tag/v2.2.1) |
+| [deepvariant](https://github.com/google/deepvariant/releases) | [1.5.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fdeepvariant) | [1.5.0](https://github.com/google/deepvariant/releases/tag/v1.5.0) |
+| [expansion_hunter](https://github.com/Illumina/ExpansionHunter/releases) | [4.0.2](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fexpansion_hunter) | [5.0.0](https://github.com/Illumina/ExpansionHunter/releases/tag/v5.0.0) |
+| [fgbio](https://github.com/fulcrumgenomics/fgbio/releases) | [2.0.2](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Ffgbio) | [2.1.0](https://github.com/fulcrumgenomics/fgbio/releases/tag/2.1.0) |
+| [freebayes](https://github.com/ekg/freebayes/releases) | [1.3.6](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Ffreebayes) | [1.3.7](https://github.com/freebayes/freebayes/releases/tag/v1.3.7) |
+| [gatk](https://github.com/broadinstitute/gatk//releases) | [4.4.0.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fgatk) | [4.4.0.0](https://github.com/broadinstitute/gatk/releases/tag/4.4.0.0) |
+| [hmmcopyutils](https://github.com/shahcompbio/hmmcopy_utils) | [0.1.1](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fhmmcopy-utils) | [0.1.1](http://compbio.bccrc.ca/software/hmmcopy/) |
+| [htslib](https://github.com/samtools/htslib/releases) | [1.17](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fhtslib) | [1.18](https://github.com/samtools/htslib/releases/tag/1.18) |
+| [ichor](https://github.com/GavinHaLab/ichorCNA/releases) | [0.5.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fichorcna) | [0.5.0](https://github.com/GavinHaLab/ichorCNA/releases/tag/v0.5.0) |
+| [lancet](https://github.com/nygenome/lancet/releases) | [1.1.x](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Flancet) | [1.1.0](https://github.com/nygenome/lancet/releases/tag/v1.1.0) |
+| [manta](https://github.com/Illumina/manta/releases) | [1.6.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fmanta) | [1.6.0](https://github.com/Illumina/manta/releases/tag/v1.6.0) |
+| [msisensor](https://github.com/xjtu-omics/msisensor-pro) | [1.1.a](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fmsisensor) | [1.2.0](https://github.com/xjtu-omics/msisensor-pro/releases/tag/v1.2.0) |
+| [multiQC](https://github.com/ewels/MultiQC/releases) | [1.13](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fmultiqc) | [1.15](https://github.com/ewels/MultiQC/releases/tag/v1.15) |
+| [octopus](https://github.com/luntergroup/octopus/releases) | [0.7.4](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Foctopus) | [0.7.4](https://github.com/luntergroup/octopus/releases/tag/v0.7.4) |
+| [python3](https://www.python.org/downloads/) | [3.7.16](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fpython) | [3.11.5](https://www.python.org/downloads/release/python-3115/) |
+| [parabricks](https://docs.nvidia.com/clara/#parabricks) | [4.0.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fclara-parabricks) | [4.1.2](https://docs.nvidia.com/clara/parabricks/latest/index.html) |
+| [R](https://www.r-project.org/) | [4.1.2](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fr-with_modules) | [4.3.1](https://stat.ethz.ch/pipermail/r-announce/2023/000694.html) |
+| [thred](https://github.com/tgen/tHReD) | [1.1.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fthred) | [1.1.0](https://github.com/tgen/tHReD/releases/tag/1.1.0) |
+| [salmon](https://github.com/COMBINE-lab/salmon/releases) | [1.9.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fsalmon) | [1.10.1](https://github.com/COMBINE-lab/salmon/releases/tag/v1.10.1) |
+| [sigprofiler](https://github.com/AlexandrovLab/SigProfilerAssignment/releases) | [0.0.24](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fsigprofiler) | [0.0.31](https://github.com/AlexandrovLab/SigProfilerAssignment/releases/tag/v0.0.31) |
+| [samtools](https://github.com/samtools/samtools/releases) | [1.17](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fsamtools) | [1.18](https://github.com/samtools/samtools/releases/tag/1.18) |
+| [snpSniffer](https://github.com/tgen/snpSniffer/releases) | [7.0.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fsnpsniffer) | [7.0.0](https://github.com/tgen/snpSniffer/releases/tag/v7.0.0) |
+| [star-fusion](https://github.com/STAR-Fusion/STAR-Fusion/releases) | [1.11.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fstar_fusion) | [1.12.0](https://github.com/STAR-Fusion/STAR-Fusion/releases/tag/STAR-Fusion-v1.12.0) |
+| [strelka](https://github.com/Illumina/strelka/releases) | [2.9.10](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fstrelka) | [2.9.10](https://github.com/Illumina/strelka/releases) |
+| [subread](https://sourceforge.net/projects/subread/) | [2.0.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fsubread) | [2.0.6](https://sourceforge.net/projects/subread/files/subread-2.0.6/) |
+| [tgen_mutation_burden](https://github.com/tgen/tgen_mutation_burden/releases) | [1.2.4](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fmutation-burden) | [1.2.4](https://github.com/tgen/tgen_mutation_burden/releases/tag/v1.2.4) |
+| [vardictJava](https://github.com/AstraZeneca-NGS/VarDictJava/releases) | [1.8.4](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fvardict) | [1.8.3](https://github.com/AstraZeneca-NGS/VarDictJava/releases/tag/v1.8.3) |
+| [vcfmerger2](https://github.com/tgen/vcfMerger2/releases) | [0.9.5](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fvcfmerger2) | [0.9.5]() |
+| [vep](https://github.com/Ensembl/ensembl-vep/releases) | [107.0](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fensembl-vep) | [110.1](https://github.com/Ensembl/ensembl-vep/releases/tag/release%2F110.1) |
+| [verifybamid2](https://github.com/Griffan/VerifyBamID/releases) | [2.0.1](https://github.com/orgs/tgen/packages/container/package/jetstream_containers%2Fverify-bam-id2) | [2.0.1](https://github.com/Griffan/VerifyBamID/releases/tag/2.0.1) |
 
 ## Install Guide
 
