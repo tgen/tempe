@@ -248,7 +248,7 @@ parser = argparse.ArgumentParser(description="Module used to push sample QC stat
                                              " with samStats2json output files", epilog=description(fileTypes),
                                  formatter_class=argparse.RawTextHelpFormatter)
 
-parser.add_argument('jsonfile', metavar="StatFile", help='path to the json that will be pushed to the LIMS')
+parser.add_argument('jsonfile', metavar='StatFile', help='path to the json that will be pushed to the LIMS')
 
 parser.add_argument('filetype', metavar='FileType', choices=fileTypes,
                     help='the file type that will be imported')
@@ -260,7 +260,11 @@ parser.add_argument('project', metavar='Project',  help='patient ID')
 
 parser.add_argument('study', metavar='Study',  help='name of the study (project)')
 
-parser.add_argument('-L', "--libraryID", metavar='LibraryID', help='name of the libraryID')
+parser.add_argument('-u', '--url', metavar='LIMS_url', default='https://tgen-fmp3.ad.tgen.org/fmi/data/v1/databases/KBase_V2', help='url of the LIMS instance')
+
+parser.add_argument('-C', '--cert', metavar='/path/to/CA.cer', default='/packages/python/3.6.0/share/TGenCA.cer', help='path to the KBase CA certificate')
+
+parser.add_argument('-L', '--libraryID', metavar='LibraryID', help='name of the libraryID')
 
 parser.add_argument('-c', '--contigList', metavar='STR', default='None', type=str,
                     help='comma separated list of contigs to push into the LIMS . (=\'None\')')
@@ -275,13 +279,14 @@ args = parser.parse_args()
 contig_list = args.contigList.split(',')
 
 # Required cert for the TGen LIMS
-CA = "/packages/python/3.6.0/share/TGenCA.cer"
+CA = args.cert
+URL = args.url
 
 # Set REST api https paths used on the private TGen network
-urlStart = "https://tgen-fmp3.ad.tgen.org/fmi/data/v1/databases/KBase_V2/sessions"
-urlFind = "https://tgen-fmp3.ad.tgen.org/fmi/data/v1/databases/KBase_V2/layouts/SamplesSequencing_REST/_find"
-urlFind2 = "https://tgen-fmp3.ad.tgen.org/fmi/data/v1/databases/KBase_V2/layouts/DCLStudies_REST/_find"
-urlPatch = "https://tgen-fmp3.ad.tgen.org/fmi/data/v1/databases/KBase_V2/layouts/SamplesSequencing_REST/records/"
+urlStart = f"{URL}/sessions"
+urlFind = f"{URL}/layouts/SamplesSequencing_REST/_find"
+urlFind2 = f"{URL}/layouts/DCLStudies_REST/_find"
+urlPatch = f"{URL}/layouts/SamplesSequencing_REST/records/"
 
 userName = None
 

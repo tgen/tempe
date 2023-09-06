@@ -7,7 +7,11 @@
 
 - name: stats2lims_{{ task }}_{{ file_type }}
   tags: [{{ tag1 }}, quality_control, stats, stats2lims, {{ tag2 }}]
-  input: {{ input_file }}
+  input:
+    - {{ input_file }}
+    {% if lims_cert is defined %}
+    - {{ lims_cert }}
+    {% endif %}
   walltime: "0:10:00"
   cpus: 1
   mem: 2G
@@ -23,6 +27,12 @@
     python3 {{ required_scripts.stats2lims.path }} \
       {% if file_type == "samtools_idxstats" %}
       --contigList "{{ constants.tempe.lims_contigs | replace(" ", "") }}" \
+      {% endif %}
+      {% if lims_url is defined %}
+      --url "{{ lims_url }}" \
+      {% endif %}
+      {% if lims_cert is defined %}
+      --cert "{{ lims_cert }}" \
       {% endif %}
       {{ input_file }} \
       {{ file_type }} \
