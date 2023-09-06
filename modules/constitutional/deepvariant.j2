@@ -125,6 +125,7 @@
         --ref "{{ constants.tempe.reference_fasta }}" \
         --infile "{{ sample.name }}.cvo.tfrecord.gz" \
         --outfile "${PROJECT_ROOT}/{{ all_vcf }}" \
+        --novcf_stats_report \
         --nonvariant_site_tfrecord_path "${PROJECT_ROOT}/{{ temp_dir }}/{{ sample.name }}.gvcf.tfrecord@{{ nshards }}.gz" \
         --gvcf_outfile "${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}.{{ aligner }}.deepvariant.all.g.vcf.gz"
 
