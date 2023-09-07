@@ -178,7 +178,7 @@ _Last Updated Sep 1st, 2023_
 | [transparser](https://github.com/tgen/transParser) | [1.0.1](ghcr.io/tgen/containers/transparser:1.0.1-23080810) | [1.0.1](https://github.com/tgen/transParser/releases/tag/v1.0.1) |
 | [trinity](https://github.com/trinityrnaseq/trinityrnaseq) | [2.8.6](ghcr.io/tgen/containers/trinity_bwa_mem2:2.8.6-23082819) | [2.15.1](https://github.com/trinityrnaseq/trinityrnaseq/releases/tag/Trinity-v2.15.1) |
 | [vardictJava](https://github.com/AstraZeneca-NGS/VarDictJava/releases) | [1.8.3](quay.io/biocontainers/vardict-java:1.8.3--hdfd78af_0) | [1.8.3](https://github.com/AstraZeneca-NGS/VarDictJava/releases/tag/v1.8.3) |
-| [vcfmerger2](https://github.com/tgen/vcfMerger2/releases) | [0.9.4](ghcr.io/tgen/containers/vcfmerger2:0.9.4-23080809) | [0.9.4](https://github.com/tgen/vcfMerger2/releases) |
+| [vcfmerger2](https://github.com/tgen/vcfMerger2/releases) | [0.9.5](ghcr.io/tgen/containers/vcfmerger2:0.9.5-23090712) | [0.9.5](https://github.com/tgen/vcfMerger2/releases) |
 | [vcf2maf](https://github.com/mskcc/vcf2maf/releases) | [1.6.21](quay.io/biocontainers/vcf2maf:1.6.21--hdfd78af_0) | [1.6.21](https://github.com/mskcc/vcf2maf/releases/tag/v1.6.21) |
 | [vep](https://github.com/Ensembl/ensembl-vep/releases) | [107.0](https://hub.docker.com/r/ensemblorg/ensembl-vep/tags) | [110.1](https://github.com/Ensembl/ensembl-vep/releases/tag/release%2F110.1) |
 | [verifybamid2](https://github.com/Griffan/VerifyBamID/releases) | [2.0.1](https://hub.docker.com/r/griffan/verifybamid2/tags) | [2.0.1](https://github.com/Griffan/VerifyBamID/releases/tag/2.0.1) |
