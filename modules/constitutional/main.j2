@@ -101,9 +101,11 @@
         {{- expansion_hunter(sample, aligner) }}
       {% endif %}
       {%- if tasks[taskPrefix+"_constitutional_cna_caller_gatk"]|default(false) %}
-        {% set normal = normSamples.values()|selectattr('assayCode', 'eq', sample.assayCode)|first %}
-        {% if normal and normal.gatkCnvPon is defined %}
-          {{- gatk_cnv_constitutional(sample, normal, aligner) }}
+        {% if normSamples.values()|selectattr('assayCode', 'eq', sample.assayCode)|first is defined %}
+          {% set normal = normSamples.values()|selectattr('assayCode', 'eq', sample.assayCode)|first is defined %}
+          {% if normal.gatkCnvPon is defined %}
+            {{- gatk_cnv_constitutional(sample, normal, aligner) }}
+          {% endif %}
         {% endif %}
       {% endif %}
     {% endif %}
