@@ -1,0 +1,429 @@
+{% from 'modules/annotation/main.j2' import annotate_vcfs with context %}
+
+{% macro chip_mutect2(sample, aligner='bwa', taskPrefix='Exome') %}
+
+{#
+We should use a PON if provided, else default to using the 1000g PON
+Task control to ensure
+#}
+
+{% if controlDataFiles is defined %}
+  {% if controlDataFiles|selectattr('assayCode', 'eq', sample.assayCode)|first is defined %}
+    {% set control = controlDataFiles|selectattr('assayCode', 'eq', sample.assayCode)|first %}
+  {% endif %}
+{% endif %}
+
+{% if control is defined and control.mutect2Pon is defined %}
+{%- set panel_of_normals %}{{ control.mutect2Pon }}{% endset %}
+{% else %}
+{%- set panel_of_normals %}{{ constants.tempe.somatic_GRCh38_1000g_pon }}{% endset %}
+{% endif %}
+
+{%- set normal_bam %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
+{%- set temp_dir %}temp/{{ sample.gltype }}/chip_calls/mutect2/{{ sample.name }}_{{ aligner }}{% endset %}
+{%- set results_dir %}{{ sample.gltype }}/chip_calls/mutect2/{{ sample.name }}_{{ aligner }}{% endset %}
+{%- set temp_vcf %}{{ temp_dir }}/{{ sample.name }}.mutect2.chip.temp.vcf.gz{% endset %}
+{%- set all_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.mutect2.chip.all.vcf.gz{% endset %}
+{%- set pass_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.mutect2.chip.pass.vcf.gz{% endset %}
+
+{% for batch in constants.tempe.calling_intervals %}
+- name: chip_mutect2_{{ sample.name }}_{{ aligner }}_{{ loop.index }}
+  tags: [{{ sample.gltype }}, snp_indel_caller, gatk_mutect2, {{ sample.name }}]
+  input:
+    - {{ normal_bam }}
+    - {{ constants.tempe.reference_fasta }}
+    - {{ constants.tempe.gnomad_genome_mutect_germlinereference }}
+    - {{ panel_of_normals }}
+  output:
+  - {{ temp_dir }}/{{ loop.index }}.mutect2.chip.vcf.gz
+  - {{ temp_dir }}/{{ loop.index }}.mutect2.chip.vcf.gz.stats
+  - {{ temp_dir }}/{{ loop.index }}.mutect2.chip.f1r2.tar.gz
+  cpus: 4
+  mem: 16G
+  walltime: "24:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.gatk.container }}
+  digest: {{ constants.tools.gatk.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    mkdir -p {{ temp_dir }}/temp_mutect2_{{ loop.index }}
+
+    {#
+      Create the read orientation file
+      This is not absolutely needed but is implemented in the Broad WDL for a cromwell issue
+      Internally we have random failure associated with a complete MuTect run but no read orientation file created
+    #}
+    touch "{{ temp_dir }}/{{ loop.index }}.mutect2.chip.f1r2.tar.gz"
+
+    gatk Mutect2 \
+      --java-options "-Xmx14G" \
+      --tmp-dir {{ temp_dir }}/temp_mutect2_{{ loop.index }}/ \
+      --reference {{ constants.tempe.reference_fasta }} \
+      --germline-resource {{ constants.tempe.gnomad_genome_mutect_germlinereference }} \
+      --panel-of-normals {{ panel_of_normals }} \
+      --f1r2-tar-gz {{ temp_dir }}/{{ loop.index }}.mutect2.chip.f1r2.tar.gz \
+      {% for interval in batch %}
+       -L "{{ interval.contig }}:{{ interval.start }}-{{ interval.stop }}" \
+       {% endfor %}
+      --max-reads-per-alignment-start 0 \
+      --max-suspicious-reads-per-alignment-start 6 \
+      --output {{ temp_dir }}/{{ loop.index }}.mutect2.chip.vcf.gz\
+      --input {{ normal_bam }}
+
+{% endfor %}
+
+{% for batch in constants.tempe.calling_intervals %}
+- name: chip_mutect2_GetPileupSummaries_{{ sample.name }}_{{ aligner }}_{{ loop.index }}
+  tags: [{{ sample.gltype }}, chip, snp_indel_caller, gatk_mutect2, {{ sample.name }}]
+  input:
+    - {{ normal_bam }}
+    - {{ constants.tempe.reference_fasta }}
+    - {{ constants.tempe.gnomad_genome_mutect_contamination }}
+  output: 
+    - {{ temp_dir }}/{{ loop.index }}.normal-pileups.table
+  cpus: 2
+  mem: 8G
+  walltime: "24:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.gatk.container }}
+  digest: {{ constants.tools.gatk.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    mkdir -p "{{ temp_dir }}/temp_GetPileupSummaries_normal_{{ loop.index }}"
+
+    {# GetPileupSummaries this can happen at the same time as the variant calling, no need to wait #}
+    {# Normal pileups #}
+    gatk --java-options "-Xmx7g" GetPileupSummaries \
+      --tmp-dir {{ temp_dir }}/temp_GetPileupSummaries_normal_{{ loop.index }}/ \
+      -reference {{ constants.tempe.reference_fasta }} \
+      --input {{ normal_bam }} \
+      --interval-set-rule UNION \
+      {% for interval in batch %}
+      --intervals {{ interval.contig }}:{{ interval.start }}-{{ interval.stop }} \
+      {% endfor %}
+      --variant {{ constants.tempe.gnomad_genome_mutect_contamination }} \
+      --output {{ temp_dir }}/{{ loop.index }}.normal-pileups.table
+
+{% endfor %}
+
+- name: chip_mutect2_merge_chunks_{{ sample.name }}_{{ aligner }}
+  tags: [{{ sample.gltype }}, chip, snp_indel_caller, gatk_mutect2, {{ sample.name }}]
+  reset: predecessors
+  input:
+    {% for b in constants.tempe.calling_intervals %}
+    - {{ temp_dir }}/{{ loop.index }}.mutect2.chip.vcf.gz
+    {% endfor %}
+  output:
+    - {{ temp_dir }}/{{ sample.name }}.chip.mutect2.raw.vcf.gz
+    - {{ temp_dir }}/{{ sample.name }}.chip.mutect2.raw.vcf.gz.tbi
+  cpus: 1
+  mem: 4G
+  walltime: "24:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.bcftools.container }}
+  digest: {{ constants.tools.bcftools.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    bcftools concat \
+      --output-type z \
+      --output {{ temp_dir }}/{{ sample.name }}.chip.mutect2.raw.vcf.gz \
+      {% for b in constants.tempe.calling_intervals %}
+      {% if not loop.last %}
+      {{ temp_dir }}/{{ loop.index }}.mutect2.chip.vcf.gz \
+      {% else %}
+      {{ temp_dir }}/{{ loop.index }}.mutect2.chip.vcf.gz
+      {% endif %}
+      {% endfor %}
+
+    bcftools index --tbi --force "{{ temp_dir }}/{{ sample.name }}.chip.mutect2.raw.vcf.gz"
+
+- name: chip_mutect2_merge_stats_{{ sample.name }}_{{ aligner }}
+  tags: [{{ sample.gltype }},l chip, snp_indel_caller, gatk_mutect2, {{ sample.name }}]
+  reset: predecessors
+  input:
+    {% for b in constants.tempe.calling_intervals %}
+    - {{ temp_dir }}/{{ loop.index }}.mutect2.chip.vcf.gz.stats
+    {% endfor %}
+  output: {{ temp_dir }}/mutect2.chip.merged.stats
+  cpus: 2
+  mem: 8G
+  walltime: "24:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.gatk.container }}
+  digest: {{ constants.tools.gatk.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    mkdir -p {{ temp_dir }}/temp_stats
+
+    gatk --java-options "-Xmx7G" MergeMutectStats \
+      --tmp-dir {{ temp_dir }}/temp_stats/ \
+      {% for b in constants.tempe.calling_intervals %}
+      -stats {{ temp_dir }}/{{ loop.index }}.mutect2.chip.vcf.gz.stats \
+      {% endfor %}
+      -O {{ temp_dir }}/mutect2.chip.merged.stats
+
+- name: chip_mutect2_learn_readorientationmodel_{{ sample.name }}_{{ aligner }}
+  tags: [{{ sample.gltype }}, chip, snp_indel_caller, gatk_mutect2, {{ sample.name }}]
+  reset: predecessors
+  input:
+    {% for b in constants.tempe.calling_intervals %}
+    - {{ temp_dir }}/{{ loop.index }}.mutect2.chip.f1r2.tar.gz
+    {% endfor %}
+  output: {{ temp_dir }}/artifact-priors.tar.gz
+  cpus: 2
+  mem: 8G
+  walltime: "24:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.gatk.container }}
+  digest: {{ constants.tools.gatk.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    mkdir -p {{ temp_dir }}/temp_readorientationmodel
+
+    gatk --java-options "-Xmx7G" LearnReadOrientationModel \
+      --tmp-dir {{ temp_dir }}/temp_readorientationmodel/ \
+      {% for b in constants.tempe.calling_intervals %}
+      -I {{ temp_dir }}/{{ loop.index }}.mutect2.chip.f1r2.tar.gz \
+      {% endfor %}
+      -O {{ temp_dir }}/artifact-priors.tar.gz
+
+- name: chip_mutect2_merge_pileup_summaries_{{ sample.name }}_{{ aligner }}
+  tags: [{{ sample.gltype }}, chip, snp_indel_caller, gatk_mutect2, {{ sample.name }}]
+  reset: predecessors
+  input:
+    {% for b in constants.tempe.calling_intervals %}
+    - {{ temp_dir }}/{{ loop.index }}.normal-pileups.table
+    {% endfor %}
+    - {{ constants.tempe.reference_dict }}
+  output:
+    - {{ temp_dir }}/merged.normal-pileups.table.tsv
+  cpus: 2
+  mem: 8G
+  walltime: "24:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.gatk.container }}
+  digest: {{ constants.tools.gatk.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    mkdir -p {{ temp_dir }}/temp_merge_normal
+
+    {# Merge normal pileup #}
+    gatk --java-options "-Xmx7G" GatherPileupSummaries \
+      --tmp-dir {{ temp_dir }}/temp_merge_normal/ \
+      --sequence-dictionary {{ constants.tempe.reference_dict }} \
+      {% for b in constants.tempe.calling_intervals %}
+      -I {{ temp_dir }}/{{ loop.index }}.normal-pileups.table \
+      {% endfor %}
+      -O {{ temp_dir }}/merged.normal-pileups.table.tsv
+
+- name: chip_mutect2_calculate_contamination_{{ sample.name }}_{{ aligner }}
+  tags: [{{ sample.gltype }}, chip, snp_indel_caller, gatk_mutect2, {{ sample.name }}]
+  reset: predecessors
+  input:
+    - {{ temp_dir }}/merged.normal-pileups.table.tsv
+  output:
+    - {{ temp_dir }}/contamination.table
+    - {{ temp_dir }}/segments.table
+  cpus: 1
+  mem: 4G
+  walltime: "24:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.gatk.container }}
+  digest: {{ constants.tools.gatk.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    mkdir -p {{ temp_dir }}/temp_calculate_contamination
+
+    gatk --java-options "-Xmx3G" CalculateContamination \
+      --tmp-dir {{ temp_dir }}/temp_calculate_contamination/ \
+      -I {{ temp_dir }}/merged.normal-pileups.table.tsv \
+      -O {{ temp_dir }}/contamination.table \
+      --tumor-segmentation {{ temp_dir }}/segments.table
+
+- name: chip_mutect2_filter_calls_{{ sample.name }}_{{ aligner }}
+  tags: [{{ sample.gltype }}, chip, snp_indel_caller, gatk_mutect2, {{ sample.name }}]
+  reset: predecessors
+  input:
+    - {{ temp_dir }}/{{ sample.name }}.chip.mutect2.raw.vcf.gz
+    - {{ temp_dir }}/mutect2.chip.merged.stats
+    - {{ temp_dir }}/artifact-priors.tar.gz
+    - {{ temp_dir }}/contamination.table
+    - {{ temp_dir }}/segments.table
+    - {{ constants.tempe.reference_fasta }}
+  output:
+    - {{ temp_vcf }}
+    - {{ temp_vcf }}.tbi
+  cpus: 2
+  mem: 8G
+  walltime: "24:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.gatk.container }}
+  digest: {{ constants.tools.gatk.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    mkdir -p {{ results_dir }}
+    mkdir -p {{ temp_dir }}/temp_filter
+    
+    {# Changed max-alt-allele-count from 2 to 1 #}
+    gatk FilterMutectCalls \
+      --tmp-dir {{ temp_dir }}/temp_filter/ \
+      --java-options "-Xmx7G" \
+      --reference {{ constants.tempe.reference_fasta }} \
+      --max-alt-allele-count 1 \
+      --min-reads-per-strand 4 \
+      --min-median-mapping-quality 45 \
+      --variant {{ temp_dir }}/{{ sample.name }}.chip.mutect2.raw.vcf.gz \
+      --stats {{ temp_dir }}/mutect2.chip.merged.stats \
+      --contamination-table {{ temp_dir }}/contamination.table \
+      --tumor-segmentation {{ temp_dir }}/segments.table \
+      --ob-priors {{ temp_dir }}/artifact-priors.tar.gz \
+      --filtering-stats {{ temp_dir }}/filtering.stats \
+      --output {{ temp_vcf }}
+
+- name: chip_mutect2_filter_variants_{{ sample.name }}_{{ aligner }}
+  tags: [{{ sample.gltype }}, chip, snp_indel_caller, gatk_mutect2, {{ sample.name }}]
+  reset: predecessors
+  input:
+    - {{ temp_vcf }}
+    - {{ temp_vcf }}.tbi
+    - {{ sample.capture_kit.extended_bed }}
+  output:
+    - {{ all_vcf }}
+    - {{ all_vcf }}.tbi
+    - {{ pass_vcf }}
+    - {{ pass_vcf }}.tbi
+  cpu: 1
+  mem: 4G
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.bcftools.container }}
+  digest: {{ constants.tools.bcftools.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    bcftools filter \
+      --output-type z \
+      --targets-file {{ sample.capture_kit.extended_bed }} \
+      --output {{ all_vcf }} \
+      {{ temp_vcf }}
+    
+    bcftools index --tbi --force "{{ all_vcf }}"
+
+    bcftools filter \
+      --include 'FORMAT/DP>=100 &&
+        FORMAT/AD >=3 &&
+        FORMAT/AF < 0.4 && 
+        FORMAT/F1R2 > 1 && 
+        FORMAT/F2R1 >= 1 &&
+        (FORMAT/DP * FORMAT/AF)>=8 &&
+        INFO/MMQ >= 45 &&
+        INFO/MBQ >= 30 &&
+        TYPE="snps"' \
+      {{ all_vcf }} | \
+    bcftools filter \
+      --output-type z \
+      --exclude '(FILTER ~ "base_qual" || 
+        FILTER ~ "contamination" || 
+        FILTER ~ "map_qual" || 
+        FILTER ~ "multiallelic" || 
+        FILTER ~ "panel_of_normals" || 
+        FILTER ~ "slippage" || 
+        FILTER ~ "strand_bias" || 
+        FILTER ~ "strict_strand")' \
+      --output {{ pass_vcf }} \
+      -
+    
+    bcftools index --tbi --force "{{ pass_vcf }}"
+
+{{- annotate_vcfs(sample, temp_dir, results_dir, pass_vcf, taskPrefix, aligner, 'mutect2', 'constitutional') }}
+
+{# We require the topmed and gnomad_genome annotations for chip filtering to work #}
+{% if tasks[taskPrefix+"_constitutional_annotate_vcfs_bcftools_topmed"]|default(false) and tasks[taskPrefix+"_constitutional_annotate_vcfs_bcftools_gnomad_genome"]|default(false) %}
+{% if tasks[taskPrefix+"_constitutional_annotate_vcfs_vep"]|default(false) %}
+
+{% set annotated_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.mutect2.chip.pass.db.vep.pick.vcf.gz{% endset %}
+{% set filtered_annot_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.mutect2.chip.flt.db.vep.pick.vcf.gz{% endset %}
+{% set final_vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.mutect2.chip.final.vcf.gz{% endset %}
+
+- name: chip_mutect2_filter_chip_variants_{{ sample.name }}_{{ aligner }}
+  tags: [{{ sample.gltype }}, constitutional, snp_indel_caller, mutect2, {{ sample.name }}]
+  input:
+    - {{ annotated_vcf }}
+    - {{ constants.tempe.known_chip_snv }}
+  output:
+    - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.mutect2.chip_annot.vcf.gz
+    - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.mutect2.chip_annot.flt.vcf.gz
+    - {{ filtered_annot_vcf }}
+    - {{ filtered_annot_vcf }}.tbi
+    - {{ final_vcf }}
+    - {{ final_vcf }}.tbi
+  cpus: 1
+  mem: 4G
+  walltime: "12:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.bcftools.container }}
+  digest: {{ constants.tools.bcftools.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    bcftools annotate \
+        --output-type z \
+        -a {{ constants.tempe.known_chip_snv }} \
+        -c INFO \
+        --output {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.mutect2.chip_annot.vcf.gz \
+        {{ annotated_vcf }}
+
+    bcftools index --tbi --force {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.mutect2.chip_annot.vcf.gz
+    
+    bcftools filter \
+        --output-type z \
+        --include '(TOPMED_AC < 100 || TOPMED_AC = ".") && 
+        (GNOMAD_GENOME_AC < 100 || GNOMAD_GENOME_AC  = ".") && 
+        (INFO/CSQ ~ "splice_acceptor_variant" ||
+        INFO/CSQ ~ "splice_donor_variant" ||
+        INFO/CSQ ~ "start_lost" ||
+        INFO/CSQ ~ "exon_loss_variant" ||
+        INFO/CSQ ~ "frameshift_variant" ||
+        INFO/CSQ ~ "stop_gained" ||
+        INFO/CSQ ~ "stop_lost" ||
+        INFO/CSQ ~ "start_lost" ||
+        INFO/CSQ ~ "rare_amino_acid_variant" ||
+        INFO/CSQ ~ "missense_variant" ||
+        INFO/CSQ ~ "inframe_insertion" ||
+        INFO/CSQ ~ "disruptive_inframe_insertion" ||
+        INFO/CSQ ~ "inframe_deletion" ||
+        INFO/CSQ ~ "disruptive_inframe_deletion")' \
+        --output {{ filtered_annot_vcf }} \
+        {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.mutect2.chip_annot.vcf.gz
+    
+    bcftools index --tbi --force {{ filtered_annot_vcf }}
+
+    bcftools view \
+        -R {{ constants.tempe.chip_genes_list }} \
+        --output {{ final_vcf }} \
+        {{ filtered_annot_vcf }}
+    
+    bcftools index --tbi --force {{ final_vcf }}
+
+{% endif %}
+{% endif %}
+
+
+{% endmacro %}

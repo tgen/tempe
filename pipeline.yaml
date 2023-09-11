@@ -1,128 +1,146 @@
 __pipeline__:
   name: tempe
-  main: main.jst
+  main: main.j2
   description: Rapid Human GRCh38 genomics suite
-  version: v1.1.2
+  version: development
+  bin: required_scripts/
 constants:
   tools:
     base:
-      container: ghcr.io/tgen/jetstream_containers/rocky8_with_epel:2022.04.19
-      digest: 8a1414a5780d23062df9b568dd174017d4f4661dd4d8fa931a1eebd59fc0f923
+      container: ghcr.io/tgen/containers/debian:bullseye
+      digest: b8f30ec0fb3f1c1ab0de63703b438f8476296df3097af5b52917ec7ce8417863
     bcftools:
-      container: ghcr.io/tgen/jetstream_containers/bcftools:1.16
-      digest: ce5c974409635f1d418093dd349ab5a8cb952f1c42038b42a99cb0aea74e0771
+      container: ghcr.io/tgen/containers/bcftools:1.17-23080313
+      digest: 29f46af18e1910acee183b7e8bed52543d38a84842f1d2477d6571952563aed4
     bedtools:
-      container: ghcr.io/tgen/jetstream_containers/bedtools:2.29.0
-      digest: 625382642b4149e19c85399d8bc6db05e35ce906ac60c253a5da0cc2eb66dd8f
+      container: ghcr.io/tgen/containers/bedtools:2.29.0-23080313
+      digest: cde92d1b69ecfda6e5f115c6b9220a312c380b0d7aa30378437476cd50206ee0
+    bpure:
+      container: ghcr.io/tgen/containers/b_pure:1.0.0
+      digest: 1360e309dc861cf8a70be88db69f22f2520273052444c055d913d4f8a96b9fd6
     bwa_mem2_samtools:
-      container: ghcr.io/tgen/jetstream_containers/bwa_mem2_samtools:2.2.1
-      digest: 7ac0d6f7d7eee5a2f75d471844c40636fa5a200452ffcb98c75ebd87f9015cc2
-    deepvariant_cpu:
-      container: ghcr.io/tgen/jetstream_containers/deepvariant:1.4.0-CPU
-      digest: 070ca3f6feeeab93c3fb70ad926fa26f87789c10557f99ce19d8c16a0b31f7c4
-    deepvariant_gpu:
-      container: ghcr.io/tgen/jetstream_containers/deepvariant:1.4.0-GPU
-      digest: d25565b61aa9100ae852aed0bf43b4922e73a246d7b4d85e33778634b9ba0627
+      container: ghcr.io/tgen/containers/bwa_mem2_samtools:2.2.1-23080315
+      digest: 98a83bc2d70fa39755a02c2d81de64ef36dac292cdf6b1fcf02570a3e227b7f6
+    cnvear:
+      container: ghcr.io/tgen/containers/cnvear:0.1.7
+      digest: 4a857e23b484ed0c32de5fb9356d427cd52ea141a797d443f453c457ab852ad2
+    deepvariant:
+      container: google/deepvariant:1.5.0-gpu
+      digest: 312af65c01d27e4fc8bb34a4c933ca708bd24d2e7d8ac3076c9c7c078afa20e9
     dle:
-      container: /home/tgenref/containers/dle_0.1.5.sif
-      digest: notarealdigest
+      container: ghcr.io/tgen/containers/discordant_loci_extractor:0.1.5-23080815
+      digest: 0a5b010298b97573114936c1bf8ae0c319ec0b84818eb14917f8161e4826b927
     expansion_hunter:
-      container: ghcr.io/tgen/jetstream_containers/expansion_hunter:4.0.2
-      digest: 8dca35f2f5d05f92b2b0973486ea0bf2852d99aff690d5aa56ca8d13e9a36d6e
+      container: ghcr.io/tgen/containers/expansion_hunter:4.0.2-23080316
+      digest: 079db962be053c674c9e6673961b61a11342a8d7826d66dbaefe75902c60dbcb
     fgbio:
-      container: ghcr.io/tgen/jetstream_containers/fgbio:2.0.2
-      digest: d4d986c59908c79f537421478417c5650849cab9f7aee5d9139fdad1e59369c1
+      container: ghcr.io/tgen/containers/fgbio:2.0.2-23082819
+      digest: c913496a731593eb173fe66a8b32d3071a4939f72a0403aecbe839ec6a29f94d
     finalize:
-      container: ghcr.io/tgen/jetstream_containers/multiqc:1.13
-      digest: edf7d9b44251530ccb6449702b3c9802a6665d85c0f88eb7a75a54bae5796388
+      container: quay.io/biocontainers/multiqc:1.13--pyhdfd78af_0
+      digest: db913f47894a386040d76ae5f46b19149a71377f5107327d15ec89d3a1ec3f5f
     freebayes:
-      container: ghcr.io/tgen/jetstream_containers/freebayes:1.3.6
-      digest: 41a5d2e71a9a5c4f9b034eebe18e1d6f93024c81e33e66f47d3fa0d3543cd6ae
+      container: quay.io/biocontainers/freebayes:1.3.6--h6f59eb7_3
+      digest: 2f782d0d87c6c30097fd39694de3c4a52e840681dc27dd4cf3f87526b13abbba
     gatk:
-      container: ghcr.io/tgen/jetstream_containers/gatk:4.1.8.0
-      digest: 1a9dac3e0720f7fe6b597d2a6f8308939b6e2ad8cd0869b4a6ab57b73c13ba50
-    hmmcopy_utils:
-      container: ghcr.io/tgen/jetstream_containers/hmmcopy-utils:v1
-      digest: 643fc7efd5f576c1ecc5982bbed474f669efec01efecd233f8832139fc720ce0
+      container: broadinstitute/gatk:4.4.0.0
+      digest: 044112d3d70603732d4a654ecaee33919cf9d45332d47268f5f1697b6ed558ed
+    gridss:
+      container: quay.io/biocontainers/gridss:2.13.2--h20b1175_1
+      digest: 886fe9d43ff1068edefe4a07ae8a04c061e2f8e8bcfb7708df9126ac24250562
+    gripss:
+      container: quay.io/biocontainers/hmftools-gripss:2.3.2--hdfd78af_0
+      digest: 4ac910852ddfa8156270b11826a533307024d261295243486a905dcd3fc257d6
+    hmmcopy:
+      container: quay.io/biocontainers/hmmcopy:0.1.1--h8b12597_4
+      digest: 607d8bd3fbe5627dd69f2b8f364cda06a672e5a0f20a29398a7092d2ab0f48d3
     htslib:
-      container: ghcr.io/tgen/jetstream_containers/htslib:1.16
-      digest: 5cc3f4717e42bdfc43183a13fa21327cf5c684c7bb5ec230a97894575e65da95
+      container: ghcr.io/tgen/containers/htslib:1.17-23080709
+      digest: f468febb69a5412fa02990e9cdadbba97030d3e7eb27cc70343dac7d53919ee2
     ichorcna:
-      container: ghcr.io/tgen/jetstream_containers/ichorcna:v1
-      digest: f9dfa90080208af3ed8bcc75a2f7b728994566abd371490b7a9cf1a080e7cf97
-      launcher: required_scripts/runIchorCNA_47ce8db.R
+      container: quay.io/biocontainers/r-ichorcna:0.5.0--pl5321r43hdfd78af_1
+      digest: 51e8ff5f610fde81268d7ba3d4ae0905982675d8d5cce4e18fd24775afa6c431
     lancet:
-      container: ghcr.io/tgen/jetstream_containers/lancet:1.1.x
-      digest: 2091a22ef2dd90abcf49924051775a2291d9c68b6efcf8a7ad68c6ff3d240685
+      container: ghcr.io/tgen/containers/lancet:1.1.x-23080709
+      digest: acd89650b9389c748e1ec91eea7453301028b2a28a8059886793630096eeb74f
     manta:
-      container: ghcr.io/tgen/jetstream_containers/manta:1.6.0
-      digest: 726c3f8a09f2729559320584fa6a2869929e4677e7b08bc8efe93f0724d3d9c9
+      container: ghcr.io/tgen/containers/manta:1.6.0-23082819
+      digest: 8413ec3da1e20da9f0cc9544722c7e9d30135f4ee0aa8092b67fc74c782913a3
     manta_tgen:
-      container: /home/tgenref/containers/manta_v1.6.0-tgen.sif
-      digest: notarealdigest
-    lumosvar2:
-      container: /home/tgenref/containers/lumosvar2_1.1.sif
-      digest: notarealdigest
+      container: ghcr.io/tgen/containers/manta_tgen:1.6.0-23082819
+      digest: 01d5f283cecd53e2f8c5f96b2e39bf1190e59cb27b3b8ee54d2bf449ca78b3db
     msisensor:
-      container: ghcr.io/tgen/jetstream_containers/msisensor:1.1.a
-      digest: dd49987f11b5a302e79f1c13b6e911cfc6cc424226782783914734771e627118
+      container: ghcr.io/tgen/containers/msisensor:1.1.a-23080815
+      digest: 304ae1828f574c5d5d8866d0530f35aa6c819fa17e3b7742b2539edde3b930c8
     mutation_burden:
-      container: ghcr.io/tgen/jetstream_containers/mutation-burden:1.2.4
-      digest: eb64be73c74dd7ea57cf75369fc4d251c71dec706eb1f2f3d75cef84fde5e64b
+      container: ghcr.io/tgen/containers/mutation-burden:1.2.4-23080815
+      digest: 8149ef5dbe66ba305082fc4ca486792e54371469189c46a774e23eec9312225e
     octopus:
-      container: ghcr.io/tgen/jetstream_containers/octopus:0.7.4
-      digest: cdb7d5116db69a79832bf0fbda5d11be172ccd2765ab445d030cc54fd7dad692
+      container: ghcr.io/tgen/containers/octopus:0.7.4-23080809
+      digest: 6ac2461140f82ab24d2a16815b7a697672c9aeb291de44f21e57b589f333ccf4
     pairoscope:
-      container: /home/tgenref/containers/pairoscope_0.4.2.sif
-      digest: notarealdigest
+      container: ghcr.io/tgen/containers/pairoscope:0.4.2-23080810
+      digest: 0d6e622d19aa44f2cd21509d789881d9308412ee392ca42bdfeafdd8ea575f38
     python3:
-      container: ghcr.io/tgen/jetstream_containers/python:3.7.2
-      digest: 8adbd3e0a1fdb0659c434eb13e6ef100d3e37dd41e44813b3ac60ff4ce9a2884
+      container: python:3.7.16-slim-bullseye
+      digest: a844c22fcd1f2b4bc945ed14e5148b2ca8fbe42c1685e8840a8200039ff04154
+    python3_with_modules:
+      container: ghcr.io/tgen/jetstream_containers/python:3.7.2-v1-with_modules
+      digest: 030adca9dc79c97178d00b65ab2dbd30e1b83f6163cad8204c66dc10868393e2
     parabricks:
-      container: ghcr.io/tgen/jetstream_containers/clara-parabricks:4.0.0-1
-      digest: 2a37e7a13669148bb922b1b675fb5ee32178e18b6813f9e3a9bc99436b59d03d
+      container: nvcr.io/nvidia/clara/clara-parabricks:4.0.0-1
+      digest: 0170beef24131a23bb63bc36ec059e493df1f04a4a78f9d2c5df9bce1d5d9a35
     R:
-      container: ghcr.io/tgen/jetstream_containers/r-with_modules:3.6.1
-      digest: 29de4cc4274d3f1df096c3cc4899ef063c3ff074ca229779bb2e1ae491a9af9c
-    thred:
-      container: ghcr.io/tgen/jetstream_containers/thred:1.1.0
-      digest: a63fb6915eac8ba936674724d3a205d53994e8214cade190f7551a91cbadafa3
+      container: ghcr.io/tgen/containers/r_with_modules:4.1.2-23080815
+      digest: 59b19f57dd510c520997df03ca5eaeb15a5c71db5637cdc834797964dd25a616
     salmon:
-      container: ghcr.io/tgen/jetstream_containers/salmon:1.9.0
-      digest: 69ffd89cb8714e5dc337b11aad6c54833a03f25c3180c2b93f072831bc3b92c7
+      container: combinelab/salmon:1.9.0
+      digest: 9c6fdc2e99967684fcc913d5ab5e9323169a7ec51da8f0068cb2cc0a94c84796
     samtools:
-      container: ghcr.io/tgen/jetstream_containers/samtools:1.16.1
-      digest: 37e2122779da2b840817a509b84e43f627a77e310e4b6d2814abde5459c2e246
+      container: ghcr.io/tgen/containers/samtools:1.17-23080815
+      digest: 859ff54d83f5dfd7b3ae2b3841f689efe4aa41ede9fb5f8df49bf648058ae0e3
+    samtools_with_python:
+      container: ghcr.io/tgen/containers/samtools_python:1.17-3.7.16-23082819
+      digest: 2eaadfb976fd23f3583c5ab35c536349243cfd6e015002434735667c6bd62ead
     sigprofiler:
-      container: ghcr.io/tgen/jetstream_containers/sigprofiler:0.0.21
-      digest: e23822b423d46434fbc8a43008ec579c636b32b45c31a95b16b0180cc13e7734
-    snpeff:
-      container: ghcr.io/tgen/jetstream_containers/snpeff:4_3t
-      digest: bd1aa0314843e414388330f6fe69bc442459c18de7999e9c91afaeef2c05a02d
+      container: ghcr.io/tgen/containers/sigprofiler:0.0.24-23080710
+      digest: 42bcc6ed2d229cc39d39b476d2f76bec4b3a42a6cccf04c4ef18cd868496fa16
     snpsniffer:
-      container: ghcr.io/tgen/jetstream_containers/snpsniffer:7.0.0
-      digest: cafd6b4b27614bf7a5460dd9812bdf5bf7bdc8c8971f1f0fa6d0b9e7b8a6dc9a
+      container: ghcr.io/tgen/containers/snpsniffer:7.0.0-23080810
+      digest: 93831227364dbe82f42836844e34ee7d33d798885edb5b98f5aaf7f13f360eb5
     star_fusion:
-      container: ghcr.io/tgen/jetstream_containers/star_fusion:1.11.0
-      digest: be24edf900fdf10aac58423ad1e93b0b87c1cd8c68a0817b041e7e306fae6c01
+      container: trinityctat/starfusion:1.11.0
+      digest: a3f1bfbb3a7a3b501ecdd1cec4325d00516b73b504afac274d351d20deee44e4
     strelka:
-      container: ghcr.io/tgen/jetstream_containers/strelka:2.9.10
-      digest: a43f85769d48e71887bc7da7cb96426730d853c6808379bd74201df3861ef05a
+      container: ghcr.io/tgen/containers/strelka:2.9.10-23080711
+      digest: e4c48b1470f2524da5734ebd84232446feec0e332b28e08c8997c3f21dffdc8e
     subread:
-      container: ghcr.io/tgen/jetstream_containers/subread:2.0.0
-      digest: 423d39597800bfdb2ca73f3c4df7158bd6202ef2d72459e1cafd81ea1d557500
+      container: quay.io/biocontainers/subread:2.0.0--hed695b0_0
+      digest: 97b2f544c6a8a1b209febcc23616fd77c46bdbb1d4f3005012456a380ca43d99
+    thred:
+      container: ghcr.io/tgen/containers/thred:1.1.0-23080712
+      digest: 615fa14c097a71bd11f6517acbfb334543764865636dc717bb680c4ca4cd8125
+    transparser:
+      container: ghcr.io/tgen/containers/transparser:1.0.1-23080810
+      digest: 2d9fdfd5700368ebe0f2512c154f18d7df3f9118c897eb46c117dc69eda2411d
+    trinity_bwa_samtools:
+      container: ghcr.io/tgen/containers/trinity_bwa_mem2:2.8.6-23082819
+      digest: b1f0623882ed2ac3a404dfd252732ae92fb1b9526ae9b9e6d367f08424d61500
     vardict:
-      container: ghcr.io/tgen/jetstream_containers/vardict:1.7.9
-      digest: 0f7e273e1c7f7f74c285b9d1e04fd484f5fc1fa767bb9a0b7a077ae5da21eabc
+      container: quay.io/biocontainers/vardict-java:1.8.3--hdfd78af_0
+      digest: 4069c082c97470bce4a07f228dbf74b6ea3fc5c4eaa93ba76d2826a496ca3c44
     vcfmerger:
-      container: ghcr.io/tgen/jetstream_containers/vcfmerger2:0.9.4
-      digest: 54b068b9dde256e0617379bc772268ff291f570fef68d495a540a7d49b2f155a
+      container: ghcr.io/tgen/containers/vcfmerger2:0.9.5-23090712
+      digest: 37640beed1f829702dbd8c03a1e4955a205abd8a38e209ea88ffa815c570a8fa
+    vcf2maf:
+      container: quay.io/biocontainers/vcf2maf:1.6.21--hdfd78af_0
+      digest: e33def318468ac924bdcc280c4aa8984865709d111cd0df9b0d82c7908b7dd07
     vep:
-      container: ghcr.io/tgen/jetstream_containers/ensembl-vep:release_107.0
-      digest: 2762c6efff95ecac45bcb1dfccdb7c139e2cc4700b855b68632dcdf45d9c7712
+      container: ensemblorg/ensembl-vep:release_107.0
+      digest: f252df581820048dbc90229d38fbc7b94738743bd9ebc23ffcc533245e9ab0e5
     verifybamid2:
-      container: ghcr.io/tgen/jetstream_containers/verify-bam-id2:2.0.1
-      digest: a72d9acafaa6faa5549337e96d4386504eb83bed42111547df4e9f664f42a040
+      container: griffan/verifybamid2:v2.0.1
+      digest: 2f1e33903d2b9a71b9feba061070cfbb16212a5a39420e10091500ec4b36fab8
   tempe:
     species: Homo sapiens
     genome_build: grch38_hg38
@@ -150,43 +168,21 @@ constants:
     bcftools_annotate_contig_update_ucsc2ensembl: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/bcftools/GRCh38_PrimaryContigs_UCSC_2_Ensembl_CrossMap.txt
     denylist: /home/tgenref/homo_sapiens/grch38_hg38/public_databases/encode/Blacklist-2.0/lists/hg38-blacklist.v2.bed.gz
     reference_msisensor_pro: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/msisensor_pro_v1.1.a/GRCh38tempe_decoy_alts_hla_masked.microsatellites.list
-    manta_prepare_sv_vcf: manta_prepare_sv_vcf_f94bcc1.py
-    pairoscope_mm_igtx_calling_script: mm_igtx_pairoscope_calling_b38_356362b.py
-    cna_seg_extend: seg_extend_229b8c7.py
-    plotCNVplus_Rscript: plotCNVplus_4d89cb4.R
-    plotSamStats_Rscript: summarize_samstats_8c45d63.R
-    summarize_mm_igtx_Rscript: summarize_Ig_875a823.R
-    process_assembled_bam: Process_Assembled_BAM_277eed7.py
-    stats2json: samStats2json_2f64a79.py
-    stats2lims: uploadStats2Lims_1ace81f.py
-    sigprofiler: sigprofiler_7595614.py
-    cellranger_reference: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/tool_resources/cellranger_6.0.0/hg38_tempe_ensembl_v103
-    cellranger_vdj_reference: /home/tgenref/homo_sapiens/grch38_hg38/tool_specific_resources/cellranger/refdata-cellranger-vdj-GRCh38-alts-ensembl-5.0.0
-    scrna_chemistry_options:
-      X3SCR:
-        chemistry_name: SC3Pv1
-        umi_length: 10
-        cell_barcode_whitelist_file: /packages/easy-build/software/CellRanger/6.0.0/lib/python/cellranger/barcodes/737K-april-2014_rc.txt
-      XCSCR:
-        chemistry_name: SC3Pv2
-        umi_length: 10
-        cell_barcode_whitelist_file: /packages/easy-build/software/CellRanger/6.0.0/lib/python/cellranger/barcodes/737K-august-2016.txt
-      X3SC3:
-        chemistry_name: SC3Pv3
-        umi_length: 12
-        cell_barcode_whitelist_file: /packages/easy-build/software/CellRanger/6.0.0/lib/python/cellranger/barcodes/3M-february-2018.txt
-      X5SCR:
-        chemistry_name: SC5P-R2
-        umi_length: 10
-        cell_barcode_whitelist_file: /packages/easy-build/software/CellRanger/6.0.0/lib/python/cellranger/barcodes/737K-august-2016.txt
-      X5SC2:
-        chemistry_name: SC5P-R2
-        umi_length: 10
-        cell_barcode_whitelist_file: /packages/easy-build/software/CellRanger/6.0.0/lib/python/cellranger/barcodes/737K-august-2016.txt
-      unknown:
-        chemistry_name: auto
-        umi_lenth: 10
-        cell_barcode_whitelist_file: /packages/easy-build/software/CellRanger/6.0.0/lib/python/cellranger/barcodes/737K-august-2016.txt
+    fish_probe_locations: /home/tgenref/homo_sapiens/grch38_hg38/hg38tgen/tool_resources/seq_fish/GRCh38_Myeloma_FISH_Probe_Locations_for_CNVear.bed
+    cnvear_locations: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/Homo_sapiens.GRCh38.103.ucsc.cnvear.bed
+    required_scripts:
+      bpure: b_pure.py
+      manta_prepare_sv_vcf: manta_prepare_sv_vcf.py
+      pairoscope_mm_igtx_calling_script: mm_igtx_pairoscope_calling_b38.py
+      cna_seg_extend: seg_extend.py
+      plotCNVplus_Rscript: plotCNVplus.R
+      plotSamStats_Rscript: summarize_samstats.R
+      summarize_mm_igtx_Rscript: summarize_Ig.R
+      process_assembled_bam: Process_Assembled_BAM.py
+      stats2json: samStats2json.py
+      stats2lims: uploadStats2Lims.py
+      sigprofiler: sigprofiler.py
+      verifybamid_plot: verifybamid_plot.R
     gatk_known_sites:
       - /home/tgenref/homo_sapiens/grch38_hg38/public_databases/broad_resource_bundle/Homo_sapiens_assembly38.dbsnp138.vcf
       - /home/tgenref/homo_sapiens/grch38_hg38/public_databases/broad_resource_bundle/Homo_sapiens_assembly38.known_indels.vcf.gz
@@ -215,13 +211,28 @@ constants:
       - {"contig": "chr12", "start": 3690834, "stop": 4690834, "name": "CCND2"}
       - {"contig": "chr16", "start": 78096103, "stop": 79950000, "name": "MAF"}
       - {"contig": "chr20", "start": 39671358, "stop": 40971360, "name": "MAFB"}
+    igtx_loci_and_gene_regions:
+      - {"contig": "chr2", "start": 88750483, "stop": 90261139, "name": "IgK" }
+      - {"contig": "chr4", "start": 1798273, "stop": 1998273, "name": "NSD2"}
+      - {"contig": "chr6", "start": 41632262, "stop": 42332262, "name": "CCND3"}
+      - {"contig": "chr8", "start": 124987758, "stop": 129487754, "name": "MYC"}
+      - {"contig": "chr8", "start": 142918584, "stop": 143925832, "name": "MAFA"}
+      - {"contig": "chr11", "start": 68732532, "stop": 69685232, "name": "CCND1"}
+      - {"contig": "chr12", "start": 3690834, "stop": 4690834, "name": "CCND2"}
+      - {"contig": "chr14", "start": 105533663, "stop": 106881350, "name": "IgH" }
+      - {"contig": "chr16", "start": 78096103, "stop": 79950000, "name": "MAF"}
+      - {"contig": "chr20", "start": 39671358, "stop": 40971360, "name": "MAFB"}
+      - {"contig": "chr22", "start": 21995603, "stop": 23057822, "name": "IgL" }
     ribo_locations: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/Homo_sapiens.GRCh38.103.ucsc.ribo.interval_list
     gatk_cnv_primary_contigs_female: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/gatk_cnv/Homo_sapiens.GRCh38.primary.contigs.female.interval_list
     gatk_cnv_primary_contigs_male: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/gatk_cnv/Homo_sapiens.GRCh38.primary.contigs.male.interval_list
     encode_denylist: /home/tgenref/homo_sapiens/grch38_hg38/public_databases/ncbi/Encode_deny_list_with_ncbi_centromere.merged.bed
     centromere: /home/tgenref/homo_sapiens/grch38_hg38/public_databases/ncbi/Modeled_regions_for_GRCh38_centromere_blacklist_merged.bed
+    somatic_GRCh38_1000g_pon: /home/tgenref/homo_sapiens/grch38_hg38/public_databases/1000G/1000g_pon.hg38.vcf.gz
+    known_chip_snv: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/CHIP/known_chip_snv.vcf.gz
+    chip_genes_list: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/CHIP/chip_genes.bed
     mappability_track: /home/tgenref/homo_sapiens/grch38_hg38/public_databases/bismap/k100.umap.no_header.bed
-    rsem_index: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/tool_resources/rsem_1.3.3/hg38_tempe
+    dj_window: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/bpure/dj_region_1kb_windowed.bed
     salmon_index: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/tool_resources/salmon_1.2.1-gompi-2019a/salmon_puff_75merPlus
     sex_check_targets: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/tgen_gender_check/chrx_common_dbSNPv152_snv_exons.bed
     sex_check_vcf: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/tgen_gender_check/chrx_common_dbSNPv152_snv_exons.vcf.gz
@@ -230,30 +241,55 @@ constants:
     starfusion_index: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/tool_resources/starFusion_gencode_v37/starFusion_Resources/ctat_genome_lib_build_dir
     strandedness_options:
       inward-unstranded-notapplicable:
-        rsem: "none"
         salmon: "IU"
-        htseq: "no"
         featurecounts: "0"
-        tophat: "-fr-unstranded"
         collectrnaseqmetrics: "NONE"
       inward-stranded-forward:
-        rsem: "forward"
         salmon: "ISF"
-        htseq: "yes"
         featurecounts: "1"
-        tophat: "-fr-secondstrand"
         collectrnaseqmetrics: "FIRST_READ_TRANSCRIPTION_STRAND"
       inward-stranded-reverse:
-        rsem: "reverse"
         salmon: "ISR"
-        htseq: "reverse"
         featurecounts: "2"
-        tophat: "-fr-firststrand"
         collectrnaseqmetrics: "SECOND_READ_TRANSCRIPTION_STRAND"
-    snpeff_config: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/tool_resources/snpEff_v4_3t/snpEff.config
-    snpeff_data: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/tool_resources/snpEff_v4_3t/data
-    snpeff_db: grch38.103
-    snpeff_canonical_cds_intervals: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/Homo_sapiens.GRCh38.103.ucsc.flt_canonical_snpeff.cds_padded.bed
+    umi_options:
+      correct_umi_umi_files: /home/tgenref/assay_files/twist_umi_adaptor_system/known_umi_sequences.txt
+      correct_umi_max_mismatches: 1
+      correct_umi_min_distance: 2
+      correct_umi_read_structure: "5M2S+T 5M2S+T"
+      group_reads_edits: 1
+      group_reads_min_map_q: 1
+      group_reads_strategy: "paired"
+      consensus_error_rate_pre_umi: 45
+      consensus_error_rate_post_umi: 40
+      consensus_min_input_base_quality: 10
+      filter_min_reads: 1
+      filter_min_base_quality: 30
+      filter_max_no_call_fraction: 0.1
+      filter_max_base_error_rate: 0.1
+    somatic_variant_filtering_options:
+      genome:
+        vcfmerger_exclude_filter: "(FMT/DP<10 | FMT/AR[0]>=0.02 | FMT/AR[1]<0.05)"
+      exome:
+        vcfmerger_exclude_filter: "(FMT/DP<10 | FMT/AR[0]>=0.02 | FMT/AR[1]<0.05)"
+    tumor_only_variant_filtering_options:
+      genome:
+        COSMIC_Ratio_Threshold: 0.10
+        vcfmerger_exclude_filter: "(FMT/DP<10 | FMT/AR[0]>=0.02 | FMT/AR[1]<0.05)"
+      exome:
+        COSMIC_Ratio_Threshold: 0.10
+        vcfmerger_exclude_filter: "(FMT/DP<10 | FMT/AR[0]>=0.02 | FMT/AR[1]<0.05)"
+    cnvear_copy_number_thresholds:
+      genome:
+        high_gain: 1.32
+        gain: 0.16
+        het_loss: -0.16
+        hom_loss: -1.32
+      exome:
+        high_gain: 1.32
+        gain: 0.16
+        het_loss: -0.16
+        hom_loss: -1.32
     snpSniffer_sites: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/snpSniffer/positions_387_hg38_ucsc.txt
     snpSniffer_database: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/snpSniffer/databaseV5_hg38_ucsc.ini
     vep_data: /home/tgenref/homo_sapiens/grch38_hg38/tool_specific_resources/vep/v103/
@@ -274,9 +310,6 @@ constants:
       - 'disruptive_inframe_insertion'
       - 'inframe_deletion'
       - 'disruptive_inframe_deletion'
-    deepvariant_models:
-      exome: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/deepvariant_v1.4.0/DeepVariant-inception_v3-1.4.0+data-wes_standard/model.ckpt
-      genome: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/deepvariant_v1.4.0/DeepVariant-inception_v3-1.4.0+data-wgs_standard/model.ckpt
     sequence_groupings:
       # Sequence groupings for BQSR (same groups as found in the GATK WDL example).
       - ['chr1']

@@ -1,0 +1,99 @@
+{% macro tumor_only_variant_filter(pair, input_vcf, temp_dir, variant_caller, origin) %}
+
+{% if input_vcf.endswith('.vcf') %}
+  {% set vcf_prefix = input_vcf.split('.')[:-1]|join('.') %}
+{% elif input_vcf.endswith('.vcf.gz') %}
+  {% set vcf_prefix = input_vcf.split('.')[:-2]|join('.') %}
+{% else %}
+  {{ raise('{} does not appear to be a vcf!'.format(input_vcf)) }}
+{% endif %}
+
+{% set output_vcf %}{{ vcf_prefix }}.flt.vcf.gz{% endset %}
+
+{# Set filtering options to the default in the pipeline.yaml, we then override them if defined #}
+{% set variant_filtering_options = {} %}
+{% do variant_filtering_options.update(constants.tempe.tumor_only_variant_filtering_options[pair.gltype]) %}
+{% if task_variables is defined and task_variables.tumor_only_variant_filtering[pair.gltype] is defined %}
+  {% do variant_filtering_options.update(task_variables.tumor_only_variant_filtering[pair.gltype]) %}
+{% endif %}
+
+{% if variant_filtering_options.variants_to_include_filter is not defined %}
+  {% do variant_filtering_options.update({'variants_to_include_filter': []}) %}
+
+  {# Checking if CC_filter is already defined, in preparation for allowing user defined filters #}
+  {# This is not defined in the pipeline.yaml, since it is already dynamic, but we allow users to set the value #}
+  {% if variant_filtering_options.CC_filter is not defined %}
+    {% if variant_caller == 'merged' and pair.callers is defined and pair.callers|length > 1 %}
+      {% if pair.callers | length > 3 %}
+        {% set CC_filter %}INFO/CC>={{ pair.callers | length - 2 }}{% endset %}
+      {% else %}
+        {% set CC_filter %}INFO/CC>={{ pair.callers | length - 1 }}{% endset %}
+      {% endif %}
+    {% endif %}
+  {% else %}
+    {% set CC_filter %}{{ variant_filtering_options.CC_filter }}{% endset %}
+  {% endif %}
+  {% if CC_filter is defined %}
+    {% do variant_filtering_options.variants_to_include_filter.append(CC_filter) %}
+  {% endif %}
+
+  {# This filter is partially dynamic, though more specifically it is very complex based on the number of annotation databases #}
+  {% if variant_filtering_options.database_filter is not defined %}
+    {# We expect this to already be defined from the pipeline.yaml #}
+    {% if variant_filtering_options.COSMIC_Ratio_Threshold is not number %}
+      {{ raise('The supplied COSMIC_Ratio_Threshold: {} is not a number'.format(variant_filtering_options.COSMIC_Ratio_Threshold)) }}
+    {% elif variant_filtering_options.COSMIC_Ratio_Threshold <= 0 or variant_filtering_options.COSMIC_Ratio_Threshold >= 1 %}
+      {{ raise('The supplied COSMIC_Ratio_Threshold: {} is outside of the expected range of 0..1'.format(variant_filtering_options.COSMIC_Ratio_Threshold)) }}
+    {% endif %}
+
+    {# Ratios are capped in a range of 0-1, with 1 indicating an AC value of 0 #}
+    {% set TOPMED_CNT_RATIO %}(INFO/COSMIC_CNT/(INFO/COSMIC_CNT + INFO/TOPMED_AC)>={{ variant_filtering_options.COSMIC_Ratio_Threshold }}){% endset %}
+    {% set TOPMED_NC_CNT_RATIO %}(INFO/COSMIC_NC_CNT/(INFO/COSMIC_NC_CNT + INFO/TOPMED_AC)>={{ variant_filtering_options.COSMIC_Ratio_Threshold }}){% endset %}
+    {% set GNOMAD_GENOME_CNT_RATIO %}(INFO/COSMIC_CNT/(INFO/COSMIC_CNT + INFO/GNOMAD_GENOME_AC)>={{ variant_filtering_options.COSMIC_Ratio_Threshold }}){% endset %}
+    {% set GNOMAD_GENOME_NC_CNT_RATIO %}(INFO/COSMIC_NC_CNT/(INFO/COSMIC_NC_CNT + INFO/GNOMAD_GENOME_AC)>={{ variant_filtering_options.COSMIC_Ratio_Threshold }}){% endset %}
+    {% set GNOMAD_EXOME_CNT_RATIO %}(INFO/COSMIC_CNT/(INFO/COSMIC_CNT + INFO/GNOMAD_EXOME_AC)>={{ variant_filtering_options.COSMIC_Ratio_Threshold }}){% endset %}
+    {% set GNOMAD_EXOME_NC_CNT_RATIO %}(INFO/COSMIC_NC_CNT/(INFO/COSMIC_NC_CNT + INFO/GNOMAD_EXOME_AC)>={{ variant_filtering_options.COSMIC_Ratio_Threshold }}){% endset %}
+    {% set INCLUDE_NON_DB %}(INFO/TOPMED==0 & INFO/GNOMAD_GENOME=0 & INFO/GNOMAD_EXOME=0){% endset %}
+    {% set INCLUDE_FROM_RATIO %}({{ TOPMED_CNT_RATIO }} | {{ TOPMED_NC_CNT_RATIO }} | {{ GNOMAD_GENOME_CNT_RATIO }} | {{ GNOMAD_GENOME_NC_CNT_RATIO }} | {{ GNOMAD_EXOME_CNT_RATIO }} | {{ GNOMAD_EXOME_NC_CNT_RATIO }}){% endset%}
+    {% if variant_caller == 'merged' %}
+      {% set DB_filter %} & ({{ INCLUDE_NON_DB }} | {{ INCLUDE_FROM_RATIO }}){% endset %}
+    {% else %}
+      {% set DB_filter %}({{ INCLUDE_NON_DB }} | {{ INCLUDE_FROM_RATIO }}){% endset %}
+    {% endif %}
+  {% else %}
+    {% set DB_filter %}{{ variant_filtering_options.database_filter }}{% endset %}
+  {% endif %}
+  {% do variant_filtering_options.variants_to_include_filter.append(DB_filter) %}
+{% endif %}
+{% set log_msg %}tumor_only_variant_filtering_{{ pair.name }}_{{ variant_caller }}_{{ origin }} is applying filter: --include '{{ variant_filtering_options.variants_to_include_filter|join('') }}'{% endset %}
+{{ log(log_msg, level='WARNING') }}
+
+- name: tumor_only_variant_filtering_{{ pair.name }}_{{ variant_caller }}_{{ origin }}
+  tags: [{{ pair.gltype }}, tumor_only, variant_filter, {{ variant_caller }}, {{ pair.name }}]
+  {% if temp_dir in input_vcf %}
+  reset: predecessors
+  {% endif %}
+  input: {{ input_vcf }}
+  output: {{ output_vcf }}
+  cpus: 4
+  mem: 8G
+  walltime: "4:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.bcftools.container }}
+  digest: {{ constants.tools.bcftools.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    mkdir -p {{ temp_dir }}
+
+    bcftools view \
+      --threads 4 \
+      --include '{{ variant_filtering_options.variants_to_include_filter|join('') }}' \
+      --output-file {{ output_vcf }} --output-type z \
+      {{ input_vcf }}
+
+    bcftools index --threads 4 --tbi --force {{ output_vcf }}
+
+{% endmacro %}
+

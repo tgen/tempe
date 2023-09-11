@@ -1,0 +1,116 @@
+{% from 'utilities/prepare_tumor_only.j2' import prepare_tumor_only with context %}
+{% from 'modules/constitutional/gatk_haplotypecallergvcf.j2' import haplotypecallergvcf with context %}
+{% from 'modules/constitutional/gatk_genotypegvcf.j2' import genotypegvcf with context %}
+{% from 'modules/constitutional/freebayes.j2' import freebayes with context %}
+{% from 'modules/constitutional/manta.j2' import manta_constitutional with context %}
+{% from 'modules/constitutional/strelka2.j2' import strelka2_constitutional with context %}
+{% from 'modules/constitutional/deepvariant.j2' import deepvariant with context %}
+{% from 'modules/constitutional/octopus.j2' import octopus_constitutional with context %}
+{% from 'modules/constitutional/vardict.j2' import vardict_constitutional with context %}
+{% from 'modules/constitutional/ichorcna.j2' import ichorcna with context %}
+{% from 'modules/constitutional/gatk_cnv.j2' import gatk_cnv_constitutional with context %}
+{% from 'modules/constitutional/expansion_hunter.j2' import expansion_hunter with context %}
+{% from 'modules/constitutional/chip_mutect2.j2' import chip_mutect2 with context %}
+
+# Constitutional tools generally operate on a single DNA samples and should not run
+# on "tumor" samples with the exception of ichor that can be run on tumor or constitutional.
+
+{%- macro constitutional_variant_calling(samples) %}
+
+{% set normSamples = {} %}
+{% set pairedNormSamples = {} %}
+
+{% if controlDataFiles is defined %}
+{% for file in controlDataFiles %}
+
+  {% if file.rgsm is defined %}
+    {% set name %}{{ file.rgsm }}_{{ file.assayCode }}{% endset %}
+  {% else %}
+    {% set name %}{{ study }}_{{ file.assayCode }}{% endset %}
+  {% endif %}
+  {% do file.update({'name': name}) %}
+
+  {% if name not in normSamples %}
+    {% do normSamples.update({name: {}}) %}
+    {% do normSamples[name].update(file) %}
+  {% endif %}
+{% endfor %}
+{% endif %}
+
+{%- for sample in samples.values() if sample.gltype in ('exome', 'genome') and sample.subGroup|lower == 'constitutional' %}
+  {% for normal in normSamples.values() if normal.assayCode == sample.assayCode %}
+    {% set name %}{{ normal.name }}{% endset %}
+    {% if name not in pairedNormSamples %}
+      {% do pairedNormSamples.update({name: {}}) %}
+      {% do pairedNormSamples[name].update(normal) %}
+      {{- prepare_tumor_only(normal) }}
+    {% endif %}
+  {% endfor %}
+{% endfor %}
+
+{%- for sample in samples.values() if sample.gltype in ('exome', 'genome') %}
+
+  {% if not sample.aligners | length >= 1 %}
+    {{- sample_aligners_did_not_traverse_to_module }}
+  {% endif %}
+
+  {% for aligner in sample.aligners %}
+
+    {% if sample.gltype in 'exome' %}
+      {% set taskPrefix = 'Exome' %}
+
+      {%- if sample.subGroup|lower != 'tumor' %}
+        {%- if tasks[taskPrefix+"_constitutional_snp_indel_caller_chip_mutect2"]|default(false) %}
+          {{- chip_mutect2(sample, aligner, taskPrefix=taskPrefix) }}
+        {% endif %}
+      {% endif %}
+    {% elif sample.gltype in 'genome' %}
+      {% set taskPrefix = 'Genome' %}
+
+      {% if tasks.Genome_constitutional_cna_caller_ichor|default(false) %}
+        {{- ichorcna(sample, aligner, taskPrefix=taskPrefix) }}
+      {% endif %}
+    {% endif %}
+
+    {%- if sample.subGroup|lower != 'tumor' %}
+      {%- if tasks[taskPrefix+"_constitutional_snp_indel_caller_gatk_HaplotypeCaller"]|default(false) %}
+        {{- haplotypecallergvcf(sample, aligner, taskPrefix=taskPrefix) }}
+      {% endif %}
+      {%- if tasks[taskPrefix+"_constitutional_snp_indel_caller_deepvariant"]|default(false) %}
+        {{- deepvariant(sample, aligner, taskPrefix=taskPrefix) }}
+      {% endif %}
+      {%- if tasks[taskPrefix+"_constitutional_snp_indel_caller_freebayes"]|default(false) %}
+        {{- freebayes(sample, aligner, taskPrefix=taskPrefix) }}
+      {% endif %}
+      {%- if tasks[taskPrefix+"_constitutional_genotype_hc_gvcf_gatk_GenotypeGVCFs"]|default(false) %}
+        {{- genotypegvcf(sample, aligner, taskPrefix=taskPrefix) }}
+      {% endif %}
+      {%- if tasks[taskPrefix+"_constitutional_snp_indel_caller_strelka2"]|default(false) %}
+        {{- strelka2_constitutional(sample, aligner, taskPrefix=taskPrefix) }}
+      {% endif %}
+      {%- if tasks[taskPrefix+"_constitutional_snp_indel_caller_octopus"]|default(false) %}
+        {{- octopus_constitutional(sample, aligner, taskPrefix=taskPrefix) }}
+      {% endif %}
+      {%- if tasks[taskPrefix+"_constitutional_snp_indel_caller_vardict"]|default(false) %}
+        {{- vardict_constitutional(sample, aligner, taskPrefix=taskPrefix) }}
+      {% endif %}
+      {%- if tasks[taskPrefix+"_constitutional_structural_caller_manta"]|default(false) %}
+        {{- manta_constitutional(sample, aligner, taskPrefix=taskPrefix) }}
+      {% endif %}
+      {% if tasks[taskPrefix+"_constitutional_structural_caller_expansion_hunter"]|default(false) %}
+        {{- expansion_hunter(sample, aligner) }}
+      {% endif %}
+      {%- if tasks[taskPrefix+"_constitutional_cna_caller_gatk"]|default(false) %}
+        {% if normSamples.values()|selectattr('assayCode', 'eq', sample.assayCode)|first is defined %}
+          {% set normal = normSamples.values()|selectattr('assayCode', 'eq', sample.assayCode)|first is defined %}
+          {% if normal.gatkCnvPon is defined %}
+            {{- gatk_cnv_constitutional(sample, normal, aligner) }}
+          {% endif %}
+        {% endif %}
+      {% endif %}
+    {% endif %}
+
+  {% endfor %}
+
+{% endfor %}
+{% endmacro %}

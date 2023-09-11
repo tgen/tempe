@@ -1,0 +1,275 @@
+{% from 'utilities/md5sum_bam_cram.j2' import md5sum_bam_cram with context %}
+
+# Run STAR-Fusion for detecting gene fusions
+
+{% macro star_fusion(sample) %}
+
+{%- set temp_dir %}temp/{{ sample.gltype }}/fusions/starfusion/{{ sample.name }}{% endset %}
+{%- set results_dir %}{{ sample.gltype }}/fusions/starfusion/{{ sample.name }}{% endset %}
+
+{# Here we build up lists of all the fastq files for this sample #}
+{% set r1fqlist = [] %}
+{% set r2fqlist = [] %}
+
+{% for rgid, rg in sample.read_groups.items() %}
+  {% if rg.data_files|length < 2 %}
+      {{ raise('Read group did not have 2 data files: {}'.format(rgid)) }}
+  {% endif %}
+
+  {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
+  {% do r1fastq.update({"path": "temp/fastqs/" + r1fastq.basename}) %}
+  {% do r1fqlist.append(r1fastq) %}
+
+  {% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
+  {% do r2fastq.update({"path": "temp/fastqs/" + r2fastq.basename}) %}
+  {% do r2fqlist.append(r2fastq) %}
+{% endfor %}
+
+- name: star_fusion_alignment_{{ sample.name }}
+  tags: [{{ sample.gltype }}, transcriptome, fusion_caller, STAR_Fusion, {{ sample.name }}]
+  reset: predecessors
+  input:
+  {% for fq in r1fqlist %}
+    - {{ fq.path }}
+  {% endfor %}
+  {% for fq in r2fqlist %}
+    - {{ fq.path }}
+  {% endfor %}
+    - {{ constants.tempe.starfusion_index }}
+  output:
+    - {{ results_dir }}/{{ sample.name }}_Chimeric.out.junction
+    {% if tasks.RNA_transcriptome_fusion_caller_Keep_STAR_Fusion_BAM|default(false) %}
+    - {{ results_dir }}/{{ sample.name }}_starfusion.bam
+    - {{ results_dir }}/{{ sample.name }}_starfusion.bam.bai
+    {% endif %}
+  cpus: 20
+  mem: 80G
+  walltime: "24:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.star_fusion.container }}
+  digest: {{ constants.tools.star_fusion.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    rm -r {{ temp_dir }} || true
+    mkdir -p {{ temp_dir }}
+    mkdir -p {{ results_dir }}
+
+    {# Newly recommended options
+    --alignInsertionFlush Right \
+    --alignSplicedMateMapLminOverLmate 0 \
+    --alignSplicedMateMapLmin 30
+    #}
+
+    STAR \
+      --genomeDir {{ constants.tempe.starfusion_index }}/ref_genome.fa.star.idx  \
+      --outReadsUnmapped None \
+      --chimSegmentMin 12 \
+      --chimJunctionOverhangMin 12 \
+      --chimOutJunctionFormat 1 \
+      --alignSJDBoverhangMin 10 \
+      --alignMatesGapMax 100000 \
+      --alignIntronMax 100000 \
+      --alignSJstitchMismatchNmax 5 -1 5 5 \
+      --alignInsertionFlush Right \
+      --alignSplicedMateMapLminOverLmate 0 \
+      --alignSplicedMateMapLmin 30 \
+      --runThreadN 20 \
+      --outSAMstrandField intronMotif \
+      --outSAMunmapped Within \
+      --outSAMtype BAM Unsorted \
+      --readFilesIn "{{ r1fqlist|map(attribute='path')|join(',') }}" "{{ r2fqlist|map(attribute='path')|join(',') }}" \
+      --outSAMattrRGline ID:GRPundef \
+      --chimMultimapScoreRange 3 \
+      --chimScoreJunctionNonGTAG -4 \
+      --chimMultimapNmax 20 \
+      --chimNonchimScoreDropMin 10 \
+      --peOverlapNbasesMin 12 \
+      --peOverlapMMp 0.1 \
+      --genomeLoad NoSharedMemory \
+      --twopassMode Basic \
+      --readFilesCommand 'gunzip -c' \
+      --quantMode GeneCounts \
+      --outFileNamePrefix "{{ temp_dir }}/"
+
+    samtools sort \
+      -T "{{ temp_dir }}" \
+      -l 2 \
+      -m 3G \
+      --threads 20 \
+      --output-fmt BAM \
+      -o "{{ temp_dir }}/{{ sample.name }}.Aligned.sorted.bam" \
+      "{{ temp_dir }}/Aligned.out.bam"
+
+    {# Removing unneeded large file #}
+    rm {{ temp_dir }}/Aligned.out.bam
+
+    samtools index -@ 20 {{ temp_dir }}/{{ sample.name }}.Aligned.sorted.bam
+
+    {% if tasks.RNA_transcriptome_fusion_caller_Keep_STAR_Fusion_BAM|default(false) %}
+    mv {{ temp_dir }}/{{ sample.name }}.Aligned.sorted.bam {{ results_dir }}/{{ sample.name }}_starfusion.bam
+    mv {{ temp_dir }}/{{ sample.name }}.Aligned.sorted.bam.bai {{ results_dir }}/{{ sample.name }}_starfusion.bam.bai
+    {% endif %}
+
+    mv {{ temp_dir }}/Chimeric.out.junction {{ results_dir }}/{{ sample.name }}_Chimeric.out.junction
+
+
+- name: star_fusion_{{ sample.name }}
+  tags: [{{ sample.gltype }}, transcriptome, fusion_caller, STAR_Fusion, {{ sample.name }}]
+  input:
+    - {{ results_dir }}/{{ sample.name }}_Chimeric.out.junction
+    {% for fq in r1fqlist %}
+    - {{ fq.path }}
+    {% endfor %}
+    {% for fq in r2fqlist %}
+    - {{ fq.path }}
+    {% endfor %}
+    - {{ constants.tempe.starfusion_index }}
+  output:
+    - {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.tsv
+    - {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.abridged.tsv
+    - {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.abridged.coding_effect.tsv
+    - {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_evidence_reads_1.fq
+    - {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_evidence_reads_2.fq
+  cpus: 4
+  mem: 8G
+  walltime: "24:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.star_fusion.container }}
+  digest: {{ constants.tools.star_fusion.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    STAR-Fusion \
+      --CPU 4 \
+      --genome_lib_dir "{{ constants.tempe.starfusion_index }}" \
+      --chimeric_junction {{ results_dir }}/{{ sample.name }}_Chimeric.out.junction \
+      --left_fq "{{ r1fqlist|map(attribute='path')|join(',') }}" \
+      --right_fq "{{ r2fqlist|map(attribute='path')|join(',') }}" \
+      --examine_coding_effect \
+      --extract_fusion_reads \
+      --output_dir "{{ temp_dir }}" \
+      --outTmpDir "{{ temp_dir }}" \
+      --tmpdir "{{ temp_dir }}"
+
+    mv {{ temp_dir }}/star-fusion.fusion_evidence_reads_1.fq {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_evidence_reads_1.fq
+    mv {{ temp_dir }}/star-fusion.fusion_evidence_reads_2.fq {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_evidence_reads_2.fq
+    mv {{ temp_dir }}/star-fusion.fusion_predictions.abridged.coding_effect.tsv {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.abridged.coding_effect.tsv
+    mv {{ temp_dir }}/star-fusion.fusion_predictions.abridged.tsv {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.abridged.tsv
+    mv {{ temp_dir }}/star-fusion.fusion_predictions.tsv {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.tsv
+
+- name: fusion_inspector_{{ sample.name }}
+  tags: [{{ sample.gltype }}, transcriptome, fusion_caller, STAR_Fusion, {{ sample.name }}]
+  input:
+    - {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.abridged.coding_effect.tsv
+    - {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_evidence_reads_1.fq
+    - {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_evidence_reads_2.fq
+    - {{ constants.tempe.starfusion_index }}
+  output:
+    - {{ results_dir }}/{{ sample.name }}_finspector.bed
+    - {{ results_dir }}/{{ sample.name }}_finspector.fa
+    - {{ results_dir }}/{{ sample.name }}_finspector.fusion_inspector_web.html
+    - {{ results_dir }}/{{ sample.name }}_finspector.fusion_inspector_web.json
+    - {{ results_dir }}/{{ sample.name }}_finspector.junction_reads.bam
+    - {{ results_dir }}/{{ sample.name }}_finspector.junction_reads.bam.bai
+    - {{ results_dir }}/{{ sample.name }}_finspector.spanning_reads.bam
+    - {{ results_dir }}/{{ sample.name }}_finspector.spanning_reads.bam.bai
+    - {{ results_dir }}/{{ sample.name }}_finspector.gmap_trinity_GG.fusions.gff3.bed.sorted.bed.gz
+    - {{ results_dir }}/{{ sample.name }}_finspector.gmap_trinity_GG.fusions.gff3.bed.sorted.bed.gz.tbi
+    - {{ results_dir }}/{{ sample.name }}_Trinity-GG.fasta
+  cpus: 2
+  mem: 16G
+  walltime: "24:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.star_fusion.container }}
+  digest: {{ constants.tools.star_fusion.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    rm -r {{ temp_dir }} || true
+    mkdir -p {{ temp_dir }}
+    mkdir -p {{ results_dir }}
+
+    NUM_FUSIONS=$(grep -w "#FusionName" -c -v {{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.abridged.coding_effect.tsv || :)
+    if (( NUM_FUSIONS == 0 )); then
+        echo "Zero fusions found, skipping FusionInspector"
+    else
+        PROJECT_ROOT=$PWD
+        cd {{ temp_dir }}
+        FusionInspector \
+          --fusions ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_star_fusion.fusion_predictions.abridged.coding_effect.tsv \
+          --out_prefix {{ sample.name }}_finspector \
+          --min_junction_reads 1 \
+          --min_novel_junction_support 3 \
+          --min_spanning_frags_only 5 \
+          --max_mate_dist 100000 \
+          --vis \
+          --max_promiscuity 10 \
+          --output_dir FusionInspector-inspect \
+          --genome_lib_dir {{ constants.tempe.starfusion_index }} \
+          --CPU 2 \
+          --only_fusion_reads \
+          --fusion_contigs_only \
+          --left_fq ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_star_fusion.fusion_evidence_reads_1.fq \
+          --right_fq ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_star_fusion.fusion_evidence_reads_2.fq \
+          --no_FFPM \
+          --include_Trinity \
+          --annotate \
+          --examine_coding_effect
+
+        {# Moving fusion inspector files to results dir #}
+        mv FusionInspector-inspect/{{ sample.name }}_finspector.bed ${PROJECT_ROOT}/{{ results_dir }}/
+        mv FusionInspector-inspect/{{ sample.name }}_finspector.fa ${PROJECT_ROOT}/{{ results_dir }}/
+        mv FusionInspector-inspect/{{ sample.name }}_finspector.fusion_inspector_web.html ${PROJECT_ROOT}/{{ results_dir }}/
+        mv FusionInspector-inspect/{{ sample.name }}_finspector.fusion_inspector_web.json ${PROJECT_ROOT}/{{ results_dir }}/
+        mv FusionInspector-inspect/{{ sample.name }}_finspector.junction_reads.bam ${PROJECT_ROOT}/{{ results_dir }}/
+        mv FusionInspector-inspect/{{ sample.name }}_finspector.junction_reads.bam.bai ${PROJECT_ROOT}/{{ results_dir }}/
+        mv FusionInspector-inspect/{{ sample.name }}_finspector.spanning_reads.bam ${PROJECT_ROOT}/{{ results_dir }}/
+        mv FusionInspector-inspect/{{ sample.name }}_finspector.spanning_reads.bam.bai ${PROJECT_ROOT}/{{ results_dir }}/
+        mv FusionInspector-inspect/{{ sample.name }}_finspector.gmap_trinity_GG.fusions.gff3.bed.sorted.bed.gz ${PROJECT_ROOT}/{{ results_dir }}/
+        mv FusionInspector-inspect/{{ sample.name }}_finspector.gmap_trinity_GG.fusions.gff3.bed.sorted.bed.gz.tbi ${PROJECT_ROOT}/{{ results_dir }}/
+        mv FusionInspector-inspect/fi_workdir/trinity_GG/Trinity-GG.fasta ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_Trinity-GG.fasta
+    fi
+
+{% if tasks.RNA_transcriptome_fusion_caller_Keep_STAR_Fusion_BAM|default(false) %}
+{% if cram|default(true) %}
+{% set bam_path %}{{ results_dir }}/{{ sample.name }}_starfusion.bam{% endset %}
+{% set cram_path %}{{ results_dir }}/{{ sample.name }}_starfusion.cram{% endset %}
+{% set aligner = 'star' %}
+
+- name: bam_to_cram_{{ sample.name }}_{{ aligner }}_fusion
+  tags: [{{ sample.gltype }}, {{ sample.name }}, bam_to_cram ]
+  input: 
+    - {{ results_dir }}/{{ sample.name }}_starfusion.bam
+    - {{ results_dir }}/{{ sample.name }}_starfusion.bam.bai
+    - {{ constants.tempe.star_fasta }}
+  output:
+    - {{ results_dir }}/{{ sample.name }}_starfusion.cram
+    - {{ results_dir }}/{{ sample.name }}_starfusion.cram.crai
+  walltime: "8:00:00"
+  cpus: 8
+  mem: 4G
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.samtools.container }}
+  digest: {{ constants.tools.samtools.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    samtools view \
+      -C \
+      -@ 8 \
+      --reference "{{ constants.tempe.star_fasta }}" \
+      -o "{{ cram_path }}" \
+      "{{ bam_path }}"
+
+    samtools index "{{ cram_path }}"
+
+    {{- md5sum_bam_cram(sample, aligner) }}
+{% endif %}
+{% endif %}
+
+{% endmacro -%}

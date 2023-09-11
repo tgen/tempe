@@ -1,0 +1,51 @@
+{% macro remove_files(directory, before, after, name='null', files_to_remove='null') %}
+
+{% if name != 'null' %}
+  {% set task_name %}{{ name }}{% endset %}
+{% else %}
+  {% if after is string %}
+    {% set task_name %}{{ after }}{% endset %}
+  {% else %}
+    {% set task_name %}{{ after[0] }}{% endset %}
+  {% endif %}
+{% endif %}
+
+- name: removing_files_{{ task_name }}
+  {% if before is not none %}
+  before-re:
+    {% if before is string %}
+    - {{ before }}
+    {% else %}
+    {% for task in before %}
+    - {{ task }}
+    {% endfor %}
+    {% endif %}
+  {% endif %}
+  after-re:
+    {% if after is string %}
+    - {{ after }}
+    {% else %}
+    {% for task in after %}
+    - {{ task }}
+    {% endfor %}
+    {% endif %}
+  input: {{ directory }}
+  walltime: "1:00:00"
+  cpus: 1
+  mem: 2G
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.base.container }}
+  digest: {{ constants.tools.base.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    {% if files_to_remove == 'null' %}
+    rm -r {{ directory }}
+    {% else %}
+    {% for file in files_to_remove %}
+    rm {{ file }}
+    {% endfor %}
+    {% endif %}
+
+{% endmacro %}

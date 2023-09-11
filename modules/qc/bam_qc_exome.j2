@@ -1,0 +1,54 @@
+# These macros are run on exome bams from the dna_alignment module.
+
+{% from 'modules/qc/stats2json.j2' import stats2json with context %}
+
+{% macro bam_qc_gatk_collecthsmetrics(sample, aligner='bwa') %}
+{% if tasks["Exome_quality_control_stats_gatk_CollectHsMetrics"]|default(false) %}
+
+  {% set task %}{{ sample.name }}_{{ aligner }}{% endset %}
+  {% set bam %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
+  {% set results_dir %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/stats{% endset %}
+  {% set output_file %}{{ results_dir }}/{{ bam|basename }}.hs_metrics{% endset %}
+  {% set output_file_json %}{{ output_file }}.json{% endset %}
+
+- name: gatk_collecthsmetrics_{{ task }}
+  tags: [{{ sample.gltype }}, quality_control, stats, gatk_CollectHsMetrics, {{ sample.name }}]
+  input: 
+    - {{ bam }}
+    - {{ bam }}.bai
+    - {{ constants.tempe.reference_fasta }}
+    - {{ sample.capture_kit.targets_interval_list }}
+    - {{ sample.capture_kit.baits_interval_list }}
+  output: {{ output_file }}
+  walltime: "8:00:00"
+  cpus: 2
+  mem: 16G
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.gatk.container }}
+  digest: {{ constants.tools.gatk.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    mkdir -p {{ results_dir }}
+
+    gatk CollectHsMetrics \
+      --java-options "-Xmx14G" \
+      --METRIC_ACCUMULATION_LEVEL null \
+      --METRIC_ACCUMULATION_LEVEL ALL_READS \
+      --METRIC_ACCUMULATION_LEVEL LIBRARY \
+      {% if sample.umi | default(false) %}
+      --COVERAGE_CAP 10000 \
+      {% else %}
+      --COVERAGE_CAP 2000 \
+      {% endif %}
+      --INPUT {{ bam }} \
+      --OUTPUT {{ output_file }} \
+      --REFERENCE_SEQUENCE {{ constants.tempe.reference_fasta }} \
+      --TARGET_INTERVALS {{ sample.capture_kit.targets_interval_list }} \
+      --BAIT_INTERVALS {{ sample.capture_kit.baits_interval_list }}
+
+
+{{- stats2json(sample.gltype, sample.name, task, output_file, output_file_json, "picard_hs_metrics", sample=sample) }}
+{% endif %}
+{% endmacro %}

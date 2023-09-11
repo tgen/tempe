@@ -1,0 +1,403 @@
+{% from 'utilities/read_group_line.j2' import read_group_line with context %}
+{% from 'utilities/remove_files.j2' import remove_files with context %}
+{% from 'utilities/bam_to_cram.j2' import bam_to_cram with context %}
+{% from 'modules/qc/stats2lims.j2' import stats2lims with context %}
+{% from 'modules/dna_alignment/gatk_baserecalibration.j2' import baserecalibration, nobaserecalibration with context %}
+
+{% macro fgbio_bwa_mem(sample, aligner) %}
+
+{% set temp_dir %}temp/{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}{% endset %}
+{% set results_dir %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}{% endset %}
+{% set umi_options = {} %}
+{% do umi_options.update(constants.tempe.umi_options) %}
+{% if task_variables is defined and task_variables.umi_alignment is defined %}
+  {% do umi_options.update(task_variables.umi_alignment) %}
+{% endif %}
+
+{% for rgid, rg in sample.read_groups.items() %}
+{% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
+{% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
+
+{#
+We are correcting the UMIs below, and this results in excluding some reads with unfixable UMIs. In testing
+we used --rejects to output these excluded reads and confirm that overall all reads are accounted for - no
+other weird filters are in place
+#}
+
+- name: create_uBAM_{{ r1fastq.basename | replace(".", "_") }}
+  tags: [{{ sample.gltype }}, alignment, dna_alignment, {{ aligner }}, umi, {{ sample.name }}]
+  reset: predecessors
+  input:
+    {% for fastq in [r1fastq, r2fastq] %}
+    - temp/fastqs/{{ fastq.basename }}
+    {% endfor %}
+    - {{ umi_options.correct_umi_umi_files }}
+  output:
+    - {{ temp_dir }}/{{ rgid }}/{{ rg.rgid }}_UMI_uBAM.bam
+    - {{ results_dir }}/stats/{{ sample.name }}_{{ rg.rgid }}.fgbio_umi_correction_metrics.txt
+  cpus: 4
+  mem: 32G
+  walltime: "4:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.fgbio.container }}
+  digest: {{ constants.tools.fgbio.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    rm -r {{ temp_dir }}/{{ rgid }} || true
+    mkdir -p {{ temp_dir }}/{{ rgid }}
+    mkdir -p {{ results_dir }}/stats
+
+    {# Extract UMI from reads and create uBAM (Step 1 - One step with fgbio)
+    ## Need read structure to be dynamic by UMI kit and reads performed #}
+    ## Defaults, unless submitter updated these in the config:
+    # --read-structure {{ constants.tempe.umi_options.correct_umi_read_structure }}
+    # --max-mismatches {{ constants.tempe.umi_options.correct_umi_max_mismatches }}
+    # --min-distance {{ constants.tempe.umi_options.correct_umi_min_distance }}
+    # --umi-files {{ constants.tempe.umi_options.correct_umi_umi_files }}
+    fgbio --tmp-dir {{ temp_dir }}/{{ rgid }}/fgbio_tmp \
+      --compression 0 \
+      FastqToBam \
+        --input {% for fastq in [r1fastq, r2fastq] %}temp/fastqs/{{ fastq.basename }} {% endfor %} \
+        --read-structure {{ umi_options.correct_umi_read_structure }} \
+        --umi-tag RX \
+        --sample {{ rg.rgsm }} \
+        --library {{ rg.rglb }} \
+        --read-group-id {{ rg.rgid }} \
+        --platform {{ rg.rgpl }} \
+        --platform-unit {{ rg.rgpu }} \
+        --platform-model {{ rg.rgpm }} \
+        --sequencing-center {{ rg.rgcn }} \
+        --output /dev/stdout | \
+      fgbio --tmp-dir {{ temp_dir }}/{{ rgid }}/fgbio_tmp \
+        --compression 1 --async-io \
+        CorrectUmis \
+        --input /dev/stdin \
+        --output {{ temp_dir }}/{{ rgid }}/{{ rg.rgid }}_UMI_uBAM.bam \
+        --max-mismatches {{ umi_options.correct_umi_max_mismatches }} \
+        --min-distance {{ umi_options.correct_umi_min_distance }} \
+        --umi-tag RX \
+        --umi-files {{ umi_options.correct_umi_umi_files }} \
+        --dont-store-original-umis \
+        --metrics {{ results_dir }}/stats/{{ rg.rgsm }}_{{ rg.rglb }}_{{ rg.rgid.split('-')[0] }}.fgbio_umi_correction_metrics.txt
+
+{% endfor %}
+
+{% for rglb, rg in sample.read_groups.values() | groupby('rglb') %}
+{% set post_umi_correction_readcount_json %}{{ results_dir }}/stats/{{ sample.rgsm }}_{{ rglb }}.fgbio_post_umi_correction_readcounts.json{% endset %}
+{% set post_umi_consensus_readcount_json %}{{ results_dir }}/stats/{{ sample.rgsm }}_{{ rglb }}.fgbio_post_umi_consensus_readcounts.json{% endset %}
+- name: merge_uBAM_{{ sample.name }}_{{ rglb }}
+  tags: [{{ sample.gltype }}, alignment, dna_alignment, {{ aligner }}, umi, {{ sample.name }}]
+  reset: predecessors
+  input:
+    {% for rgid in rg %}
+    - {{ temp_dir }}/{{ rgid.rgid }}/{{ rgid.rgid }}_UMI_uBAM.bam
+    {% endfor %}
+  output:
+    - {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.UMI_uBAM.bam
+    - {{ post_umi_correction_readcount_json }}
+  cpus: 8
+  mem: 16G
+  walltime: "4:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.samtools.container }}
+  digest: {{ constants.tools.samtools.digest }}
+  cmd: |
+    set -eu
+
+    samtools merge \
+      --threads 8 \
+      -c \
+      -f \
+      -l 6 \
+      {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.UMI_uBAM.bam \
+    {% for rgid in rg %}
+      {% if not loop.last %}
+      {{ temp_dir }}/{{ rgid.rgid }}/{{ rgid.rgid }}_UMI_uBAM.bam \
+      {% else %}
+      {{ temp_dir }}/{{ rgid.rgid }}/{{ rgid.rgid }}_UMI_uBAM.bam
+      {% endif %}
+    {% endfor %}
+
+    {# Collecting count of reads post merging rgids - thus this is read counts post correction for the rglb #}
+    RGLB_READCOUNTS=$(samtools view -c {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.UMI_uBAM.bam)
+    cat <<EOF > {{ post_umi_correction_readcount_json }}
+    {"SAMPLES": [{"LIBRARIES": [{"READGROUPS": [{}], "postUMICorrectionReadCount": "${RGLB_READCOUNTS}", "LB": "{{ rglb }}" }], "SM": "{{ sample.rgsm }}"}]}
+    EOF
+
+{% set task %}{{ sample.name }}_{{ aligner }}_fgbio_post_umi_correction_readcount{% endset %}
+{{- stats2lims(sample.gltype, sample.name, task, post_umi_correction_readcount_json, "fgbio_umi") }}
+
+- name: bwa_mem_merge_umi_alignment_{{ sample.name }}_{{ rglb }}
+  tags: [{{ sample.gltype }}, alignment, dna_alignment, {{ aligner }}, umi, {{ sample.name }}]
+  reset: predecessors
+  input:
+    - {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.UMI_uBAM.bam
+    - {{ constants.tempe.bwa_mem2_index }}
+    - {{ constants.tempe.reference_fasta }}
+  output:
+    - {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.UMI_{{ aligner }}.bam
+  cpus: 20
+  mem: 80G
+  walltime: "4:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.fgbio.container }}
+  digest: {{ constants.tools.fgbio.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    samtools fastq \
+      {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.UMI_uBAM.bam |\
+    bwa-mem2 mem \
+      -v 3 \
+      -Y \
+      -K 100000000 \
+      -p \
+      -t 19 \
+      {{ constants.tempe.bwa_mem2_index }} \
+      /dev/stdin |\
+    fgbio --compression 1 --async-io ZipperBams \
+      --unmapped {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.UMI_uBAM.bam \
+      --ref {{ constants.tempe.reference_fasta }} \
+      --output {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.UMI_{{ aligner }}.bam
+
+
+{# Testing showed the expected increase in coverage using UMI aware duplicate marking by 7-20%
+# But that does not use the structured UMI, which is the only thing we should support
+# Doing correction using the structured UMI causes a slight reduction in coverage and produces a lossy BAM
+# As reads that are dropped as they can not be corrected are dropped from the BAM
+#### Maybe there are setting to prevent, needs investigation
+# Doing read collapsing on the single reads in testing allowed read correction on ~50% of reads
+### This is capture kit and depth dependent but was 800-2000x
+# This is very lossy so final reads are mix of collapsed and singletons
+
+### Based on testing and getting most value from the approach I suggest using UMI correction with
+# single read family collapsing to maximize coverage and read accuracy #}
+
+- name: fgbio_consensus_reads_{{ sample.name }}_{{ rglb }}
+  tags: [{{ sample.gltype }}, alignment, dna_alignment, {{ aligner }}, umi, {{ sample.name }}]
+  reset: predecessors
+  input:
+    - {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.UMI_{{ aligner }}.bam
+  output:
+    - {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.con_uBAM.bam
+    - {{ results_dir }}/stats/{{ sample.name }}_{{ rglb }}.{{ aligner }}.bam.fgbio_family_size_histogram.txt
+  cpus: 4
+  mem: 32G
+  walltime: "24:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.fgbio.container }}
+  digest: {{ constants.tools.fgbio.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    {# Group Reads by UMI (This does not need to be sort, it sorts by UMI, then 5' end, then those with matching 3' are tagged) #}
+    ## Defaults, unless submitter updated these in the config:
+    # --strategy {{ constants.tempe.umi_options.group_reads_strategy }}
+    # --edits {{ constants.tempe.umi_options.group_reads_edits }}
+    # --min-map-q {{ constants.tempe.umi_options.group_reads_min_map_q }}
+    fgbio --tmp-dir {{ temp_dir }}/fgbio_tmp \
+      --compression 1 --async-io \
+      GroupReadsByUmi \
+      --input {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.UMI_{{ aligner }}.bam \
+      {% if tasks[sample.gltype|capitalize+"_alignment_dna_alignment_umi_collapse_duplex"]|default(false) %}
+      {# For duplex the grouping strategy must be paired #}
+      --strategy "paired" \
+      {% else %}
+      {# We default to paired, though adjacency is another recommended option - we default to paired #}
+      {# since at a future state we may want to filter duplicates some complex UMI related duplicates #}
+      {# In testing about 3% of reads are part of a duplicate set #}
+      --strategy {{ umi_options.group_reads_strategy|default("paired") }} \
+      {% endif %}
+      --family-size-histogram {{ results_dir }}/stats/{{ sample.name }}_{{ rglb }}.{{ aligner }}.bam.fgbio_family_size_histogram.txt \
+      --raw-tag RX \
+      --assign-tag MI \
+      --edits {{ umi_options.group_reads_edits }} \
+      --min-map-q {{ umi_options.group_reads_min_map_q }} \
+      --output {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.group_by_umi.bam
+
+    {# We are currently forced to generate consensus reads, either via simplex or duplex collapsing #}
+    {# here we default to simplex unless duplex was activated, this avoids the potential for both tasks #}
+    {# being enabled and then the collapsing would be combined and IO no longer makes sense #}
+    ## Defaults, unless submitter updated these in the config:
+    # --error-rate-pre-umi {{ constants.tempe.umi_options.consensus_error_rate_pre_umi }}
+    # --error-rate-post-umi {{ constants.tempe.umi_options.consensus_error_rate_post_umi }}
+    # --min-input-base-quality {{ constants.tempe.umi_options.consensus_min_input_base_quality }}
+    {% if tasks[sample.gltype|capitalize+"_alignment_dna_alignment_umi_collapse_duplex"]|default(false) %}
+    {# Collapse combined read families - Duplex #}
+    fgbio --tmp-dir {{ temp_dir }}/fgbio_tmp --compression 1 \
+      CallDuplexConsensusReads \
+      --threads 4 \
+      --read-group-id {{ (rg|first).rgid }} \
+      --input {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.group_by_umi.bam  \
+      --output {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.con_uBAM.bam \
+      --error-rate-pre-umi {{ umi_options.consensus_error_rate_pre_umi }} \
+      --error-rate-post-umi {{ umi_options.consensus_error_rate_post_umi }} \
+      --min-input-base-quality {{ umi_options.consensus_min_input_base_quality }}
+    {% else %}
+    {# Collapse single read families - Simplex #}
+    fgbio --tmp-dir {{ temp_dir }}/fgbio_tmp --compression 1 \
+      CallMolecularConsensusReads \
+      --input {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.group_by_umi.bam \
+      --threads 4 \
+      --min-reads 1 \
+      --tag MI \
+      --read-group-id {{ (rg|first).rgid }} \
+      --error-rate-pre-umi {{ umi_options.consensus_error_rate_pre_umi }} \
+      --error-rate-post-umi {{ umi_options.consensus_error_rate_post_umi }} \
+      --min-input-base-quality {{ umi_options.consensus_min_input_base_quality }} \
+      --output {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.con_uBAM.bam
+    {% endif %}
+
+- name: bwa_mem_umi_collapsed_{{ sample.name }}_{{ rglb }}
+  tags: [{{ sample.gltype }}, alignment, dna_alignment, {{ aligner }}, umi, {{ sample.name }}]
+  reset: predecessors
+  input:
+    - {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.con_uBAM.bam
+    - {{ constants.tempe.bwa_mem2_index }}
+    - {{ constants.tempe.reference_fasta }}
+  output:
+    {% if sample.read_groups.values() | groupby('rglb') | length == 1 %}
+    - {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam
+    {% else %}
+    - {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.md.bam
+    {% endif %}
+    - {{ post_umi_consensus_readcount_json }}
+  cpus: 20
+  mem: 80G
+  walltime: "4:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.fgbio.container }}
+  digest: {{ constants.tools.fgbio.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    {# Align UMI collapsed single read families
+    ## This produces a final BAM that is ready for metrics and variant calling
+    ## DUPLICATE MARKING IS NOT REQUIRED, as they are removed in previous steps
+    ## For QC might want duplicate numbers on the original BAM ({{ sample.name }}_{{ rglb }}.UMI_{{ aligner }}.bam)
+    ## For speed should move to bwa-mem2 #}
+    samtools fastq {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.con_uBAM.bam |\
+    bwa-mem2 mem \
+      -v 3 \
+      -Y \
+      -K 100000000 \
+      -p \
+      -t 19 \
+      {{ constants.tempe.bwa_mem2_index }} \
+      /dev/stdin |\
+    fgbio --compression 0 --async-io ZipperBams \
+      --unmapped  {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.con_uBAM.bam \
+      --ref {{ constants.tempe.reference_fasta }} \
+      --tags-to-reverse Consensus \
+      --tags-to-revcomp Consensus |\
+    samtools fixmate \
+      --threads 19 \
+      -m \
+      - \
+      {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.uns.bam
+
+    {% if tasks[sample.gltype|capitalize+"_alignment_dna_alignment_umi_filter_consensus"]|default(false)  %}
+    ## Defaults, unless submitter updated these in the config:
+    # --min-reads {{ constants.tempe.umi_options.filter_min_reads }}
+    # --min-base-quality {{ constants.tempe.umi_options.filter_min_base_quality }}
+    # --max-no-call-fraction {{ constants.tempe.umi_options.filter_max_no_call_fraction }}
+    # --max-base-error-rate {{ constants.tempe.umi_options.filter_max_base_error_rate }}
+    fgbio --compression 0 \
+      FilterConsensusReads \
+      --input {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.uns.bam \
+      --output /dev/stdout \
+      --ref {{ constants.tempe.reference_fasta }} \
+      {% if tasks[sample.gltype|capitalize+"_alignment_dna_alignment_umi_collapse_duplex"]|default(false) %}
+      --require-single-strand-agreement true \
+      {% endif %}
+      --min-reads {{ umi_options.filter_min_reads }} \
+      --min-base-quality {{ umi_options.filter_min_base_quality }} \
+      --max-no-call-fraction {{ umi_options.filter_max_no_call_fraction }} \
+      --max-base-error-rate {{ umi_options.filter_max_base_error_rate }} | \
+      samtools sort \
+        --threads 19 \
+        {% if sample.read_groups.values() | groupby('rglb') | length == 1 %}
+        -o {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam \
+        {% else %}
+        -o {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.md.bam \
+        {% endif %}
+        --write-index
+    {% else %}
+    samtools sort \
+      --threads 19 \
+      {% if sample.read_groups.values() | groupby('rglb') | length == 1 %}
+      -o {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam \
+      {% else %}
+      -o {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.md.bam \
+      {% endif %}
+      --write-index \
+      {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.uns.bam
+    {% endif %}
+
+    {# Collecting count of reads post merging rgids, aka read counts post correction per rglb #}
+    {% if sample.read_groups.values() | groupby('rglb') | length == 1 %}
+    RGLB_READCOUNTS=$(samtools view -c {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam)
+    {% else %}
+    RGLB_READCOUNTS=$(samtools view -c {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.md.bam)
+    {% endif %}
+    cat <<EOF > {{ post_umi_consensus_readcount_json }}
+    {"SAMPLES": [{"LIBRARIES": [{"READGROUPS": [{}], "postUMIConsensusReadCount": "${RGLB_READCOUNTS}", "LB": "{{ rglb }}" }], "SM": "{{ sample.rgsm }}"}]}
+    EOF
+
+{% set task %}{{ sample.name }}_{{ aligner }}_fgbio_post_umi_consensus_readcount{% endset %}
+{{- stats2lims(sample.gltype, sample.name, task, post_umi_consensus_readcount_json, "fgbio_umi") }}
+
+{% endfor %}
+
+{% if sample.read_groups.values() | groupby('rglb') | length > 1 %}
+- name: samtools_merge_rglb_umi_bams_{{ sample.name }}_{{ aligner }}
+  tags: [{{ sample.gltype }}, alignment, dna_alignment, bwa, {{ sample.name }}]
+  reset: predecessors
+  input: 
+  {% for rglb, rg in sample.read_groups.values() | groupby('rglb') %}
+    - {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.md.bam
+  {% endfor %}
+  output: {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam
+  walltime: "24:00:00"
+  cpus: 4
+  mem: 8G
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.bwa_mem2_samtools.container }}
+  digest: {{ constants.tools.bwa_mem2_samtools.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    {# No long options available for the following:
+      -c           Combine @RG headers with colliding IDs [alter IDs to be distinct]
+      -f           Overwrite the output BAM if exist
+    #}
+    samtools merge \
+      --threads 4 \
+      -c \
+      -f \
+      --write-index \
+      {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam \
+      {% for rglb, rg in sample.read_groups.values() | groupby('rglb') %}
+      {% if not loop.last %}
+      {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.md.bam \
+      {% else %}
+      {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.md.bam
+      {% endif %}
+      {% endfor %}
+
+{% endif %}
+
+{% if tasks[sample.gltype|capitalize+"_alignment_base_recalibration_gatk"]|default(false) %}
+  {{- baserecalibration(sample, aligner) }}
+{% else %}
+  {{- nobaserecalibration(sample, aligner) }}
+{% endif %}
+{{- bam_to_cram(sample, aligner) }}
+
+{% endmacro %}

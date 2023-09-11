@@ -1,0 +1,72 @@
+{% from 'modules/dna_alignment/bwa_mem2_samtools.j2' import bwa_mem2_samtools with context %}
+{% from 'modules/dna_alignment/fgbio_umi.j2' import fgbio_bwa_mem with context %}
+{% from 'modules/dna_alignment/pb_fq2bam.j2' import fq2bam with context %}
+{% from 'modules/dna_alignment/split_fastq.j2' import split_fastqs with context %}
+{% from 'modules/qc/main.j2' import bam_qc with context %}
+{% from 'utilities/remove_files.j2' import remove_files with context %}
+
+{% macro dna_alignment(samples) %}
+
+  {# Not configurable by LIMS #}
+  {% set reads_per_chunk = reads_per_chunk|default(40000000) %}
+
+  {% for sample in samples.values() if sample.gltype in ['genome', 'exome'] %}
+    {% set task_list = [] %}
+    {% set platform = (sample.read_groups.values()|first).rgpm|default('') %}
+    {% if platform|lower in ['hiseq4000', 'novaseq6000', 'novaseqxplus'] %}
+      {% set opt_dup_distance = 2500 %}
+    {% else %}
+      {% set opt_dup_distance = 100 %}
+    {% endif %}
+
+    {# In main we check the following (commenting here for visibility):
+    {% if sample.gltype in ['genome', 'exome'] %}
+        {% if tasks[sample.gltype|capitalize+"_alignment_dna_alignment_bwa"]|default(false) %}
+            {% do sample.aligners.append('bwa') %}
+        {% endif %}
+        {% if tasks[sample.gltype|capitalize+"_alignment_dna_alignment_parabricks"]|default(false) %}
+            {% do sample.aligners.append('parabricks') %}
+        {% endif %}
+    {% endif %}
+    #}
+    {% if 'bwa' in sample.aligners %}
+      {% if sample.umiType != "" | default(false) %}
+        {% for rglb, rg in sample.read_groups.values() | groupby('rglb') %}
+        {% set task %}merge_uBAM_{{ sample.name }}_{{ rglb }}{% endset %}
+        {% do task_list.append(task) %}
+        {% endfor %}
+        {{- fgbio_bwa_mem(sample, aligner='bwa') }}
+      {% else %}
+        {% for rglb, rg in sample.read_groups.values() | groupby('rglb') %}
+        {% set task %}chunked_samtools_merge_rgid_bams_{{ sample.name }}_{{ rglb }}_bwa{% endset %}
+        {% do task_list.append(task) %}
+        {% endfor %}
+        {{- split_fastqs(sample, reads_per_chunk) }}
+        {{- bwa_mem2_samtools(sample, reads_per_chunk, opt_dup_distance, aligner='bwa') }}
+      {% endif %}
+      {{- bam_qc(sample, aligner='bwa') }}
+    {% endif %}
+    {% if 'parabricks' in sample.aligners %}
+      {% set task %}fq2bam_{{ sample.name }}_parabricks{% endset %}
+      {% do task_list.append(task) %}
+      {{- fq2bam(sample, opt_dup_distance, aligner='parabricks') }}
+      {{- bam_qc(sample, aligner='parabricks') }}
+    {% endif %}
+
+    {% set files_to_remove = [] %}
+    {% for rgid, rg in sample.read_groups.items() %}
+      {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
+      {% do r1fastq.update({"path": "temp/fastqs/" + r1fastq.basename}) %}
+      {% do files_to_remove.append(r1fastq.path) %}
+
+      {% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
+      {% do r2fastq.update({"path": "temp/fastqs/" + r2fastq.basename}) %}
+      {% do files_to_remove.append(r2fastq.path) %}
+    {% endfor %}
+
+    {% set task_name %}{{ sample.name }}_dna_fastqs{% endset %}
+    {{- remove_files('temp/fastqs/', none, task_list, task_name, files_to_remove) }}
+
+  {% endfor %}
+
+{% endmacro %}

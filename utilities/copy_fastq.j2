@@ -1,0 +1,32 @@
+{% macro copy_fastq(fastq) %}
+
+- name: copy_fastqs_{{ fastq.basename | replace(".", "_") }}
+  input: {{ fastq.fastqPath }}
+  output: temp/fastqs/{{ fastq.basename }}
+  retry: 2
+  cpus: 6
+  {% if fastq.fileType == "fasterq" %}
+  mem: 32G
+  {% else %}
+  mem: 8G
+  {% endif %}
+  walltime: "4:00:00"
+  queue_preset: "DATA-MOVER"
+  {% if fastq.fileType == "fasterq" %}
+  runner_preset: "PETAGENE"
+  {% endif %}
+  container: {{ constants.tools.base.container }}
+  digest: {{ constants.tools.base.digest }}
+  cmd: |
+    set -uev
+
+    mkdir -p temp/fastqs/
+
+    {% if fastq.fileType == "fasterq" %}
+    # petasuite is available because we inject it into the container at runtime
+    petasuite --md5match --decompress {{ fastq.fastqPath|replace(".fastq.gz",".fasterq") }} --dstpath "temp/fastqs/"
+    {% else %}
+    rsync "{{ fastq.fastqPath }}" "temp/fastqs/"
+    {% endif %}
+
+{% endmacro %}
