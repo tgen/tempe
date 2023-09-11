@@ -149,7 +149,11 @@
             gcWig = "${EXTDATA}/gc_hg38_1000kb.wig", 
             mapWig = "${EXTDATA}/map_hg38_1000kb.wig", 
             repTimeWig = NULL, 
-            normal_panel=NULL, 
+            {% if control.ichorPon is defined %}
+            normal_panel="temp/tumor_only/control_data_files/{{ control.assayCode }}/{{ control.ichorPon | basename }}",
+            {% else %}
+            normal_panel=NULL,
+            {% endif %}
             sex = NULL, 
             exons.bed=NULL, 
             id = "{{ sample.name}}.{{ aligner }}.ichorCNA", 
