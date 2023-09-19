@@ -10,7 +10,7 @@
 {% set results_dir %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}{% endset %}
 {% set umi_options = {} %}
 {% do umi_options.update(constants.tempe.umi_options) %}
-{% if task_variables is defined and task_variables.umi_alignment is defined %}
+{% if task_variables and task_variables.umi_alignment %}
   {% do umi_options.update(task_variables.umi_alignment) %}
 {% endif %}
 

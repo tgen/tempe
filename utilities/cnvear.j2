@@ -9,10 +9,10 @@
 {# Set thresholds to the default in the pipeline.yaml, we then override them if defined #}
 {% set cnvear_copy_number_thresholds = {} %}
 {% do cnvear_copy_number_thresholds.update(constants.tempe.cnvear_copy_number_thresholds[sample_or_pair.gltype]) %}
-{% if task_variables is defined and task_variables.cnvear_copy_number_thresholds[sample_or_pair.gltype] is defined %}
+{% if task_variables and task_variables.cnvear_copy_number_thresholds and task_variables.cnvear_copy_number_thresholds[sample_or_pair.gltype] %}
   {% do cnvear_copy_number_thresholds.update(task_variables.cnvear_copy_number_thresholds[sample_or_pair.gltype]) %}
 {% endif %}
-{% set log_msg %}cnvear_{{ input_tool | lower }}_{{ sample_or_pair.name }}_{{ aligner }} is using these thresholds: high_gain={{ cnvear_copy_number_thresholds.high_gain }} , gain={{ cnvear_copy_number_thresholds.gain }} , het_loss={{ cnvear_copy_number_thresholds.het_loss }} , hom_loss={{ cnvear_copy_number_thresholds.hom_loss }}'{% endset %}
+{% set log_msg %}cnvear_{{ input_tool | lower }}_{{ sample_or_pair.name }}_{{ aligner }} is using these thresholds: high_gain={{ cnvear_copy_number_thresholds.high_gain }} , gain={{ cnvear_copy_number_thresholds.gain }} , het_loss={{ cnvear_copy_number_thresholds.het_loss }} , hom_loss={{ cnvear_copy_number_thresholds.hom_loss }}{% endset %}
 {{ log(log_msg, level='WARNING') }}
 
 {% set output_dir %}{{ input_seg | dirname }}{% endset %}
