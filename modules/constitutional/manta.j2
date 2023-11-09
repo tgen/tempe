@@ -79,7 +79,42 @@
 
     {# Remove the remaining files #}
     {% set task %}manta_{{ sample.name }}_{{ aligner }}{% endset %}
+    {% set before_task %}manta_filter_pass_{{ sample.name }}_{{ aligner }}{% endset %}
     {% set directory %}{{ temp_dir }}{% endset %}
-    {{- remove_files(directory,none,task) }}
+    {{- remove_files(directory, before_task, task) }}
+
+- name: manta_filter_pass_{{ sample.name }}_{{ aligner }}
+  tags: [{{ sample.gltype}}, constitutional, structural_caller, manta, {{ sample.name }}]
+  input:
+    - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.manta.diploidSV.vcf.gz
+    - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.manta.diploidSV.vcf.gz.tbi
+  output:
+    - {{ temp_dir }}/results/variants/diploidSV.pass.vcf.gz
+    - {{ temp_dir }}/results/variants/diploidSV.pass.vcf.gz.tbi
+  cpus: 1
+  mem: 2G
+  walltime: "12:00:00"
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.bcftools.container }}
+  digest: {{ constants.tools.bcftools.digest }}
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    {# Ensuring that the output dir exists for bcftools filter #}
+    mkdir -p {{ temp_dir }}/results/variants
+
+    {# filtering somatic vcf by PASS #}
+    bcftools filter \
+      -i 'FILTER == "PASS"' \
+      -O z \
+      -o {{ temp_dir }}/results/variants/diploidSV.pass.vcf.gz \
+      {{ results_dir }}/{{ sample.name }}.{{ aligner }}.manta.diploidSV.vcf.gz
+
+    bcftools index --tbi --force {{ temp_dir }}/results/variants/diploidSV.pass.vcf.gz
+
+{% set input_vcf %}{{ temp_dir }}/results/variants/diploidSV.pass.vcf.gz{% endset %}
+{% set final_vcf_prefix %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.manta.diploidSV.pass{% endset %}
+{{- vep(sample, results_dir, input_vcf, 'manta', final_vcf_prefix, aligner, 'constitutional') }}
 
 {% endmacro %}
