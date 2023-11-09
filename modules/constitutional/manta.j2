@@ -1,4 +1,5 @@
 {% from 'utilities/remove_files.j2' import remove_files with context %}
+{% from 'modules/annotation/vep.j2' import vep with context %}
 
 {% macro manta_constitutional(sample, aligner='bwa', taskPrefix='Genome') %}
 {% set bam %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
