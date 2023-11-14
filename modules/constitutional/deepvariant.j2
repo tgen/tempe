@@ -54,7 +54,7 @@
       --reads "${PROJECT_ROOT}/{{ bam }}" \
       --examples "${PROJECT_ROOT}/{{ temp_dir }}/{{ sample.name }}.ex.tfrecord@{{ nshards }}.gz" \
       --gvcf "${PROJECT_ROOT}/{{ temp_dir }}/{{ sample.name }}.gvcf.tfrecord@{{ nshards }}.gz"
-      
+
 {% endfor %}
 
 - name: deepvariant_call_variants_{{ sample.name }}_{{ aligner }}
@@ -85,9 +85,9 @@
     {# Run call_variants #}
     call_variants \
       {% if sample.gltype == 'exome' %}
-      --checkpoint /opt/models/wes/model.ckpt \
+      --checkpoint /opt/models/wes \
       {% else %}
-      --checkpoint /opt/models/wgs/model.ckpt \
+      --checkpoint /opt/models/wgs \
       {% endif %}
       --examples "{{ sample.name }}.ex.tfrecord@{{ nshards }}.gz" \
       --outfile "{{ sample.name }}.cvo.tfrecord.gz"
@@ -115,11 +115,11 @@
     set -o pipefail
 
     PROJECT_ROOT=$PWD
-    
+
     mkdir -p "{{ results_dir }}"
 
     cd "{{ temp_dir }}"
-    
+
     {# Run postprocess_variants with gVCFs #}
     postprocess_variants \
         --ref "{{ constants.tempe.reference_fasta }}" \
