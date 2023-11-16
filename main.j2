@@ -46,7 +46,7 @@
 
 {% set required_scripts = {} %}
 {% for name, value in constants.tempe.required_scripts.items() %}
-    {% set path = __pipeline__.path ~ '/' ~ __pipeline__.bin ~ value %}
+    {% set path = '${JS_PIPELINE_PATH}/' ~ __pipeline__.bin ~ value %}
     {% do required_scripts.update({name: {}}) %}
     {% do required_scripts[name].update({"path": path}) %}
 {% endfor %}
