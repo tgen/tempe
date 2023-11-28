@@ -136,7 +136,7 @@
 
     {% if sample.gltype in 'rna' %}
         {# default to adding star as aligner until we have more than one aligner #}
-        {% if tasks.RNA_alignment_rna_alignment_STAR|default(true) %}
+        {% if tasks['RNA_alignment_rna_alignment_STAR']|default(true) %}
             {% do sample.aligners.append('star') %}
         {% endif %}
     {% endif %}
@@ -183,7 +183,7 @@
 
 {# project level quality control #}
 {% if samples|length > 1 %}
-  {% if (tasks.Exome_quality_control_genotype_concordance_snpSniffer or tasks.Genome_quality_control_genotype_concordance_snpSniffer) |default(false) %}
+  {% if tasks['Exome_quality_control_genotype_concordance_snpSniffer']|default(true) or tasks['Genome_quality_control_genotype_concordance_snpSniffer']|default(true) %}
     {{- snpsniffer_summary(samples) }}
   {% endif %}
 {% endif %}

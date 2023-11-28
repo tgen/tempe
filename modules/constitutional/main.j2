@@ -67,7 +67,7 @@
     {% elif sample.gltype in 'genome' %}
       {% set taskPrefix = 'Genome' %}
 
-      {% if tasks.Genome_constitutional_cna_caller_ichor|default(false) %}
+      {% if tasks['Genome_constitutional_cna_caller_ichor']|default(false) %}
         {{- ichorcna(sample, aligner, taskPrefix=taskPrefix) }}
       {% endif %}
     {% endif %}
