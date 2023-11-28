@@ -54,7 +54,7 @@
       --reads "${PROJECT_ROOT}/{{ bam }}" \
       --examples "${PROJECT_ROOT}/{{ temp_dir }}/{{ sample.name }}.ex.tfrecord@{{ nshards }}.gz" \
       --gvcf "${PROJECT_ROOT}/{{ temp_dir }}/{{ sample.name }}.gvcf.tfrecord@{{ nshards }}.gz"
-      
+
 {% endfor %}
 
 - name: deepvariant_call_variants_{{ sample.name }}_{{ aligner }}
@@ -85,15 +85,15 @@
     {# Run call_variants #}
     call_variants \
       {% if sample.gltype == 'exome' %}
-      --checkpoint /opt/models/wes/model.ckpt \
+      --checkpoint /opt/models/wes \
       {% else %}
-      --checkpoint /opt/models/wgs/model.ckpt \
+      --checkpoint /opt/models/wgs \
       {% endif %}
       --examples "{{ sample.name }}.ex.tfrecord@{{ nshards }}.gz" \
       --outfile "{{ sample.name }}.cvo.tfrecord.gz"
 
 {% set read_bins = [0, 500000000, 1000000000, 2000000000, 4000000000, 8000000000] %}
-{% set memory_bins = ['16G','24G','32G','40G','48G'] %}
+{% set memory_bins = ['32G','40G','48G','56G','64G'] %}
 
 - name: deepvariant_postprocess_variants_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, deepvariant, {{ sample.name }}]
@@ -104,7 +104,7 @@
   output:
     - {{ all_vcf }}
     - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.deepvariant.all.g.vcf.gz
-  cpus: 1
+  cpus: 4
   mem: {{ sample.total_reads|assignbin(read_bins, memory_bins) }}
   walltime: "24:00:00"
   queue_preset: "DEFAULT"
@@ -115,13 +115,14 @@
     set -o pipefail
 
     PROJECT_ROOT=$PWD
-    
+
     mkdir -p "{{ results_dir }}"
 
     cd "{{ temp_dir }}"
-    
+
     {# Run postprocess_variants with gVCFs #}
     postprocess_variants \
+        --cpus 4 \
         --ref "{{ constants.tempe.reference_fasta }}" \
         --infile "{{ sample.name }}.cvo.tfrecord.gz" \
         --outfile "${PROJECT_ROOT}/{{ all_vcf }}" \
