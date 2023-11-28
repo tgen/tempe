@@ -278,7 +278,7 @@
 
 {% set task_list = [] %}
 
-{% if tasks.RNA_transcriptome_quantify_expression_subread_featureCounts|default(false) %}
+{% if tasks['RNA_transcriptome_quantify_expression_subread_featureCounts']|default(false) %}
   {% set task %}featurecounts_{{ sample.name }}{% endset %}
   {% do task_list.append(task) %}
   {{- featurecounts(sample) }}

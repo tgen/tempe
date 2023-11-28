@@ -38,7 +38,7 @@
     - {{ constants.tempe.starfusion_index }}
   output:
     - {{ results_dir }}/{{ sample.name }}_Chimeric.out.junction
-    {% if tasks.RNA_transcriptome_fusion_caller_Keep_STAR_Fusion_BAM|default(false) %}
+    {% if tasks['RNA_transcriptome_fusion_caller_Keep_STAR_Fusion_BAM']|default(false) %}
     - {{ results_dir }}/{{ sample.name }}_starfusion.bam
     - {{ results_dir }}/{{ sample.name }}_starfusion.bam.bai
     {% endif %}
@@ -107,7 +107,7 @@
 
     samtools index -@ 20 {{ temp_dir }}/{{ sample.name }}.Aligned.sorted.bam
 
-    {% if tasks.RNA_transcriptome_fusion_caller_Keep_STAR_Fusion_BAM|default(false) %}
+    {% if tasks['RNA_transcriptome_fusion_caller_Keep_STAR_Fusion_BAM']|default(false) %}
     mv {{ temp_dir }}/{{ sample.name }}.Aligned.sorted.bam {{ results_dir }}/{{ sample.name }}_starfusion.bam
     mv {{ temp_dir }}/{{ sample.name }}.Aligned.sorted.bam.bai {{ results_dir }}/{{ sample.name }}_starfusion.bam.bai
     {% endif %}
@@ -234,7 +234,7 @@
         mv FusionInspector-inspect/fi_workdir/trinity_GG/Trinity-GG.fasta ${PROJECT_ROOT}/{{ results_dir }}/{{ sample.name }}_Trinity-GG.fasta
     fi
 
-{% if tasks.RNA_transcriptome_fusion_caller_Keep_STAR_Fusion_BAM|default(false) %}
+{% if tasks['RNA_transcriptome_fusion_caller_Keep_STAR_Fusion_BAM']|default(false) %}
 {% if cram|default(true) %}
 {% set bam_path %}{{ results_dir }}/{{ sample.name }}_starfusion.bam{% endset %}
 {% set cram_path %}{{ results_dir }}/{{ sample.name }}_starfusion.cram{% endset %}

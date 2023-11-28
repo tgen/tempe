@@ -648,7 +648,7 @@
 
 
 {% macro bam_qc_snpsniffer_geno(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner, bam_level=true) %}
-{% if tasks[taskPrefix+"_quality_control_genotype_concordance_snpSniffer"]|default(false) %}
+{% if tasks[taskPrefix+"_quality_control_genotype_concordance_snpSniffer"]|default(true) %}
 
   {% set results_dir %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/stats{% endset %}
 
