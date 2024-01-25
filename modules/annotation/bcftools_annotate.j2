@@ -4,10 +4,8 @@
 
 - name: bcftools_annotate_{{ variant_caller }}_{{ sample_or_pair.name }}_{{ aligner }}
   tags: [{{ sample_or_pair.gltype }}, {{ analysis_type }}, annotate_vcfs, {{ variant_caller }}, {{ sample_or_pair.name }}]
-  input: {{ input_vcf }}
-  output:
-    - {{ output_vcf }}
-    - {{ output_vcf }}.tbi
+  input:
+    - {{ input_vcf }}
     {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_dbsnp"]|default(false) %}
     - {{ constants.tempe.dbsnp }}
     {% endif %}
@@ -29,6 +27,9 @@
     {% if tasks[taskPrefix+"_"+analysis_type+"_annotate_vcfs_bcftools_topmed"]|default(false) %}
     - {{ constants.tempe.topmed }}
     {% endif %}
+  output:
+    - {{ output_vcf }}
+    - {{ output_vcf }}.tbi
   walltime: "8:00:00"
   cpus: 4
   mem: 4G
