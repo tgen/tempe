@@ -14,39 +14,39 @@ fileTypes = {
     "picard_alignment_summary_metrics": {
         "prefix": "picardTools_alignmentStats_",
         "help": "\"bam_name.bam.alignment_Summary_Metrics\" file generated from Picard."
-        },
+    },
     "picard_hs_metrics": {
         "prefix": "picardTools_hsStats_",
         "help": "\"bam_name.bam.hs_Metrics\" file generated from Picard."
-        },
+    },
     "picard_insert_size_metrics": {
         "prefix": "picardTools_insertSizeStats_",
         "help": "\"bam_name.bam.insert_size_metrics\" file generated from Picard."
-        },
+    },
     "picard_quality_yield_metrics": {
         "prefix": "picardTools_qualityYieldMetrics_",
         "help": "\"bam_name.bam.quality_yield_metrics\" file generated from Picard."
-        },
+    },
     "picard_gc_bias_summary_metrics": {
         "prefix": "picardTools_gc_bias_",
         "help": "\"bam_name.bam.summary_metrics\" file generated from Picard."
-        },
+    },
     "picard_rna_metrics": {
         "prefix": "picardTools_rnaMetrics_",
         "help": "\"bam_name.bam.rna_metrics\" file generated from Picard."
-        },
+    },
     "picard_wgs_wnzc_metrics": {
         "prefix": "picardTools_wnczMetrics_",
         "help": "\"bam_name.bam.wgs_metrics\" file generated from Picard."
-        },
+    },
     "picard_error_summary_metrics": {
         "prefix": "picardTools_errorMetrics_",
         "help": "\"bam_name.bam.error_summary_metrics\" file generated from Picard."
-        },
+    },
     "picard_mark_duplicates_metrics": {
         "prefix": "picardTools_markDups_",
         "help": "\"bam_name.bam.md_metrics\" file generated from Picard."
-        },
+    },
     "samtools_idxstats": {
         "prefix": "idxStatsChrCount_",
         "help": "\"bam_name.bam.flagstats.txt\" file generated from Samtools."
@@ -54,11 +54,11 @@ fileTypes = {
     "samtools_markdup": {
         "prefix": "samStats_markdup_",
         "help": "\"bam_name.bam.markdup.txt\" file generated from Samtools."
-        },
+    },
     "samtools_flagstats": {
         "prefix": "samStats_reads_",
         "help": "\"bam_name.bam.flagstats.txt\" file generated from Samtools."
-        },
+    },
     "bt_cell_counts": {
         "prefix": "samToolsIgCount_",
         "help": "\"bam_name.bam.BTcell.loci.counts.txt\" file generated from rna_getBTcellLociCounts task in the "
@@ -256,9 +256,9 @@ parser.add_argument('filetype', metavar='FileType', choices=fileTypes,
 parser.add_argument('isilonpath', metavar='IsilonPath',
                     help='the path where the results of the study from the pipeline were stored')
 
-parser.add_argument('project', metavar='Project',  help='patient ID')
+parser.add_argument('project', metavar='Project', help='patient ID')
 
-parser.add_argument('study', metavar='Study',  help='name of the study (project)')
+parser.add_argument('study', metavar='Study', help='name of the study (project)')
 
 parser.add_argument('-u', '--url', metavar='LIMS_url', default='https://tgen-fmp3.ad.tgen.org/fmi/data/v1/databases/KBase_V2', help='url of the LIMS instance')
 
@@ -284,9 +284,11 @@ URL = args.url
 
 # Set REST api https paths used on the private TGen network
 urlStart = f"{URL}/sessions"
-urlFind = f"{URL}/layouts/SamplesSequencing_REST/_find"
-urlFind2 = f"{URL}/layouts/DCLStudies_REST/_find"
-urlPatch = f"{URL}/layouts/SamplesSequencing_REST/records/"
+urlStudyFind = f"{URL}/layouts/DCLStudies_REST/_find"
+urlSampleFind = f"{URL}/layouts/SamplesSequencing_REST/_find"
+urlSamplePatch = f"{URL}/layouts/SamplesSequencing_REST/records/"
+urlRunBuilderFind = f"{URL}/layouts/SequencingRunBuilder_REST/_find"
+urlRunBuilderPatch = f"{URL}/layouts/SequencingRunBuilder_REST/records/"
 
 userName = None
 
@@ -304,7 +306,7 @@ headers = {
     'Content-Type': "application/json",
     'cache-control': "no-cache",
     'Authorization': 'Basic %s' % b64Val
-    }
+}
 
 # Get the token from the response.
 responseToken, parsed_responseToken = server_request("POST", urlStart, payload, headers)
@@ -318,10 +320,10 @@ token = parsed_responseToken['response']['token']
 
 # Set the header needed for requests
 headers = {
-            'Content-Type': "application/json",
-            'cache-control': "no-cache",
-            'Authorization': 'Bearer %s' % token
-        }
+    'Content-Type': "application/json",
+    'cache-control': "no-cache",
+    'Authorization': 'Bearer %s' % token
+}
 
 # Open json file and store it as contents
 try:
@@ -334,12 +336,12 @@ try:
     for sample in contents["SAMPLES"]:
 
         # Loops through each library in the sample and uploads each to KBase.
-        counter = 0
+        library_counter = 0
         libraryID = ""
         prefix = fileTypes[args.filetype]['prefix']
 
         for library in contents["SAMPLES"][sample_counter]["LIBRARIES"]:
-            patchData = {"fieldData": {}}
+            samplePatchData = {"fieldData": {}}
 
             if args.libraryID:
                 libraryData = {"query": [{"DCL Sample ID": "=" + args.libraryID}]}
@@ -348,15 +350,15 @@ try:
                     if x == "READGROUPS" or x == "HISTOGRAM":
                         pass
                     elif x == "LB":
-                        libraryID = contents["SAMPLES"][sample_counter]["LIBRARIES"][counter][x]
+                        libraryID = contents["SAMPLES"][sample_counter]["LIBRARIES"][library_counter][x]
                     else:
                         # Special filtering for idx stats
                         if prefix == "idxStatsChrCount_" and x in contig_list:
-                            patchData["fieldData"][prefix + x] = \
-                                contents["SAMPLES"][sample_counter]["LIBRARIES"][counter][x]
+                            samplePatchData["fieldData"][prefix + x] = \
+                                contents["SAMPLES"][sample_counter]["LIBRARIES"][library_counter][x]
                         elif prefix != "idxStatsChrCount_":
-                            patchData["fieldData"][prefix + x] = \
-                                contents["SAMPLES"][sample_counter]["LIBRARIES"][counter][x]
+                            samplePatchData["fieldData"][prefix + x] = \
+                                contents["SAMPLES"][sample_counter]["LIBRARIES"][library_counter][x]
 
                 libraryData = {"query": [{"DCL Sample ID": "=" + libraryID}]}
 
@@ -367,15 +369,16 @@ try:
             json_studyData = json.dumps(studyData)
             json_libraryData = json.dumps(libraryData)
 
-            postResponse1, parsed_postResponse1 = server_request("POST", urlFind, json_libraryData, headers)
+            postSampleResponse, parsed_postSampleResponse = server_request("POST", urlSampleFind, json_libraryData, headers)
 
-            if postResponse1.status_code != 200:
-                print("ERROR:\n" + "Code: " + str(parsed_postResponse1["messages"][0]["code"]) +
-                      "\n" + "Message: " + str(parsed_postResponse1["messages"][0]['message']))
+            if postSampleResponse.status_code != 200:
+                print("ERROR:")
+                print("Code: " + str(parsed_postSampleResponse["messages"][0]["code"]))
+                print("Message: " + str(parsed_postSampleResponse["messages"][0]['message']))
                 raise ValueError("Something went wrong finding the study name code and project name")
 
-            db_study = parsed_postResponse1['response']['data'][0]['fieldData']['DCL_Studies::Study Name Code']
-            db_project = parsed_postResponse1['response']['data'][0]['fieldData']['DCL Patient ID']
+            db_study = parsed_postSampleResponse['response']['data'][0]['fieldData']['DCL_Studies::Study Name Code']
+            db_project = parsed_postSampleResponse['response']['data'][0]['fieldData']['DCL Patient ID']
 
             if not args.study == db_study:
                 print("UPLOAD FAILED: Study name code does not match.")
@@ -389,14 +392,15 @@ try:
                 print("Value from KBase: " + db_project)
                 raise Exception('The provided Project does not match the DCL Patient ID in the LIMS.')
 
-            postResponse2, parsed_postResponse2 = server_request("POST", urlFind2, json_studyData, headers)
+            postStudyResponse, parsed_postStudyResponse = server_request("POST", urlStudyFind, json_studyData, headers)
 
-            if postResponse2.status_code != 200:
-                print("ERROR:\n" + "Code: " + str(parsed_postResponse2["messages"][0]["code"]) +
-                      "\n" + "Message: " + str(parsed_postResponse2["messages"][0]['message']))
+            if postStudyResponse.status_code != 200:
+                print("ERROR:")
+                print("Code: " + str(parsed_postStudyResponse["messages"][0]["code"]))
+                print("Message: " + str(parsed_postStudyResponse["messages"][0]['message']))
                 raise ValueError("Something went wrong finding the Isilon path")
 
-            db_isilonpath = parsed_postResponse2['response']['data'][0]['fieldData']['Pipeline_FinalStoragePath']
+            db_isilonpath = parsed_postStudyResponse['response']['data'][0]['fieldData']['Pipeline_FinalStoragePath']
 
             if not args.isilonpath == db_isilonpath:
                 print("UPLOAD FAILED: Isilon path does not match. ")
@@ -406,34 +410,84 @@ try:
 
             # PATCH
             # Converts data to be patched into json format
-            json_patchData = json.dumps(patchData)
+            json_samplePatchData = json.dumps(samplePatchData)
 
             # The record ID used in the patch
-            recordID = str([d['recordId'] for d in parsed_postResponse1['response']['data']][0])
+            recordID = str([d['recordId'] for d in parsed_postSampleResponse['response']['data']][0])
 
             for i in range(20):
                 patchResponse, parsed_patchResponse = server_request("PATCH",
-                                                                     urlPatch + recordID,
-                                                                     json_patchData,
+                                                                     urlSamplePatch + recordID,
+                                                                     json_samplePatchData,
                                                                      headers)
 
                 if patchResponse.status_code != 200:
                     if i == 19:
-                        print("ERROR:\n" + "Code: " + str(parsed_patchResponse["messages"][0]["code"]) +
-                              "\n" + "Message: " + str(parsed_patchResponse["messages"][0]['message']))
-                        raise ValueError("The library record has been in use by another user for 20 consecutive "
-                                         "attempts.")
+                        print("ERROR:")
+                        print("Code: " + str(parsed_patchResponse["messages"][0]["code"]))
+                        print("Message: " + str(parsed_patchResponse["messages"][0]['message']))
+                        raise ValueError("The library record has been in use by another user for 20 consecutive attempts.")
                     elif parsed_patchResponse["messages"][0]["code"] == '301':
                         sleep(randint(4, 10))
                         continue
                     else:
-                        print("ERROR:\n" + "Code: " + str(parsed_patchResponse["messages"][0]["code"]) +
-                              "\n" + "Message: " + str(parsed_patchResponse["messages"][0]['message']))
+                        print("ERROR:")
+                        print("Code: " + str(parsed_patchResponse["messages"][0]["code"]))
+                        print("Message: " + str(parsed_patchResponse["messages"][0]['message']))
                         raise ValueError("Something went wrong with the PATCH.")
                 else:
                     break
 
-            counter += 1
+            # Loop through each readgroup
+            readgroup_counter = 0
+
+            for readgroup in contents["SAMPLES"][sample_counter]["LIBRARIES"][library_counter]["READGROUPS"]:
+                runBuilderPatchData = {"fieldData": {}}
+
+                for x in readgroup:
+                    if x == "READ_GROUP":
+                        readgroupID = \
+                            contents["SAMPLES"][sample_counter]["LIBRARIES"][library_counter]["READGROUPS"][readgroup_counter][x]
+                    else:
+                        runBuilderPatchData["fieldData"][prefix + x] = \
+                            contents["SAMPLES"][sample_counter]["LIBRARIES"][library_counter]["READGROUPS"][readgroup_counter][x]
+
+                readgroupData = {"query": [{"RG_ID": "=" + readgroupID}]}
+                json_readgroupData = json.dumps(readgroupData)
+                postResponse1, parsed_postResponse1 = server_request("POST", urlRunBuilderFind, json_readgroupData, headers)
+
+                # Converts data to be patched into json format
+                json_runBuilderPatchData = json.dumps(runBuilderPatchData)
+
+                # The record ID used in the patch
+                recordID = str([d['recordId'] for d in parsed_postResponse1['response']['data']][0])
+
+                for i in range(20):
+                    patchResponse, parsed_patchResponse = server_request("PATCH",
+                                                                         urlRunBuilderPatch + recordID,
+                                                                         json_runBuilderPatchData,
+                                                                         headers)
+
+                    if patchResponse.status_code != 200:
+                        if i == 19:
+                            print("ERROR:")
+                            print("Code: " + str(parsed_patchResponse["messages"][0]["code"]))
+                            print("Message: " + str(parsed_patchResponse["messages"][0]['message']))
+                            raise ValueError("The runbuilder record has been in use by another user for 20 consecutive attempts.")
+                        elif parsed_patchResponse["messages"][0]["code"] == '301':
+                            sleep(randint(4, 10))
+                            continue
+                        else:
+                            print("ERROR:")
+                            print("Code: " + str(parsed_patchResponse["messages"][0]["code"]))
+                            print("Message: " + str(parsed_patchResponse["messages"][0]['message']))
+                            raise ValueError("Something went wrong with the PATCH.")
+                    else:
+                        break
+
+                readgroup_counter += 1
+
+            library_counter += 1
 
         sample_counter += 1
 
