@@ -597,8 +597,8 @@ constants:
       - - {"contig": "chr1", "length": 20338057, "start": 228608365, "stop": 248946422}
         - {"contig": "chr2", "length": 16135118, "start": 10001, "stop": 16145119}
         - {"contig": "chr2", "length": 16721010, "start": 16146120, "stop": 32867130}
-        - {"contig": "chr2", "length": 48494, "start": 32868131, "stop": 32916625}
-      - - {"contig": "chr2", "length": 56413053, "start": 32917626, "stop": 89330679}
+        - {"contig": "chr2", "length": 47169, "start": 32868131, "stop": 32915300}
+      - - {"contig": "chr2", "length": 56412279, "start": 32918400, "stop": 89330679}
         - {"contig": "chr2", "length": 155312, "start": 89530680, "stop": 89685992}
         - {"contig": "chr2", "length": 648518, "start": 89753993, "stop": 90402511}
         - {"contig": "chr2", "length": 735633, "start": 91402512, "stop": 92138145}
@@ -620,10 +620,8 @@ constants:
         - {"contig": "chr4", "length": 456438, "start": 8816478, "stop": 9272916}
         - {"contig": "chr4", "length": 22496378, "start": 9322917, "stop": 31819295}
         - {"contig": "chr4", "length": 1000446, "start": 31832570, "stop": 32833016}
-        - {"contig": "chr4", "length": 16497907, "start": 32839017, "stop": 49336924}
-        - {"contig": "chr4", "length": 171175, "start": 49486925, "stop": 49658100}
-        - {"contig": "chr4", "length": 2035850, "start": 49708101, "stop": 51743951}
-        - {"contig": "chr4", "length": 7084841, "start": 51793952, "stop": 58878793}
+        - {"contig": "chr4", "length": 16238183, "start": 32839017, "stop": 49077200}
+        - {"contig": "chr4", "length": 7062693, "start": 51816100, "stop": 58878793}
       - - {"contig": "chr4", "length": 131201739, "start": 58921382, "stop": 190123121}
       - - {"contig": "chr4", "length": 31433, "start": 190173122, "stop": 190204555}
         - {"contig": "chr5", "length": 17520547, "start": 10001, "stop": 17530548}
