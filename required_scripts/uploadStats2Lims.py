@@ -438,54 +438,56 @@ try:
                 else:
                     break
 
-            # Loop through each readgroup
-            readgroup_counter = 0
+            if len(contents["SAMPLES"][sample_counter]["LIBRARIES"][library_counter]["READGROUPS"][0]) > 0:
 
-            for readgroup in contents["SAMPLES"][sample_counter]["LIBRARIES"][library_counter]["READGROUPS"]:
-                runBuilderPatchData = {"fieldData": {}}
+                # Loop through each readgroup
+                readgroup_counter = 0
 
-                for x in readgroup:
-                    if x == "READ_GROUP":
-                        readgroupID = \
-                            contents["SAMPLES"][sample_counter]["LIBRARIES"][library_counter]["READGROUPS"][readgroup_counter][x]
-                    else:
-                        runBuilderPatchData["fieldData"][prefix + x] = \
-                            contents["SAMPLES"][sample_counter]["LIBRARIES"][library_counter]["READGROUPS"][readgroup_counter][x]
+                for readgroup in contents["SAMPLES"][sample_counter]["LIBRARIES"][library_counter]["READGROUPS"]:
+                    runBuilderPatchData = {"fieldData": {}}
 
-                readgroupData = {"query": [{"RG_ID": "=" + readgroupID}]}
-                json_readgroupData = json.dumps(readgroupData)
-                postResponse1, parsed_postResponse1 = server_request("POST", urlRunBuilderFind, json_readgroupData, headers)
-
-                # Converts data to be patched into json format
-                json_runBuilderPatchData = json.dumps(runBuilderPatchData)
-
-                # The record ID used in the patch
-                recordID = str([d['recordId'] for d in parsed_postResponse1['response']['data']][0])
-
-                for i in range(20):
-                    patchResponse, parsed_patchResponse = server_request("PATCH",
-                                                                         urlRunBuilderPatch + recordID,
-                                                                         json_runBuilderPatchData,
-                                                                         headers)
-
-                    if patchResponse.status_code != 200:
-                        if i == 19:
-                            print("ERROR:")
-                            print("Code: " + str(parsed_patchResponse["messages"][0]["code"]))
-                            print("Message: " + str(parsed_patchResponse["messages"][0]['message']))
-                            raise ValueError("The runbuilder record has been in use by another user for 20 consecutive attempts.")
-                        elif parsed_patchResponse["messages"][0]["code"] == '301':
-                            sleep(randint(4, 10))
-                            continue
+                    for x in readgroup:
+                        if x == "READ_GROUP":
+                            readgroupID = \
+                                contents["SAMPLES"][sample_counter]["LIBRARIES"][library_counter]["READGROUPS"][readgroup_counter][x]
                         else:
-                            print("ERROR:")
-                            print("Code: " + str(parsed_patchResponse["messages"][0]["code"]))
-                            print("Message: " + str(parsed_patchResponse["messages"][0]['message']))
-                            raise ValueError("Something went wrong with the PATCH.")
-                    else:
-                        break
+                            runBuilderPatchData["fieldData"][prefix + x] = \
+                                contents["SAMPLES"][sample_counter]["LIBRARIES"][library_counter]["READGROUPS"][readgroup_counter][x]
 
-                readgroup_counter += 1
+                    readgroupData = {"query": [{"RG_ID": "=" + readgroupID}]}
+                    json_readgroupData = json.dumps(readgroupData)
+                    postResponse1, parsed_postResponse1 = server_request("POST", urlRunBuilderFind, json_readgroupData, headers)
+
+                    # Converts data to be patched into json format
+                    json_runBuilderPatchData = json.dumps(runBuilderPatchData)
+
+                    # The record ID used in the patch
+                    recordID = str([d['recordId'] for d in parsed_postResponse1['response']['data']][0])
+
+                    for i in range(20):
+                        patchResponse, parsed_patchResponse = server_request("PATCH",
+                                                                             urlRunBuilderPatch + recordID,
+                                                                             json_runBuilderPatchData,
+                                                                             headers)
+
+                        if patchResponse.status_code != 200:
+                            if i == 19:
+                                print("ERROR:")
+                                print("Code: " + str(parsed_patchResponse["messages"][0]["code"]))
+                                print("Message: " + str(parsed_patchResponse["messages"][0]['message']))
+                                raise ValueError("The runbuilder record has been in use by another user for 20 consecutive attempts.")
+                            elif parsed_patchResponse["messages"][0]["code"] == '301':
+                                sleep(randint(4, 10))
+                                continue
+                            else:
+                                print("ERROR:")
+                                print("Code: " + str(parsed_patchResponse["messages"][0]["code"]))
+                                print("Message: " + str(parsed_patchResponse["messages"][0]['message']))
+                                raise ValueError("Something went wrong with the PATCH.")
+                        else:
+                            break
+
+                    readgroup_counter += 1
 
             library_counter += 1
 
