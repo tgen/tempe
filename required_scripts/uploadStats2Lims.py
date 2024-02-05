@@ -438,7 +438,8 @@ try:
                 else:
                     break
 
-            if len(contents["SAMPLES"][sample_counter]["LIBRARIES"][library_counter]["READGROUPS"][0]) > 0:
+            if len(contents["SAMPLES"][sample_counter]["LIBRARIES"][library_counter]["READGROUPS"]) > 0 and \
+                    len(contents["SAMPLES"][sample_counter]["LIBRARIES"][library_counter]["READGROUPS"][0]) > 0:
 
                 # Loop through each readgroup
                 readgroup_counter = 0
