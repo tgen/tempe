@@ -103,8 +103,8 @@ constants:
       container: ghcr.io/tgen/containers/samtools_python:1.17-3.7.16-23082819
       digest: 2eaadfb976fd23f3583c5ab35c536349243cfd6e015002434735667c6bd62ead
     sigprofiler:
-      container: artifactory.tgen.org/hpc-virtual-containers/oci/testing/sigprofiler:0.0.24-24022900
-      digest: af719fe62393a4da95f723592d9519bd9ab011e52956d7b6c67fa2430050e76d
+      container: ghcr.io/tgen/containers/sigprofiler:0.0.24-24030411
+      digest: 4696efb66bdef231cbc64f145f777b847b47f6445444b30cd91713346f0c38ee
     snpsniffer:
       container: ghcr.io/tgen/containers/snpsniffer:7.0.0-23080810
       digest: 93831227364dbe82f42836844e34ee7d33d798885edb5b98f5aaf7f13f360eb5
