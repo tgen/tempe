@@ -1129,7 +1129,7 @@ constants:
       - - {"contig": "chr1", "length": 20338057, "start": 228608365, "stop": 248946422}
         - {"contig": "chr2", "length": 16135118, "start": 10001, "stop": 16145119}
         - {"contig": "chr2", "length": 16721010, "start": 16146120, "stop": 32867130}
-        - {"contig": "chr2", "length": 48494, "start": 32868131, "stop": 32916625}
+        - {"contig": "chr2", "length": 47170, "start": 32868131, "stop": 32915301}
       - - {"contig": "chr2", "length": 56413053, "start": 32917626, "stop": 89330679}
         - {"contig": "chr2", "length": 155312, "start": 89530680, "stop": 89685992}
         - {"contig": "chr2", "length": 648518, "start": 89753993, "stop": 90402511}
