@@ -101,9 +101,6 @@
     set -eu
     set -o pipefail
 
-    {# Ensuring that the output dir exists for bcftools filter #}
-    mkdir -p {{ temp_dir }}/results/variants
-
     {# filtering somatic vcf by PASS #}
     bcftools filter \
       -i 'FILTER == "PASS"' \

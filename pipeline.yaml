@@ -103,8 +103,8 @@ constants:
       container: ghcr.io/tgen/containers/samtools_python:1.17-3.7.16-23082819
       digest: 2eaadfb976fd23f3583c5ab35c536349243cfd6e015002434735667c6bd62ead
     sigprofiler:
-      container: ghcr.io/tgen/containers/sigprofiler:0.0.24-23080710
-      digest: 42bcc6ed2d229cc39d39b476d2f76bec4b3a42a6cccf04c4ef18cd868496fa16
+      container: ghcr.io/tgen/containers/sigprofiler:0.0.24-24030411
+      digest: 4696efb66bdef231cbc64f145f777b847b47f6445444b30cd91713346f0c38ee
     snpsniffer:
       container: ghcr.io/tgen/containers/snpsniffer:7.0.0-23080810
       digest: 93831227364dbe82f42836844e34ee7d33d798885edb5b98f5aaf7f13f360eb5
@@ -1129,7 +1129,7 @@ constants:
       - - {"contig": "chr1", "length": 20338057, "start": 228608365, "stop": 248946422}
         - {"contig": "chr2", "length": 16135118, "start": 10001, "stop": 16145119}
         - {"contig": "chr2", "length": 16721010, "start": 16146120, "stop": 32867130}
-        - {"contig": "chr2", "length": 48494, "start": 32868131, "stop": 32916625}
+        - {"contig": "chr2", "length": 47170, "start": 32868131, "stop": 32915301}
       - - {"contig": "chr2", "length": 56413053, "start": 32917626, "stop": 89330679}
         - {"contig": "chr2", "length": 155312, "start": 89530680, "stop": 89685992}
         - {"contig": "chr2", "length": 648518, "start": 89753993, "stop": 90402511}
