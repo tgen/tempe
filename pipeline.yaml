@@ -28,8 +28,8 @@ constants:
       container: google/deepvariant:1.6.0-gpu
       digest: 3b11b08770e4c2818fa65195b31267a430aac815652a7fc4bcd3a0e284a5368f
     dle:
-      container: ghcr.io/tgen/containers/discordant_loci_extractor:0.1.5-23080815
-      digest: 0a5b010298b97573114936c1bf8ae0c319ec0b84818eb14917f8161e4826b927
+      container: ghcr.io/tgen/containers/discordant_loci_extractor:0.1.6-24031215
+      digest: b644809bcc871bc633f43f4e311e0b872953a81f39812b124c97b504204b7282
     expansion_hunter:
       container: ghcr.io/tgen/containers/expansion_hunter:4.0.2-23080316
       digest: 079db962be053c674c9e6673961b61a11342a8d7826d66dbaefe75902c60dbcb
