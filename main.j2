@@ -116,7 +116,11 @@
 {% endfor %}
 
 {% for sample in samples.values() %}
-    {% set totalReads = sample.read_groups.values() | sum(attribute="numberOfReads") %}
+    {% if sample.read_groups.values() | selectattr("numberOfReads", "defined") | list | length > 0 %}
+    {% set totalReads = sample.read_groups.values() | selectattr("numberOfReads", "defined") | list | sum("numberOfReads") %}
+    {% else %}
+    {% set totalReads = 0 %}
+    {% endif %}
     {% do sample.update({'total_reads': totalReads}) %}
 {% endfor %}
 
