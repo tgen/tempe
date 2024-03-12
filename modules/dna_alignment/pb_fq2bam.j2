@@ -49,7 +49,7 @@
     set -eu
     set -o pipefail
 
-    gpus=${CUDA_VISIBLE_DEVICES/,/}
+    gpus=$(echo "${CUDA_VISIBLE_DEVICES}" | sed 's/,//g')
 
     rm -r {{ temp_dir }}/{markdup_temp,stats} || true
     mkdir -p {{ temp_dir }}/{markdup_temp,stats}
