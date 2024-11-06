@@ -16,8 +16,8 @@
 {{ log(log_msg, level='WARNING') }}
 
 {% set output_dir %}{{ input_seg | dirname }}{% endset %}
+{% set temp_dir %}temp/{{ output_dir }}{% endset %}
 {% set cnvear_output %}{{ seg_prefix | basename }}.cnvear.tsv{% endset %}
-{% set cnvear_probes %}{{ seg_prefix | basename }}.cnvear.probes.bed{% endset %}
 {% if sex is defined and sex in ['Female','female','Male','male'] %}
 {% set config_sex %}{{ sex }}{% endset %}
 {% else %}
@@ -35,7 +35,6 @@
     {% endif %}
   output:
     - {{ output_dir }}/{{ cnvear_output }}
-    - {{ output_dir }}/{{ cnvear_probes }}
   cpus: 1
   mem: 16G
   walltime: "24:00:00"
@@ -44,21 +43,23 @@
   digest: {{ constants.tools.cnvear.digest }}
   cmd: |
 
+    mkdir -p {{ temp_dir }}
+
     {# The input seg might not overlap every probe region, particularly when using the cnvear_locations file #}
     {# We create an intersected bed that includes regions specifically from the probe region file. We keep #}
     {# original probe locations, but exclude regions that fall entirely outside of the input seg windows #}
     {% if studyDisease == "Multiple Myeloma" | default(false) %}
     tail -n+2 {{ input_seg }} | cut -f2-4 | \
     bedtools intersect -a {{ constants.tempe.fish_probe_locations }} -b stdin -wa | \
-    sort -k1,1V -k2,2n -k3,3n -u > {{ output_dir }}/{{ cnvear_probes }}
+    sort -k1,1V -k2,2n -k3,3n -u > {{ temp_dir }}/cnvear.probes.bed
     {% else %}
     tail -n+2 {{ input_seg }} | cut -f2-4 | \
     bedtools intersect -a {{ constants.tempe.cnvear_locations }} -b stdin -wa | \
-    sort -k1,1V -k2,2n -k3,3n -u > {{ output_dir }}/{{ cnvear_probes }}
+    sort -k1,1V -k2,2n -k3,3n -u > {{ temp_dir }}/cnvear.probes.bed
     {% endif %}
-    
+
     cnvear.py \
-      --file-probes {{ output_dir }}/{{ cnvear_probes }} \
+      --file-probes {{ temp_dir }}/cnvear.probes.bed \
       --file-segments {{ input_seg }} \
       --input-copy-number-space 'LOG2' \
       --output-copy-number-space 'LOG2' \
