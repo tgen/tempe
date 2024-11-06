@@ -61,7 +61,7 @@
 
     {% for sample_lb, sample_rgs in sample.read_groups.values()|groupby('rglb') %}
       {# Tasks performed on dna bams #}
-      {% if sample.gltype not in ['rna',] and sample.umiType is defined and sample.umiType == "" and 'bwa' in aligner | default(false) %}
+      {% if sample.gltype not in ['rna',] and sample.umiType is defined and sample.umiType != "Inline_Duplex" and 'bwa' in aligner | default(false) %}
         {{- bam_qc_samtools_markdup(sample, sample_lb, taskPrefix=taskPrefix, aligner=aligner) }}
       {% endif %}
     {% endfor%}
