@@ -31,7 +31,7 @@
     - temp/fastqs/{{ sample.name }}/{{ rgid }}/{{ r2fastq.basename }}/{{ chunk_suffix }}
     - {{ constants.tempe.bwa_mem2_index }}
   output: {{ temp_dir }}/{{ rgid }}/{{ chunk_suffix }}.{{ aligner }}.bam
-  walltime: "24:00:00"
+  walltime: "8:00:00"
   cpus: 20
   mem: 80G
   queue_preset: "DEFAULT"
@@ -110,7 +110,7 @@
     {% endfor %}
   {% endfor %}
   output: {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.bam
-  walltime: "24:00:00"
+  walltime: "8:00:00"
   cpus: 4
   mem: 8G
   queue_preset: "DEFAULT"
@@ -226,7 +226,7 @@
     - {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.md.bam
   {% endfor %}
   output: {{ temp_dir }}/{{ sample.name }}.{{ aligner }}.md.bam
-  walltime: "24:00:00"
+  walltime: "8:00:00"
   cpus: 4
   mem: 8G
   queue_preset: "DEFAULT"

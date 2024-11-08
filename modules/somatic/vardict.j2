@@ -23,7 +23,7 @@
     - {{ temp_dir }}/{{ loop.index }}.bed
   cpus: 1
   mem: 2G
-  walltime: "24:00:00"
+  walltime: "8:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bedtools.container }}
   digest: {{ constants.tools.bedtools.digest }}
@@ -272,7 +272,7 @@
     - {{ pass_vcf }}.tbi
   cpus: 1
   mem: 4G
-  walltime: "12:00:00"
+  walltime: "8:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
   digest: {{ constants.tools.bcftools.digest }}

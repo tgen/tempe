@@ -443,7 +443,7 @@
     - {{ temp_dir }}/results/variants/somaticSV.pass.vcf.gz.tbi
   cpus: 4
   mem: 4G
-  walltime: "12:00:00"
+  walltime: "8:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
   digest: {{ constants.tools.bcftools.digest }}
@@ -597,7 +597,7 @@
     - {{ gammit_path }}
     - {{ pairoscope_path }}
   output: {{ results_dir }}/{{ sample.name }}_mm_igtx_summary.txt
-  walltime: "24:00:00"
+  walltime: "8:00:00"
   cpus: 2
   mem: 4G
   queue_preset: "DEFAULT"

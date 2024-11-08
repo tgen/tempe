@@ -93,7 +93,7 @@
     - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.manta.diploidSV.pass.vcf.gz.tbi
   cpus: 1
   mem: 2G
-  walltime: "12:00:00"
+  walltime: "8:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
   digest: {{ constants.tools.bcftools.digest }}

@@ -79,7 +79,7 @@
     - {{ all_vcf }}.tbi
   cpus: 1
   mem: 4G
-  walltime: "24:00:00"
+  walltime: "8:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
   digest: {{ constants.tools.bcftools.digest }}
@@ -120,7 +120,7 @@
   output:
     - {{ pass_vcf }}
     - {{ pass_vcf }}.tbi
-  walltime: "24:00:00"
+  walltime: "8:00:00"
   cpus: 1
   mem: 4G
   queue_preset: "DEFAULT"

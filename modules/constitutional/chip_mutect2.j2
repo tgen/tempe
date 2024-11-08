@@ -122,7 +122,7 @@ Task control to ensure
     - {{ temp_dir }}/{{ sample.name }}.chip.mutect2.raw.vcf.gz.tbi
   cpus: 1
   mem: 4G
-  walltime: "24:00:00"
+  walltime: "8:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
   digest: {{ constants.tools.bcftools.digest }}
@@ -153,7 +153,7 @@ Task control to ensure
   output: {{ temp_dir }}/mutect2.chip.merged.stats
   cpus: 2
   mem: 8G
-  walltime: "24:00:00"
+  walltime: "8:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
   digest: {{ constants.tools.gatk.digest }}
@@ -269,7 +269,7 @@ Task control to ensure
     - {{ temp_vcf }}.tbi
   cpus: 2
   mem: 8G
-  walltime: "24:00:00"
+  walltime: "8:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
   digest: {{ constants.tools.gatk.digest }}
@@ -310,6 +310,7 @@ Task control to ensure
     - {{ pass_vcf }}.tbi
   cpu: 1
   mem: 4G
+  walltime: "8:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
   digest: {{ constants.tools.bcftools.digest }}
@@ -375,7 +376,7 @@ Task control to ensure
     - {{ final_vcf }}.tbi
   cpus: 1
   mem: 4G
-  walltime: "12:00:00"
+  walltime: "8:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
   digest: {{ constants.tools.bcftools.digest }}

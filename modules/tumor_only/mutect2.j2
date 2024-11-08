@@ -134,7 +134,7 @@
     - {{ temp_dir }}/{{ pair.name }}_{{ aligner }}.mutect2.raw.vcf.gz.tbi
   cpus: 1
   mem: 4G
-  walltime: "24:00:00"
+  walltime: "8:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
   digest: {{ constants.tools.bcftools.digest }}
@@ -165,7 +165,7 @@
   output: {{ temp_dir }}/merged.stats
   cpus: 2
   mem: 8G
-  walltime: "24:00:00"
+  walltime: "8:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
   digest: {{ constants.tools.gatk.digest }}
@@ -223,7 +223,7 @@
     - {{ temp_dir }}/merged.normal-pileups.table.tsv
   cpus: 2
   mem: 8G
-  walltime: "24:00:00"
+  walltime: "8:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
   digest: {{ constants.tools.gatk.digest }}
@@ -295,7 +295,7 @@
     - {{ all_vcf }}.tbi
   cpus: 2
   mem: 8G
-  walltime: "24:00:00"
+  walltime: "8:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
   digest: {{ constants.tools.gatk.digest }}
@@ -332,6 +332,7 @@
     - {{ pass_vcf }}.tbi
   cpu: 1
   mem: 4G
+  walltime: "8:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
   digest: {{ constants.tools.bcftools.digest }}

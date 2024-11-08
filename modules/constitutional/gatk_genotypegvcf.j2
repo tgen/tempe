@@ -86,7 +86,7 @@
   output:
     - {{ all_vcf }}
     - {{ all_vcf }}.tbi
-  walltime: "24:00:00"
+  walltime: "8:00:00"
   cpus: 1
   mem: 4G
   queue_preset: "DEFAULT"
@@ -122,9 +122,9 @@
     {% endfor %}
   output:
     - {{ temp_dir }}/{{ sample.name }}.hc.fvt.vcf.gz
-  walltime: "24:00:00"
   cpus: 4
   mem: 16G
+  walltime: "8:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.gatk.container }}
   digest: {{ constants.tools.gatk.digest }}
@@ -156,9 +156,9 @@
   output:
     - {{ pass_vcf }}
     - {{ pass_vcf }}.tbi
-  walltime: "24:00:00"
   cpus: 4
   mem: 16G
+  walltime: "8:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.bcftools.container }}
   digest: {{ constants.tools.bcftools.digest }}
