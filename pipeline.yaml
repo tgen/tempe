@@ -2,7 +2,7 @@ __pipeline__:
   name: tempe
   main: main.j2
   description: Rapid Human GRCh38 genomics suite
-  version: v1.2.2
+  version: v1.2.3.dev1
   bin: required_scripts/
 constants:
   tools:
@@ -16,8 +16,8 @@ constants:
       container: ghcr.io/tgen/containers/bedtools:2.29.0-23080313
       digest: cde92d1b69ecfda6e5f115c6b9220a312c380b0d7aa30378437476cd50206ee0
     bpure:
-      container: ghcr.io/tgen/containers/b_pure:1.0.0
-      digest: 1360e309dc861cf8a70be88db69f22f2520273052444c055d913d4f8a96b9fd6
+      container: ghcr.io/tgen/containers/b_pure:1.1.0
+      digest: 46eef2e7ed4566836def75e9436463950b14ed8b13b7222e100db0b882d6d6bb
     bwa_mem2_samtools:
       container: ghcr.io/tgen/containers/bwa_mem2_samtools:2.2.1-23080315
       digest: 98a83bc2d70fa39755a02c2d81de64ef36dac292cdf6b1fcf02570a3e227b7f6
