@@ -171,7 +171,6 @@ constants:
     fish_probe_locations: /home/tgenref/homo_sapiens/grch38_hg38/hg38tgen/tool_resources/seq_fish/GRCh38_Myeloma_FISH_Probe_Locations_for_CNVear.bed
     cnvear_locations: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/Homo_sapiens.GRCh38.103.ucsc.cnvear.bed
     required_scripts:
-      bpure: b_pure.py
       manta_prepare_sv_vcf: manta_prepare_sv_vcf.py
       pairoscope_mm_igtx_calling_script: mm_igtx_pairoscope_calling_b38.py
       cna_seg_extend: seg_extend.py
