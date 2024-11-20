@@ -613,6 +613,7 @@
   input:
     - {{ tumor_bam }}
     - {{ tumor_bam }}.bai
+    - {{ constants.tempe.reference_fasta }}
   output:
     - {{ results_dir }}/{{ tumor.name }}.{{ aligner }}_output_filtered.tsv
   walltime: "8:00:00"
