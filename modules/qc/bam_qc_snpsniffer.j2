@@ -6,12 +6,14 @@
 
 {% set snpsniffer_list = [] %}
 {% for sample in samples.values() %}
+  {% if tasks[sample.gltype|capitalize+'_quality_control_genotype_concordance_snpSniffer']|default(false) %}
   {% for sample_lb, sample_rgs in sample.read_groups.values()|groupby('rglb') %}
     {% for aligner in sample.aligners %}
       {% set snpsniffer_result %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/stats/{{ sample.name }}_{{ sample_lb }}.{{ aligner }}.bam.snpSniffer.vcf{% endset %}
       {% do snpsniffer_list.append(snpsniffer_result) %}
     {% endfor %}
   {% endfor %}
+  {% endif %}
 {% endfor %}
 
 {% if snpsniffer_list | length > 1 %}
