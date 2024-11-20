@@ -60,6 +60,8 @@ constants:
     ichorcna:
       container: quay.io/biocontainers/r-ichorcna:0.5.0--pl5321r43hdfd78af_1
       digest: 51e8ff5f610fde81268d7ba3d4ae0905982675d8d5cce4e18fd24775afa6c431
+    igcaller:
+      container: /home/tgenref/containers/igcaller_v1.3.sif
     lancet:
       container: ghcr.io/tgen/containers/lancet:1.1.x-23080709
       digest: acd89650b9389c748e1ec91eea7453301028b2a28a8059886793630096eeb74f

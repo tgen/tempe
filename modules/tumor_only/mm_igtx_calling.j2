@@ -571,6 +571,74 @@
 
 {% endmacro %}
 
+{% macro mm_igtx_igcaller(tumor, aligner='bwa') %}
+
+{#
+  -I, --inputsFolder Path to folder containing IgCaller reference files
+  -V, --genomeVersion Reference genome version [hg19, hg38]
+  -C, --chromosomeAnnotation {ensembl,ucsc}
+  -T BAMT, --bamT BAMT  Tumor bam file
+  -N BAMN, --bamN BAMN  Normal bam file, if available
+  -R, --refGenome Reference genome fasta
+  -seq {wgs,wes,capture}, --sequencing Sequencing technique [wgs/wes/capture, default=wgs]
+  -o OUTPUTPATH, --outputPath A folder inside this directory will be created with the output [default = current directory]
+  -p TUMORPURITY, --tumorPurity Purity of the tumor sample (tumor cell contect) [0-1,default=1]
+  -kmb KEEPMINIIGBAMS, --keepMiniIgBams Should IgCaller keep (ie no remove) mini IG BAM files used in the analysis? [yes/no, default=no]
+  -mq MAPQ, --mappingQuality Mapping quality cut off to filter out reads for IG reconstruction [default=0]
+  -bq BASEQ, --baseQuality Base quality cut off for samtools mpileup for mutation analysis [default=13]
+  -d DEPTH, --minDepth Depth cut off to consider a position [0-inf, default=2]
+  -ad ALTDEPTH, --minAltDepth Alt depth cut off to consider a nucleotide [0-inf, default=1]
+  -vafN VAFCUTOFFNORMAL, --vafCutoffNormal VAF cut off to consider a mutation [0-1, default=0.20]
+  -vaf VAFCUTOFF, --vafCutoff VAF cut off to consider a mutation when working with phased reads and without phased reads, respectively [two numbers between 0-1 separated by a comma, default=0.66,0.1]
+  -s SCORECUTOFF, --scoreCutoff Minimum score supporting a gene rearrangement in order to be considered as high confidence [default='empty'; will consider 3 for wgs/wes and 15 for capture]
+  -shortV {yes,no}, --shortReportedVseq {yes,no} Make V sequence start at (approx) FR1 [yes/no, default=yes]
+  -mqOnco MAPQONCO, --mappingQualityOncoIg MAPQONCO
+                        Mapping quality cut off to filter out reads when analyzing oncogenic IG rearrangements [default=15]
+  -mntonco MNTONCO, --minNumberReadsTumorOncoIg MNTONCO
+                        Minimum score supporting an oncogenic IG rearrangement in order to be annotated [default=5]
+  -mntoncoPass MNTONCOPASS, --minNumberReadsTumorOncoIgPass MNTONCOPASS
+                        Minimum score supporting an oncogenic IG rearrangement in order to be considered as high confidence [default=10]
+  -mnnonco MNNONCO, --maxNumberReadsNormalOncoIg MNNONCO
+                        Maximum number of reads supporting an oncogenic IG rearrangement in the normal sample in order to be considered as high confidence [default=2]
+  -mncPoN MNCPON, --maxNumberCountInPoN MNCPON
+                        Maximum number of count in panel of normals (PoN) in order to be considered as high confidence [default=2]
+#}
+
+{% set tumor_bam %}{{ tumor.gltype }}/alignment/{{ aligner }}/{{ tumor.name }}/{{ tumor.name }}.{{ aligner }}.bam{% endset %}
+{% set temp_dir %}temp/{{ tumor.gltype }}/tumor_only_structural_calls/mm_igtx_igcaller/{{ tumor.name }}_{{ aligner }}{% endset %}
+{% set results_dir %}{{ tumor.gltype }}/tumor_only_structural_calls/mm_igtx_igcaller/{{ tumor.name }}_{{ aligner }}{% endset %}
+
+- name: igcaller_{{ tumor.name }}
+  tags: [{{ tumor.gltype }}, structural_caller, igcaller, {{ tumor.name }}]
+  input:
+    - {{ tumor_bam }}
+    - {{ tumor_bam }}.bai
+  output:
+    - {{ results_dir }}/{{ tumor.name }}.{{ aligner }}_output_filtered.tsv
+  walltime: "8:00:00"
+  cpus: 4
+  mem: 16G
+  queue_preset: "DEFAULT"
+  container: {{ constants.tools.igcaller.container }}
+  cmd: |
+    set -eu
+
+    mkdir -p {{ temp_dir }}
+    mkdir -p {{ results_dir }}
+
+    IgCaller \
+      -@ 4 \
+      --inputsFolder /IgCaller/IgCaller_reference_files \
+      --refGenome {{ constants.tempe.reference_fasta }} \
+      --genomeVersion hg38 \
+      --chromosomeAnnotation ucsc \
+      --outputPath {{ temp_dir }} \
+      -T {{ tumor_bam }}
+
+    mv {{ temp_dir }}/{{ tumor.name }}.{{ aligner }}_IgCaller/* {{ results_dir }}/
+
+{% endmacro %}
+
 {% macro mm_igtx_summarize(sample, aligner='bwa') %}
 
 {% set control = {} %}

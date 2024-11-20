@@ -11,6 +11,7 @@
 {% from 'modules/tumor_only/mm_igtx_calling.j2' import mm_igtx_pairoscope with context %}
 {% from 'modules/tumor_only/mm_igtx_calling.j2' import mm_igtx_manta with context %}
 {% from 'modules/tumor_only/mm_igtx_calling.j2' import mm_igtx_gammit with context %}
+{% from 'modules/tumor_only/mm_igtx_calling.j2' import mm_igtx_igcaller with context %}
 {% from 'modules/tumor_only/mm_igtx_calling.j2' import mm_igtx_summarize with context %}
 
 
@@ -97,13 +98,8 @@
 
         {% if tasks[taskPrefix+"_disease_specific_multiple_myeloma"]|default(false) %}
             {{- mm_igtx_gammit(tumor, aligner) }}
-        {% endif %}
-
-        {% if tasks[taskPrefix+"_disease_specific_multiple_myeloma"]|default(false) %}
+            {{- mm_igtx_igcaller(tumor, aligner) }}
             {{- mm_igtx_pairoscope(tumor, aligner) }}
-        {% endif %}
-
-        {% if tasks[taskPrefix+"_disease_specific_multiple_myeloma"]|default(false) %}
             {{- mm_igtx_summarize(tumor, aligner) }}
         {% endif %}
 
