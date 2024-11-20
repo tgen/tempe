@@ -461,7 +461,7 @@
 
 - name: mm_igtx_manta_flag_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, tumor_only, manta, flag, {{ pair.name }}]
-  reset: 
+  reset:
     - prepare_tumor_only_{{ pair.normal.name }}
     - mm_igtx_manta_bcftools_filter_{{ pair.name }}_{{ aligner }}
   input:
@@ -508,7 +508,9 @@
 
 - name: mm_igtx_manta_transparser_{{ pair.name }}_{{ aligner }}
   tags: [{{ pair.gltype }}, tumor_only, manta, transparser, {{ pair.name }}]
-  reset: prepare_tumor_only_{{ pair.normal.name }}
+  reset:
+    - prepare_tumor_only_{{ pair.normal.name }}
+    - mm_igtx_manta_flag_{{ pair.name }}_{{ aligner }}
   input:
     - {{ temp_dir }}/results/variants/somaticSV.pass.flag.vcf
   output:
@@ -608,7 +610,7 @@
 {% set temp_dir %}temp/{{ tumor.gltype }}/tumor_only_structural_calls/mm_igtx_igcaller/{{ tumor.name }}_{{ aligner }}{% endset %}
 {% set results_dir %}{{ tumor.gltype }}/tumor_only_structural_calls/mm_igtx_igcaller/{{ tumor.name }}_{{ aligner }}{% endset %}
 
-- name: igcaller_{{ tumor.name }}
+- name: mm_igtx_igcaller_{{ tumor.name }}
   tags: [{{ tumor.gltype }}, structural_caller, igcaller, {{ tumor.name }}]
   input:
     - {{ tumor_bam }}
