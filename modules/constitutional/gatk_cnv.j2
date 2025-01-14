@@ -352,7 +352,7 @@
 {% set input_seg %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.re_centered.cr.igv.seg{% endset %}
 {{- cnvear(sample, input_seg, 'GATK', aligner) }}
 
-{% set task %}cnvear_gatk_{{ sample.name }}_{{ aligner }}
+{% set task %}cnvear_gatk_{{ sample.name }}_{{ aligner }}{% endset %}
 {% set directory %}{{ temp_dir }}{% endset %}
 {{- remove_files(directory,none,task) }}
 

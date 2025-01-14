@@ -802,7 +802,7 @@
 {{- thred(pair, final_seg, aligner)}}
 {{- cnvear(pair, final_seg, 'GATK', aligner) }}
 
-{% set task %}cnvear_gatk_{{ pair.name }}_{{ aligner }}
+{% set task %}cnvear_gatk_{{ pair.name }}_{{ aligner }}{% endset %}
 {% set directory %}{{ temp_dir }}{% endset %}
 {{- remove_files(directory,none,task) }}
 
