@@ -800,12 +800,11 @@
 
 {% set final_seg %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.re_centered.cr.igv.seg{% endset %}
 {{- thred(pair, final_seg, aligner)}}
+{{- cnvear(pair, final_seg, 'GATK', aligner) }}
 
-{% set task %}gatk_call_cnv_step4_plot_cnv_{{ pair.name }}_{{ aligner }}{% endset %}
+{% set task %}cnvear_gatk_{{ pair.name }}_{{ aligner }}
 {% set directory %}{{ temp_dir }}{% endset %}
 {{- remove_files(directory,none,task) }}
-
-{{- cnvear(pair, final_seg, 'GATK', aligner) }}
 
 {% if studyDisease == "Multiple Myeloma" | default(false) %}
 {{- bpure(pair.tumor, final_seg, 'high', 'somatic_gatk', aligner) }}
