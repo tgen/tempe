@@ -1,5 +1,5 @@
 
-<img src="images/TGen_CoH_Color_Medium.png" width="400" height="147" title="InsertSizePlot">  
+<img src="images/TGen_CoH_Color_Medium.png" width="400" height="147" title="TGen_Logo_2025">  
 
 # Tempe Workflow - A Container-Focused JetStream Workflow
 
