@@ -60,7 +60,7 @@
       --cosmic_version 3.4 \
       --input_type vcf \
       --context_type "96" \
-      {% if sample_or_pair.gltype == 'exome' %}
+      {% if pair.gltype == 'exome' %}
       --exome True \
       {% endif %}
       --sample_reconstruction_plots png
@@ -74,7 +74,7 @@
       --input_type vcf \
       --collapse_to_SBS96 False \
       --context_type "DINUC" \
-      {% if sample_or_pair.gltype == 'exome' %}
+      {% if pair.gltype == 'exome' %}
       --exome True \
       {% endif %}
       --sample_reconstruction_plots png
