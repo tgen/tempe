@@ -1,8 +1,6 @@
 ---
-title: Home
-layout: home
-nav_order: 1
-permalink: /
+title: Overview
+nav_order: 2
 ---
 
 **Tempe** is a jetstream workflow supports the analysis of human sequencing

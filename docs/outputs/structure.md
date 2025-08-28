@@ -1,4 +1,9 @@
-# Output Structure
+---
+title: Output
+nav_order: 5
+---
+
+## Output Structure
 
 All final output files are placed in a standardized folder structure that
 generally reflects the relationship of files or the processing order.

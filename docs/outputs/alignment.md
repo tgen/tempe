@@ -1,3 +1,7 @@
-# Alignment
+---
+title: Alignment
+nav_order: 6
+---
 
-We highly encourage the use of CRAM files over BAM as in most cases the return on space efficiency is worth the time spent on CRAM encode/decode.
+We highly encourage the use of CRAM files over BAM as in most cases the return
+on space efficiency is worth the time spent on CRAM encode/decode.

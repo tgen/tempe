@@ -1,4 +1,9 @@
-# Somatic Variant Callers
+---
+title: Somatic Variant Callers
+nav_order: 8
+---
+
+## Somatic Variant Callers
 
 In the Tempe workflow we offer five somatic SNV/INDEL callers. These are:
 

@@ -1,4 +1,7 @@
-# Available Software
+---
+title: Tools
+nav_order: 4
+---
 
 All tools are available as OCI images under our [packages](https://github.com/orgs/tgen/packages)
 _Last Updated Sep 1st, 2023_  
