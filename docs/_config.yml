@@ -3,6 +3,13 @@ description: Tempe - A containerized jetstream workflow
 theme: just-the-docs
 
 url: https://tgen.github.io/tempe
-logo: "/docs/images/TGen_CoH_Color_Medium.png"
 
 nav_enabled: true
+permalink: pretty
+
+defaults:
+  - scope:
+      path: "docs" # an empty string here means all files in the project
+      type: "pages"
+    values:
+      layout: "default"
