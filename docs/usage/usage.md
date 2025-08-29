@@ -1,6 +1,7 @@
 ---
 title: Usage
 nav_order: 3
+permalink: usage/
 ---
 
 ## Running from command line

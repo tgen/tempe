@@ -1,6 +1,8 @@
 ---
 title: Alignment
-nav_order: 6
+parent: Output
+nav_order: 1
+permalink: outputs/alignment/
 ---
 
 We highly encourage the use of CRAM files over BAM as in most cases the return

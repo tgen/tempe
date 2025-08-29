@@ -1,6 +1,8 @@
 ---
 title: Constitutional Variant Callers
-nav_order: 7
+parent: Variant Calling
+nav_order: 2
+permalink: outputs/variant_calling/constitutional/
 ---
 
 ## Constitutional Variant Callers

@@ -1,6 +1,7 @@
 ---
 title: Output
 nav_order: 5
+permalink: outputs/
 ---
 
 ## Output Structure

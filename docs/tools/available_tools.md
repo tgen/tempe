@@ -1,6 +1,7 @@
 ---
 title: Tools
 nav_order: 4
+permalink: tools/
 ---
 
 All tools are available as OCI images under our [packages](https://github.com/orgs/tgen/packages)

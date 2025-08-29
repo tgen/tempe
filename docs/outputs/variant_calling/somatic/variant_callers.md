@@ -1,6 +1,8 @@
 ---
 title: Somatic Variant Callers
-nav_order: 8
+parent: Variant Calling
+nav_order: 1
+permalink: outputs/variant_calling/somatic/
 ---
 
 ## Somatic Variant Callers

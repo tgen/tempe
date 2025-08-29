@@ -9,7 +9,15 @@ permalink: pretty
 
 defaults:
   - scope:
-      path: "docs" # an empty string here means all files in the project
+      path: ""
       type: "pages"
     values:
       layout: "default"
+
+callouts:
+  important:
+    title: Important
+    color: blue
+
+mermaid:
+  version: "11.10.1"
