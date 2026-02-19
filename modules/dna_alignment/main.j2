@@ -19,6 +19,11 @@
       {% set opt_dup_distance = 100 %}
     {% endif %}
 
+    {% if tasks[sample.gltype|capitalize+'_preprocessing_trim_reads']|default(false) %}
+      {% from 'utilities/read_trimming.j2' import trim_reads with context %}
+      {{- trim_reads(sample, rg, rgid) }}
+    {% endif %}
+
     {# In main we check the following (commenting here for visibility):
     {% if sample.gltype in ['genome', 'exome'] %}
         {% if tasks[sample.gltype|capitalize+"_alignment_dna_alignment_bwa"]|default(false) %}

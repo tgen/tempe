@@ -184,10 +184,6 @@
 {% for fastq in dataFiles %}
     {{- copy_fastq(fastq) }}
 {% endfor %}
-{% if tasks[sample.gltype|capitalize+'_preprocessing_trim_reads']|default(false) %}
-  {% from 'utilities/read_trimming.j2' import trim_reads with context %}
-  {{- trim_reads(sample, rg, rgid) }}
-{% endif %}
 
 {# project level quality control #}
 {% if samples|length > 1 %}
