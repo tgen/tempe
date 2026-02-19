@@ -46,6 +46,13 @@
         - \
         "{{ temp_dir }}/{{ rgid }}/{{ fastq.basename }}/"
 
+    {% if tasks[sample.gltype|capitalize+'_preprocessing_trim_reads']|default(false) %}
+      {# If we perform read trimming then it's possible, and likely, that the read count can change, resulting in fewer chunks than expected #}
+        {% for i in range(n_chunks) %}
+          {% set chunk_suffix = '%02d' % i %}
+          [ -e {{ temp_dir }}/{{ rgid }}/{{ fastq.basename }}/{{ chunk_suffix }} ] || touch {{ temp_dir }}/{{ rgid }}/{{ fastq.basename }}/{{ chunk_suffix }}
+        {% endfor %}
+    {% endif %}
     N_CREATED=$(ls "{{ temp_dir }}/{{ rgid }}/{{ fastq.basename }}/" | wc -l)
 
     if [[ ${N_CREATED} -ne {{ n_chunks }} ]]

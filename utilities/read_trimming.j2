@@ -1,0 +1,45 @@
+{% macro trim_reads(sample, rg, rgid) %}
+
+{% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
+{% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
+
+{% set r1fastq_basename = r1fastq.basename %}
+{% set r2fastq_basename = r2fastq.basename %}
+{% set r1fastq_trimmed %}{{ r1fastq.basename | replace('fastq.gz', 'trimmed.fastq.gz') }}{% endset %}
+{% set r2fastq_trimmed %}{{ r2fastq.basename | replace('fastq.gz', 'trimmed.fastq.gz') }}{% endset %}
+
+{% do r1fastq.update({'basename': r1fastq_trimmed }) %}
+{% do r2fastq.update({'basename': r2fastq_trimmed }) %}
+
+- name: preprocessing_{{ sample.name }}_{{ rgid }}_read_trimming
+  input:
+    - temp/fastqs/{{ r1fastq_basename }}
+    - temp/fastqs/{{ r2fastq_basename }}
+  output:
+    - temp/fastqs/{{ r1fastq_trimmed }}
+    - temp/fastqs/{{ r2fastq_trimmed }}
+  cpus: 8
+  mem: 8G
+  container: {{ constants.tools.fastp.container }}
+  cmd: |
+    set -eu
+
+    fastp \
+      --thread 8 \
+      --in1 temp/fastqs/{{ r1fastq_basename }} \
+      --in2 temp/fastqs/{{ r2fastq_basename }} \
+      --out1 temp/fastqs/{{ r1fastq_trimmed }} \
+      --out2 temp/fastqs/{{ r2fastq_trimmed }} \
+      --html temp/fastqs/{{ rgid }}_trim_report.html \
+      --json temp/fastqs/{{ rgid }}_trim_report.json \
+      --report_title "{{ rgid }} Trimming" \
+      --dont_eval_duplication \
+      --n_base_limit 5 \
+      --length_required 75 \
+      --qualified_quality_phred 15 \
+      --unqualified_percent_limit 40 \
+      --trim_poly_g  \
+      --poly_g_percent 85 \
+      --trim_poly_g_read2only
+
+{% endmacro %}
