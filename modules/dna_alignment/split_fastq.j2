@@ -14,7 +14,7 @@
 {% if n_chunks > 99 %}{{ raise('ValueError', 'Too many chunks!') }}{% endif %}
 
 {% for fastq in [r1fastq, r2fastq] %}
-- name: split_fastq_{{ fastq.basename | replace(".", "_") }}
+- name: split_fastq_{{ fastq.basename | replace('trimmed.fastq.gz', 'fastq.gz') | replace(".", "_") }}
   tags: [{{ sample.gltype }}, alignment, dna_alignment, split, {{ sample.name }}]
   reset: predecessors
   input:

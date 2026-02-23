@@ -21,7 +21,9 @@
 
     {% if tasks[sample.gltype|capitalize+'_preprocessing_trim_reads']|default(false) %}
       {% from 'utilities/read_trimming.j2' import trim_reads with context %}
-      {{- trim_reads(sample, rg, rgid) }}
+      {% for rgid, rg in sample.read_groups.items() %}
+        {{- trim_reads(sample, rg, rgid) }}
+      {% endfor %}
     {% endif %}
 
     {# In main we check the following (commenting here for visibility):
