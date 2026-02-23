@@ -108,8 +108,8 @@ constants:
       container: ghcr.io/tgen/containers/sigprofiler:0.0.24-24030411
       digest: 4696efb66bdef231cbc64f145f777b847b47f6445444b30cd91713346f0c38ee
     snpsniffer:
-      container: ghcr.io/tgen/containers/snpsniffer:7.0.0-23080810
-      digest: 93831227364dbe82f42836844e34ee7d33d798885edb5b98f5aaf7f13f360eb5
+      container: ghcr.io/tgen/containers/snpsniffer:7.0.1
+      digest: 22eeb74559868fc2b80976f7901cb2c1021893bf9fe2939b06da0b539af3c942
     star_fusion:
       container: trinityctat/starfusion:1.11.0
       digest: a3f1bfbb3a7a3b501ecdd1cec4325d00516b73b504afac274d351d20deee44e4
