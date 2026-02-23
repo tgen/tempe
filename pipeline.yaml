@@ -105,8 +105,8 @@ constants:
       container: ghcr.io/tgen/containers/samtools_python:1.17-3.7.16-23082819
       digest: 2eaadfb976fd23f3583c5ab35c536349243cfd6e015002434735667c6bd62ead
     sigprofiler:
-      container: ghcr.io/tgen/containers/sigprofiler:0.0.24-24030411
-      digest: 4696efb66bdef231cbc64f145f777b847b47f6445444b30cd91713346f0c38ee
+      container: quay.io/biocontainers/sigprofilerassignment:0.2.3--pyhdfd78af_0
+      digest: 83320cff906f6d6fc685518c1ad720bb31d56517c612747ed5c0905c749f5090
     snpsniffer:
       container: ghcr.io/tgen/containers/snpsniffer:7.0.0-23080810
       digest: 93831227364dbe82f42836844e34ee7d33d798885edb5b98f5aaf7f13f360eb5
@@ -296,6 +296,9 @@ constants:
     vep_data: /home/tgenref/homo_sapiens/grch38_hg38/tool_specific_resources/vep/v103/
     vep_canonical_cds_intervals: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/gene_model/ensembl_v103/Homo_sapiens.GRCh38.103.ucsc.flt_canonical_vep.cds_padded.bed
     verifybamid_resources: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/VerifyBamID_2.0.1
+    sigprofiler_ref_dir: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/sigprofiler/references/chromosomes
+    sigprofiler_sbs: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/sigprofiler/COSMIC_v3.4_SBS_GRCh38.txt
+    sigprofiler_dbs: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/sigprofiler/COSMIC_v3.4_DBS_GRCh38.txt
     ns_effects:
       - 'splice_acceptor_variant'
       - 'splice_donor_variant'

@@ -15,6 +15,9 @@
   tags: [{{ pair.gltype }}, somatic, mutational_signatures, sigprofiler, {{ pair.name }}]
   input:
     - {{ filt_vcf }}
+    - {{ constants.tempe.sigprofiler_ref_dir }}
+    - {{ constants.tempe.sigprofiler_sbs }}
+    - {{ constants.tempe.sigprofiler_dbs }}
   output:
     - {{ results_dir }}/SBS/Assignment_Solution/Activities/Assignment_Solution_Activities.txt
     - {{ results_dir }}/SBS/Assignment_Solution/Activities/Assignment_Solution_Activity_Plots.pdf
@@ -32,9 +35,9 @@
     - {{ results_dir }}/DBS/Assignment_Solution/Signatures/DBS_78_plots_Assignment_Solution.pdf
     - {{ results_dir }}/DBS/Assignment_Solution/Solution_Stats/Assignment_Solution_Samples_Stats.txt
     - {{ results_dir }}/DBS/Assignment_Solution/Solution_Stats/Assignment_Solution_Signature_Assignment_log.txt
-  cpus: 4
-  mem: 8G
-  walltime: "24:00:00"
+  cpus: 2
+  mem: 4G
+  walltime: "4:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.sigprofiler.container }}
   digest: {{ constants.tools.sigprofiler.digest }}
@@ -42,19 +45,38 @@
     set -eu
     set -o pipefail
 
-    {# Remove previously generated matrix #}
-    rm -r {{ temp_dir }}/vcfs/*/ || true
+    rm -r {{ temp_vcf_dir }} || true
+    mkdir -p {{ temp_vcf_dir }}
+    mkdir -p {{ results_dir }}/{SBS,DBS}
 
-    {# Should already exist #}
-    mkdir -p {{ temp_dir }}/vcfs
-    mkdir -p {{ results_dir }}
+    export SIGPROFILERMATRIXGENERATOR_VOLUME="{{ constants.tempe.sigprofiler_ref_dir }}"
+    export SIGPROFILERASSIGNMENT_VOLUME="{{ temp_dir }}"
 
-    sigprofiler_assignment.py \
-      --vcfpath {{ temp_dir }}/vcfs \
-      --output {{ results_dir }} \
+    SigProfilerAssignment cosmic_fit \
+      {{ temp_vcf_dir }} \
+      {{ results_dir }}/SBS \
+      --signatures {{ constants.tempe.sigprofiler_sbs }} \
+      --genome_build GRCh38 \
+      --cosmic_version 3.4 \
+      --input_type vcf \
+      --context_type "96" \
       {% if pair.gltype == 'exome' %}
-      --exome \
+      --exome True \
       {% endif %}
-      --project {{ pair.name }}
+      --sample_reconstruction_plots png
+
+    SigProfilerAssignment cosmic_fit \
+      {{ temp_vcf_dir }} \
+      {{ results_dir }}/DBS \
+      --signatures {{ constants.tempe.sigprofiler_dbs }} \
+      --genome_build GRCh38 \
+      --cosmic_version 3.4 \
+      --input_type vcf \
+      --collapse_to_SBS96 False \
+      --context_type "DINUC" \
+      {% if pair.gltype == 'exome' %}
+      --exome True \
+      {% endif %}
+      --sample_reconstruction_plots png
 
 {% endmacro %}
