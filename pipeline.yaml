@@ -108,8 +108,8 @@ constants:
       container: quay.io/biocontainers/sigprofilerassignment:0.2.3--pyhdfd78af_0
       digest: 83320cff906f6d6fc685518c1ad720bb31d56517c612747ed5c0905c749f5090
     snpsniffer:
-      container: ghcr.io/tgen/containers/snpsniffer:7.0.0-23080810
-      digest: 93831227364dbe82f42836844e34ee7d33d798885edb5b98f5aaf7f13f360eb5
+      container: ghcr.io/tgen/containers/snpsniffer:7.0.1
+      digest: 22eeb74559868fc2b80976f7901cb2c1021893bf9fe2939b06da0b539af3c942
     star_fusion:
       container: trinityctat/starfusion:1.11.0
       digest: a3f1bfbb3a7a3b501ecdd1cec4325d00516b73b504afac274d351d20deee44e4
