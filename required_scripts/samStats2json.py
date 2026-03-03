@@ -240,7 +240,11 @@ fileTypes = {
         "samtool": True,
         "help": "\"bam_name.samtools_markdup_summary.tsv\" file generated from the samtools_stats task in the "
                 "phoenix pipeline. "
-    }
+    },
+    "fastp": {
+        "fastp": True,
+        "help": "\"rgid_trim_report.json\" file generated from fastp"
+    },
 }
 
 # Additional picard files that may need support in future development
@@ -1093,6 +1097,35 @@ def starsolo_metrics_data_extract(file_row_list, sample_index, library_index, re
 
     return output_dict
 
+def fastp_data_extract(stats_file_string, sample_index, library_index, read_group_index):
+    """Extract data from fastp json output file."""
+
+    output_dict = {}
+
+    location_in_json, output_dict = add_to_json(
+        output_dict,
+        "output_dict",
+        sample_index,
+        library_index,
+        read_group_index
+    )
+
+    stats_dict = json.load(stats_file_string)
+
+    data_dict = {}
+    data_dict.update({'FILTERED_PASSING': stats_dict['filtering_result']['passed_filter_reads']})
+    data_dict.update({'FILTERED_LOW_QUALITY': stats_dict['filtering_result']['low_quality_reads']})
+    data_dict.update({'FILTERED_TOO_MANY_N': stats_dict['filtering_result']['too_many_N_reads']})
+    data_dict.update({'FILTERED_TOO_SHORT': stats_dict['filtering_result']['too_short_reads']})
+    data_dict.update({'FILTERED_ADAPTER_DIMER': stats_dict['filtering_result']['adapter_dimer_reads']})
+    data_dict.update({'FILTERED_POLYG': stats_dict['polyg_trimming']['total_polyg_trimmed_reads']})
+
+    for key, value in data_dict.items():
+        add_command = location_in_json + "[\"" + key + "\"] = " + value
+
+        exec(add_command)
+
+    return output_dict
 
 def rename_chromosomes(stats_file_string, chr_dictionary):
     for item in chr_dictionary.keys():
@@ -1262,6 +1295,14 @@ if __name__ == '__main__':
     if "starsoloMetrics" in fileTypes[args.filetype]:
         final_json = starsolo_metrics_data_extract(
             stats_file_row_list,
+            args.samplename,
+            args.libraryname,
+            args.readgroupname
+        )
+
+    if "fastp" in fileTypes[args.filetype]:
+        final_json = fastp_data_extract(
+            stats_file_string,
             args.samplename,
             args.libraryname,
             args.readgroupname

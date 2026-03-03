@@ -34,7 +34,7 @@ constants:
       container: ghcr.io/tgen/containers/expansion_hunter:4.0.2-23080316
       digest: 079db962be053c674c9e6673961b61a11342a8d7826d66dbaefe75902c60dbcb
     fastp:
-      container: ghcr.io/tgen/fastp:1.1.1
+      container: ghcr.io/tgen/fastp:1.1.1-tgen
     fgbio:
       container: ghcr.io/tgen/containers/fgbio:2.0.2-23082819
       digest: c913496a731593eb173fe66a8b32d3071a4939f72a0403aecbe839ec6a29f94d
