@@ -1110,7 +1110,7 @@ def fastp_data_extract(stats_file_string, sample_index, library_index, read_grou
         read_group_index
     )
 
-    stats_dict = json.load(stats_file_string)
+    stats_dict = json.loads(stats_file_string)
 
     data_dict = {}
     data_dict.update({'FILTERED_PASSING': stats_dict['filtering_result']['passed_filter_reads']})
@@ -1121,7 +1121,7 @@ def fastp_data_extract(stats_file_string, sample_index, library_index, read_grou
     data_dict.update({'FILTERED_POLYG': stats_dict['polyg_trimming']['total_polyg_trimmed_reads']})
 
     for key, value in data_dict.items():
-        add_command = location_in_json + "[\"" + key + "\"] = " + value
+        add_command = location_in_json + "[\"" + key + "\"] = " + str(value)
 
         exec(add_command)
 

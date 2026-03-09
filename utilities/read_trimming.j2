@@ -42,8 +42,8 @@
       --in2 temp/fastqs/{{ r2fastq_basename }} \
       --out1 temp/fastqs/{{ r1fastq_trimmed }} \
       --out2 temp/fastqs/{{ r2fastq_trimmed }} \
-      --html {{ results_dir }}/{{ rgid }}_trim_report.html \
-      --json {{ results_dir }}/{{ rgid }}_trim_report.json \
+      --html {{ results_html }} \
+      --json {{ results_json }} \
       --report_title "{{ rgid }} Trimming" \
       --dont_eval_duplication \
       --n_base_limit 5 \
