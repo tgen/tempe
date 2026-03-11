@@ -95,7 +95,11 @@
     - {{ results_dir }}/{{ tumor.name }}_fastqs.tar.gz
     - {{ temp_dir }}/igtx_gene_regions.bed
     - {{ temp_dir }}/igtx_regions.bed
+  {% if boost_resources | default(false) %}
+  walltime: "120:00:00"
+  {% else %}
   walltime: "48:00:00"
+  {% endif %}
   cpus: 4
   mem: 8G
   queue_preset: "DEFAULT"
@@ -362,7 +366,11 @@
     - {{ results_dir }}/{{ pair.name }}.{{ aligner }}.manta.somaticSV.vcf.gz.tbi
   cpus: 20
   mem: 20G
+  {% if boost_resources | default(false) %}
+  walltime: "48:00:00"
+  {% else %}
   walltime: "24:00:00"
+  {% endif %}
   queue_preset: "DEFAULT"
   container: {{ constants.tools.manta_tgen.container }}
   digest: {{ constants.tools.manta_tgen.digest }}
