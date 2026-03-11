@@ -8,11 +8,6 @@
 
 {% set temp_dir %}temp/{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}{% endset %}
 {% set results_dir %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}{% endset %}
-{% set umi_options = {} %}
-{% do umi_options.update(constants.tempe.umi_options) %}
-{% if task_variables is defined and task_variables.umi_alignment is defined %}
-  {% do umi_options.update(task_variables.umi_alignment) %}
-{% endif %}
 
 {% for rgid, rg in sample.read_groups.items() %}
 {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
@@ -31,7 +26,7 @@ other weird filters are in place
     {% for fastq in [r1fastq, r2fastq] %}
     - temp/fastqs/{{ fastq.basename }}
     {% endfor %}
-    - {{ umi_options.correct_umi_umi_files }}
+    - {{ task_variables.umi_options.correct_umi_umi_files }}
   output:
     - {{ temp_dir }}/{{ rgid }}/{{ rg.rgid }}_UMI_uBAM.bam
     - {{ results_dir }}/stats/{{ sample.name }}_{{ rg.rgid }}.fgbio_umi_correction_metrics.txt
@@ -52,15 +47,15 @@ other weird filters are in place
     {# Extract UMI from reads and create uBAM (Step 1 - One step with fgbio)
     ## Need read structure to be dynamic by UMI kit and reads performed #}
     ## Defaults, unless submitter updated these in the config:
-    # --read-structure {{ constants.tempe.umi_options.correct_umi_read_structure }}
-    # --max-mismatches {{ constants.tempe.umi_options.correct_umi_max_mismatches }}
-    # --min-distance {{ constants.tempe.umi_options.correct_umi_min_distance }}
-    # --umi-files {{ constants.tempe.umi_options.correct_umi_umi_files }}
+    # --read-structure {{ task_variables.umi_options.correct_umi_read_structure }}
+    # --max-mismatches {{ task_variables.umi_options.correct_umi_max_mismatches }}
+    # --min-distance {{ task_variables.umi_options.correct_umi_min_distance }}
+    # --umi-files {{ task_variables.umi_options.correct_umi_umi_files }}
     fgbio --tmp-dir {{ temp_dir }}/{{ rgid }}/fgbio_tmp \
       --compression 0 \
       FastqToBam \
         --input {% for fastq in [r1fastq, r2fastq] %}temp/fastqs/{{ fastq.basename }} {% endfor %} \
-        --read-structure {{ umi_options.correct_umi_read_structure }} \
+        --read-structure {{ task_variables.umi_options.correct_umi_read_structure }} \
         --umi-tag RX \
         --sample {{ rg.rgsm }} \
         --library {{ rg.rglb }} \
@@ -75,10 +70,10 @@ other weird filters are in place
         CorrectUmis \
         --input /dev/stdin \
         --output {{ temp_dir }}/{{ rgid }}/{{ rg.rgid }}_UMI_uBAM.bam \
-        --max-mismatches {{ umi_options.correct_umi_max_mismatches }} \
-        --min-distance {{ umi_options.correct_umi_min_distance }} \
+        --max-mismatches {{ task_variables.umi_options.correct_umi_max_mismatches }} \
+        --min-distance {{ task_variables.umi_options.correct_umi_min_distance }} \
         --umi-tag RX \
-        --umi-files {{ umi_options.correct_umi_umi_files }} \
+        --umi-files {{ task_variables.umi_options.correct_umi_umi_files }} \
         --dont-store-original-umis \
         --metrics {{ results_dir }}/stats/{{ rg.rgsm }}_{{ rg.rglb }}_{{ rg.rgid.split('-')[0] }}.fgbio_umi_correction_metrics.txt
 
@@ -196,9 +191,9 @@ other weird filters are in place
 
     {# Group Reads by UMI (This does not need to be sort, it sorts by UMI, then 5' end, then those with matching 3' are tagged) #}
     ## Defaults, unless submitter updated these in the config:
-    # --strategy {{ constants.tempe.umi_options.group_reads_strategy }}
-    # --edits {{ constants.tempe.umi_options.group_reads_edits }}
-    # --min-map-q {{ constants.tempe.umi_options.group_reads_min_map_q }}
+    # --strategy {{ task_variables.umi_options.group_reads_strategy }}
+    # --edits {{ task_variables.umi_options.group_reads_edits }}
+    # --min-map-q {{ task_variables.umi_options.group_reads_min_map_q }}
     fgbio --tmp-dir {{ temp_dir }}/fgbio_tmp \
       --compression 1 --async-io \
       GroupReadsByUmi \
@@ -210,22 +205,22 @@ other weird filters are in place
       {# We default to paired, though adjacency is another recommended option - we default to paired #}
       {# since at a future state we may want to filter duplicates some complex UMI related duplicates #}
       {# In testing about 3% of reads are part of a duplicate set #}
-      --strategy {{ umi_options.group_reads_strategy|default("paired") }} \
+      --strategy {{ task_variables.umi_options.group_reads_strategy|default("paired") }} \
       {% endif %}
       --family-size-histogram {{ results_dir }}/stats/{{ sample.name }}_{{ rglb }}.{{ aligner }}.bam.fgbio_family_size_histogram.txt \
       --raw-tag RX \
       --assign-tag MI \
-      --edits {{ umi_options.group_reads_edits }} \
-      --min-map-q {{ umi_options.group_reads_min_map_q }} \
+      --edits {{ task_variables.umi_options.group_reads_edits }} \
+      --min-map-q {{ task_variables.umi_options.group_reads_min_map_q }} \
       --output {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.group_by_umi.bam
 
     {# We are currently forced to generate consensus reads, either via simplex or duplex collapsing #}
     {# here we default to simplex unless duplex was activated, this avoids the potential for both tasks #}
     {# being enabled and then the collapsing would be combined and IO no longer makes sense #}
     ## Defaults, unless submitter updated these in the config:
-    # --error-rate-pre-umi {{ constants.tempe.umi_options.consensus_error_rate_pre_umi }}
-    # --error-rate-post-umi {{ constants.tempe.umi_options.consensus_error_rate_post_umi }}
-    # --min-input-base-quality {{ constants.tempe.umi_options.consensus_min_input_base_quality }}
+    # --error-rate-pre-umi {{ task_variables.umi_options.consensus_error_rate_pre_umi }}
+    # --error-rate-post-umi {{ task_variables.umi_options.consensus_error_rate_post_umi }}
+    # --min-input-base-quality {{ task_variables.umi_options.consensus_min_input_base_quality }}
     {% if tasks[sample.gltype|capitalize+"_alignment_dna_alignment_umi_collapse_duplex"]|default(false) %}
     {# Collapse combined read families - Duplex #}
     fgbio --tmp-dir {{ temp_dir }}/fgbio_tmp --compression 1 \
@@ -234,9 +229,9 @@ other weird filters are in place
       --read-group-id {{ (rg|first).rgid }} \
       --input {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.group_by_umi.bam  \
       --output {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.con_uBAM.bam \
-      --error-rate-pre-umi {{ umi_options.consensus_error_rate_pre_umi }} \
-      --error-rate-post-umi {{ umi_options.consensus_error_rate_post_umi }} \
-      --min-input-base-quality {{ umi_options.consensus_min_input_base_quality }}
+      --error-rate-pre-umi {{ task_variables.umi_options.consensus_error_rate_pre_umi }} \
+      --error-rate-post-umi {{ task_variables.umi_options.consensus_error_rate_post_umi }} \
+      --min-input-base-quality {{ task_variables.umi_options.consensus_min_input_base_quality }}
     {% else %}
     {# Collapse single read families - Simplex #}
     fgbio --tmp-dir {{ temp_dir }}/fgbio_tmp --compression 1 \
@@ -246,9 +241,9 @@ other weird filters are in place
       --min-reads 1 \
       --tag MI \
       --read-group-id {{ (rg|first).rgid }} \
-      --error-rate-pre-umi {{ umi_options.consensus_error_rate_pre_umi }} \
-      --error-rate-post-umi {{ umi_options.consensus_error_rate_post_umi }} \
-      --min-input-base-quality {{ umi_options.consensus_min_input_base_quality }} \
+      --error-rate-pre-umi {{ task_variables.umi_options.consensus_error_rate_pre_umi }} \
+      --error-rate-post-umi {{ task_variables.umi_options.consensus_error_rate_post_umi }} \
+      --min-input-base-quality {{ task_variables.umi_options.consensus_min_input_base_quality }} \
       --output {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.con_uBAM.bam
     {% endif %}
 
@@ -303,10 +298,10 @@ other weird filters are in place
 
     {% if tasks[sample.gltype|capitalize+"_alignment_dna_alignment_umi_filter_consensus"]|default(false)  %}
     ## Defaults, unless submitter updated these in the config:
-    # --min-reads {{ constants.tempe.umi_options.filter_min_reads }}
-    # --min-base-quality {{ constants.tempe.umi_options.filter_min_base_quality }}
-    # --max-no-call-fraction {{ constants.tempe.umi_options.filter_max_no_call_fraction }}
-    # --max-base-error-rate {{ constants.tempe.umi_options.filter_max_base_error_rate }}
+    # --min-reads {{ task_variables.umi_options.filter_min_reads }}
+    # --min-base-quality {{ task_variables.umi_options.filter_min_base_quality }}
+    # --max-no-call-fraction {{ task_variables.umi_options.filter_max_no_call_fraction }}
+    # --max-base-error-rate {{ task_variables.umi_options.filter_max_base_error_rate }}
     fgbio --compression 0 \
       FilterConsensusReads \
       --input {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.uns.bam \
@@ -315,10 +310,10 @@ other weird filters are in place
       {% if tasks[sample.gltype|capitalize+"_alignment_dna_alignment_umi_collapse_duplex"]|default(false) %}
       --require-single-strand-agreement true \
       {% endif %}
-      --min-reads {{ umi_options.filter_min_reads }} \
-      --min-base-quality {{ umi_options.filter_min_base_quality }} \
-      --max-no-call-fraction {{ umi_options.filter_max_no_call_fraction }} \
-      --max-base-error-rate {{ umi_options.filter_max_base_error_rate }} | \
+      --min-reads {{ task_variables.umi_options.filter_min_reads }} \
+      --min-base-quality {{ task_variables.umi_options.filter_min_base_quality }} \
+      --max-no-call-fraction {{ task_variables.umi_options.filter_max_no_call_fraction }} \
+      --max-base-error-rate {{ task_variables.umi_options.filter_max_base_error_rate }} | \
       samtools sort \
         --threads 19 \
         {% if sample.read_groups.values() | groupby('rglb') | length == 1 %}

@@ -255,44 +255,6 @@ constants:
         salmon: "ISR"
         featurecounts: "2"
         collectrnaseqmetrics: "SECOND_READ_TRANSCRIPTION_STRAND"
-    umi_options:
-      correct_umi_umi_files: /home/tgenref/assay_files/twist_umi_adaptor_system/known_umi_sequences.txt
-      correct_umi_max_mismatches: 1
-      correct_umi_min_distance: 2
-      correct_umi_read_structure: "5M2S+T 5M2S+T"
-      group_reads_edits: 1
-      group_reads_min_map_q: 1
-      group_reads_strategy: "paired"
-      consensus_error_rate_pre_umi: 45
-      consensus_error_rate_post_umi: 40
-      consensus_min_input_base_quality: 10
-      filter_min_reads: 1
-      filter_min_base_quality: 30
-      filter_max_no_call_fraction: 0.1
-      filter_max_base_error_rate: 0.1
-    somatic_variant_filtering_options:
-      genome:
-        vcfmerger_exclude_filter: "(FMT/DP<10 | FMT/AR[0]>=0.02 | FMT/AR[1]<0.05)"
-      exome:
-        vcfmerger_exclude_filter: "(FMT/DP<10 | FMT/AR[0]>=0.02 | FMT/AR[1]<0.05)"
-    tumor_only_variant_filtering_options:
-      genome:
-        COSMIC_Ratio_Threshold: 0.10
-        vcfmerger_exclude_filter: "(FMT/DP<10 | FMT/AR[0]>=0.02 | FMT/AR[1]<0.05)"
-      exome:
-        COSMIC_Ratio_Threshold: 0.10
-        vcfmerger_exclude_filter: "(FMT/DP<10 | FMT/AR[0]>=0.02 | FMT/AR[1]<0.05)"
-    cnvear_copy_number_thresholds:
-      genome:
-        high_gain: 1.32
-        gain: 0.16
-        het_loss: -0.16
-        hom_loss: -1.32
-      exome:
-        high_gain: 1.32
-        gain: 0.16
-        het_loss: -0.16
-        hom_loss: -1.32
     snpSniffer_sites: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/snpSniffer/positions_387_hg38_ucsc.txt
     snpSniffer_database: /home/tgenref/homo_sapiens/grch38_hg38/hg38_tempe/tool_resources/snpSniffer/databaseV5_hg38_ucsc.ini
     vep_data: /home/tgenref/homo_sapiens/grch38_hg38/tool_specific_resources/vep/v103/
@@ -1473,3 +1435,67 @@ constants:
         - {"contig": "chrY", "length": 4867932, "start": 21805282, "stop": 26673214}
         - {"contig": "chrY", "length": 98294, "start": 56673215, "stop": 56771509}
         - {"contig": "chrY", "length": 66392, "start": 56821510, "stop": 56887902}
+task_variables:
+  umi_options:
+    correct_umi_umi_files: /home/tgenref/assay_files/twist_umi_adaptor_system/known_umi_sequences.txt
+    correct_umi_max_mismatches: 1
+    correct_umi_min_distance: 2
+    correct_umi_read_structure: "5M2S+T 5M2S+T"
+    group_reads_edits: 1
+    group_reads_min_map_q: 1
+    group_reads_strategy: "paired"
+    consensus_error_rate_pre_umi: 45
+    consensus_error_rate_post_umi: 40
+    consensus_min_input_base_quality: 10
+    filter_min_reads: 1
+    filter_min_base_quality: 30
+    filter_max_no_call_fraction: 0.1
+    filter_max_base_error_rate: 0.1
+  somatic_variant_filtering_options:
+    genome:
+      vcfmerger_exclude_filter: "(FMT/DP<10 | FMT/AR[0]>=0.02 | FMT/AR[1]<0.05)"
+    exome:
+      vcfmerger_exclude_filter: "(FMT/DP<10 | FMT/AR[0]>=0.02 | FMT/AR[1]<0.05)"
+  tumor_only_variant_filtering_options:
+    genome:
+      COSMIC_Ratio_Threshold: 0.10
+      vcfmerger_exclude_filter: "(FMT/DP<10 | FMT/AR[0]>=0.02 | FMT/AR[1]<0.05)"
+    exome:
+      COSMIC_Ratio_Threshold: 0.10
+      vcfmerger_exclude_filter: "(FMT/DP<10 | FMT/AR[0]>=0.02 | FMT/AR[1]<0.05)"
+  cnvear_copy_number_thresholds:
+    genome:
+      high_gain: 1.32
+      gain: 0.16
+      het_loss: -0.16
+      hom_loss: -1.32
+    exome:
+      high_gain: 1.32
+      gain: 0.16
+      het_loss: -0.16
+      hom_loss: -1.32
+  read_trimming:
+    genome:
+      n_base_limit: 5
+      length_required: 75
+      qualified_quality_phred: 15
+      unqualified_percent_limit: 40
+      trim_poly_g: true
+      poly_g_percent: 0.85
+      trim_poly_g_read2only: true
+    exome:
+      n_base_limit: 5
+      length_required: 75
+      qualified_quality_phred: 15
+      unqualified_percent_limit: 40
+      trim_poly_g: true
+      poly_g_percent: 0.85
+      trim_poly_g_read2only: true
+    rna:
+      n_base_limit: 5
+      length_required: 75
+      qualified_quality_phred: 15
+      unqualified_percent_limit: 40
+      trim_poly_g: true
+      poly_g_percent: 0.85
+      trim_poly_g_read2only: true

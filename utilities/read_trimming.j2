@@ -46,13 +46,17 @@
       --json {{ results_json }} \
       --report_title "{{ rgid }} Trimming" \
       --dont_eval_duplication \
-      --n_base_limit 5 \
-      --length_required 75 \
-      --qualified_quality_phred 15 \
-      --unqualified_percent_limit 40 \
-      --trim_poly_g  \
-      --poly_g_percent 85 \
-      --trim_poly_g_read2only
+      {% if task_variables.read_trimming[sample.gltype|lower].trim_poly_g %}
+      --trim_poly_g \
+      --poly_g_percent {{ task_variables.read_trimming[sample.gltype|lower].poly_g_percent }} \
+      {% if task_variables.read_trimming[sample.gltype|lower].trim_poly_g_read2only %}
+      --trim_poly_g_read2only \
+      {% endif %}
+      {% endif %}
+      --n_base_limit {{ task_variables.read_trimming[sample.gltype|lower].n_base_limit }} \
+      --length_required {{ task_variables.read_trimming[sample.gltype|lower].length_required }} \
+      --qualified_quality_phred {{ task_variables.read_trimming[sample.gltype|lower].qualified_quality_phred }} \
+      --unqualified_percent_limit {{ task_variables.read_trimming[sample.gltype|lower].unqualified_percent_limit }}
 
 
 {{- stats2json(sample.gltype, sample.name, task, results_json, minimal_json, "fastp", sample_name=sample.name, library_name=rg.rglb, read_group_name=rgid) }}

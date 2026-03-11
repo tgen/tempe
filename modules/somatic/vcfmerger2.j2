@@ -72,13 +72,7 @@
       -o "{{ prepped_path }}"
 
 
-{# Set filtering options to the default in the pipeline.yaml, we then override them if defined #}
-{% set variant_filtering_options = {} %}
-{% do variant_filtering_options.update(constants.tempe.somatic_variant_filtering_options[pair.gltype]) %}
-{% if task_variables is defined and task_variables.somatic_variant_filtering is defined and task_variables.somatic_variant_filtering[pair.gltype] is defined %}
-  {% do variant_filtering_options.update(task_variables.somatic_variant_filtering[pair.gltype]) %}
-{% endif %}
-{% set log_msg %}vcfmerger2_filter_{{ caller }}_{{ pair.name }}_{{ aligner }} is applying filter: --exclude '{{ variant_filtering_options.vcfmerger_exclude_filter }}'{% endset %}
+{% set log_msg %}vcfmerger2_filter_{{ caller }}_{{ pair.name }}_{{ aligner }} is applying filter: --exclude '{{ task_variables.somatic_variant_filtering[pair.gltype].vcfmerger_exclude_filter }}'{% endset %}
 {{ log(log_msg, level='WARNING') }}
 
 - name: vcfmerger2_filter_{{ caller }}_{{ pair.name }}_{{ aligner }}
@@ -98,7 +92,7 @@
 
     bcftools filter \
       --output-type v \
-      --exclude '{{ variant_filtering_options.vcfmerger_exclude_filter }}' \
+      --exclude '{{ task_variables.somatic_variant_filtering[pair.gltype].vcfmerger_exclude_filter }}' \
       "{{ prepped_path }}" \
       > "{{ filtered_path }}"
 
