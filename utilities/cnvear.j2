@@ -6,7 +6,7 @@
   {{ raise('{} does not appear to be a seg!'.format(input_seg)) }}
 {% endif %}
 
-{% set log_msg %}cnvear_{{ input_tool | lower }}_{{ sample_or_pair.name }}_{{ aligner }} is using these thresholds: high_gain={{ cnvear_copy_number_thresholds.high_gain }} , gain={{ cnvear_copy_number_thresholds.gain }} , het_loss={{ cnvear_copy_number_thresholds.het_loss }} , hom_loss={{ cnvear_copy_number_thresholds.hom_loss }}{% endset %}
+{% set log_msg %}cnvear_{{ input_tool | lower }}_{{ sample_or_pair.name }}_{{ aligner }} is using these thresholds: high_gain={{ task_variables.cnvear_copy_number_thresholds[sample_or_pair.gltype|lower].high_gain }} , gain={{ task_variables.cnvear_copy_number_thresholds[sample_or_pair.gltype|lower].gain }} , het_loss={{ task_variables.cnvear_copy_number_thresholds[sample_or_pair.gltype|lower].het_loss }} , hom_loss={{ task_variables.cnvear_copy_number_thresholds[sample_or_pair.gltype|lower].hom_loss }}{% endset %}
 {{ log(log_msg, level='WARNING') }}
 
 {% set output_dir %}{{ input_seg | dirname }}{% endset %}
