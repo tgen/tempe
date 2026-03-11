@@ -1451,12 +1451,12 @@ task_variables:
     filter_min_base_quality: 30
     filter_max_no_call_fraction: 0.1
     filter_max_base_error_rate: 0.1
-  somatic_variant_filtering_options:
+  somatic_variant_filtering:
     genome:
       vcfmerger_exclude_filter: "(FMT/DP<10 | FMT/AR[0]>=0.02 | FMT/AR[1]<0.05)"
     exome:
       vcfmerger_exclude_filter: "(FMT/DP<10 | FMT/AR[0]>=0.02 | FMT/AR[1]<0.05)"
-  tumor_only_variant_filtering_options:
+  tumor_only_variant_filtering:
     genome:
       COSMIC_Ratio_Threshold: 0.10
       vcfmerger_exclude_filter: "(FMT/DP<10 | FMT/AR[0]>=0.02 | FMT/AR[1]<0.05)"

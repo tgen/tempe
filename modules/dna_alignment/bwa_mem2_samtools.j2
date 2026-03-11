@@ -87,7 +87,7 @@
       -T "{{ temp_dir }}/{{ rgid }}/{{ chunk_suffix }}_st_sort_temp/{{ chunk_suffix }}" \
       {% if qc_only is defined and not qc_only %}
       -u \
-      {% endif %
+      {% endif %}
       -m 3G \
       --threads 19 \
       --output-fmt BAM \
