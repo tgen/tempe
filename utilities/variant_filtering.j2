@@ -1,11 +1,11 @@
 {% macro filter_variants(pair, input_vcf, output_dir, output_vcf, task, variant_caller) %}
 
-{% if task_variables.somatic_variant_filtering[pair.gltype].variants_to_include_filter is not defined %}
-  {% do task_variables.somatic_variant_filtering[pair.gltype].update({'variants_to_include_filter': []}) %}
+{% if task_variables.somatic_variant_filtering[pair.gltype|lower].variants_to_include_filter is not defined %}
+  {% do task_variables.somatic_variant_filtering[pair.gltype|lower].update({'variants_to_include_filter': []}) %}
 
   {# Checking if CC_filter is already defined, in preparation for allowing user defined filters #}
   {# This is not defined in the pipeline.yaml, since it is already dynamic, but we allow users to set the value #}
-  {% if task_variables.somatic_variant_filtering[pair.gltype].CC_filter is not defined %}
+  {% if task_variables.somatic_variant_filtering[pair.gltype|lower].CC_filter is not defined %}
     {% if variant_caller == 'merged' and pair.callers is defined and pair.callers|length > 1 %}
       {% if pair.callers | length > 3 %}
         {% set CC_filter %}INFO/CC>={{ pair.callers | length - 2 }}{% endset %}
@@ -14,11 +14,11 @@
       {% endif %}
     {% endif %}
   {% else %}
-    {% set CC_filter = task_variables.somatic_variant_filtering[pair.gltype].CC_filter %}
+    {% set CC_filter = task_variables.somatic_variant_filtering[pair.gltype|lower].CC_filter %}
   {% endif %}
-  {% do task_variables.somatic_variant_filtering[pair.gltype].variants_to_include_filter.append(CC_filter) %}
+  {% do task_variables.somatic_variant_filtering[pair.gltype|lower].variants_to_include_filter.append(CC_filter) %}
 {% endif %}
-{% set log_msg %}variant_filtering for {{ task }} is applying filter: --include "{{ task_variables.somatic_variant_filtering[pair.gltype].variants_to_include_filter|join('') }}"{% endset %}
+{% set log_msg %}variant_filtering for {{ task }} is applying filter: --include "{{ task_variables.somatic_variant_filtering[pair.gltype|lower].variants_to_include_filter|join('') }}"{% endset %}
 {{ log(log_msg, level='WARNING') }}
 
 {# Checking for output_vcf type, e.g. vcf.gz, vcf, bcf #}
@@ -47,7 +47,7 @@
     mkdir -p {{ output_dir }}
 
     bcftools view \
-      --include "{{ task_variables.somatic_variant_filtering[pair.gltype].variants_to_include_filter|join('') }}" \
+      --include "{{ task_variables.somatic_variant_filtering[pair.gltype|lower].variants_to_include_filter|join('') }}" \
       --output-file {{ output_vcf }} \
       --output-type {{ output_type }} \
       {{ input_vcf }}

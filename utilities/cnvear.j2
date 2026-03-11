@@ -57,10 +57,10 @@
       --file-segments {{ input_seg }} \
       --input-copy-number-space 'LOG2' \
       --output-copy-number-space 'LOG2' \
-      --threshold_high_gain_call {{ task_variables.cnvear_copy_number_thresholds[sample_or_pair.gltype].high_gain }} \
-      --threshold_gain_call {{ task_variables.cnvear_copy_number_thresholds[sample_or_pair.gltype].gain }} \
-      --threshold_heterozygous_loss_call {{ task_variables.cnvear_copy_number_thresholds[sample_or_pair.gltype].het_loss }} \
-      --threshold_homozygous_loss_call {{ task_variables.cnvear_copy_number_thresholds[sample_or_pair.gltype].hom_loss }} \
+      --threshold_high_gain_call {{ task_variables.cnvear_copy_number_thresholds[sample_or_pair.gltype|lower].high_gain }} \
+      --threshold_gain_call {{ task_variables.cnvear_copy_number_thresholds[sample_or_pair.gltype|lower].gain }} \
+      --threshold_heterozygous_loss_call {{ task_variables.cnvear_copy_number_thresholds[sample_or_pair.gltype|lower].het_loss }} \
+      --threshold_homozygous_loss_call {{ task_variables.cnvear_copy_number_thresholds[sample_or_pair.gltype|lower].hom_loss }} \
       --seg-tool {{ input_tool }} \
       --samplename {{ sample_or_pair.name }} \
       --dir-out {{ output_dir }} \

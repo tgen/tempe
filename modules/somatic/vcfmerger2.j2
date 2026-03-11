@@ -72,7 +72,7 @@
       -o "{{ prepped_path }}"
 
 
-{% set log_msg %}vcfmerger2_filter_{{ caller }}_{{ pair.name }}_{{ aligner }} is applying filter: --exclude '{{ task_variables.somatic_variant_filtering[pair.gltype].vcfmerger_exclude_filter }}'{% endset %}
+{% set log_msg %}vcfmerger2_filter_{{ caller }}_{{ pair.name }}_{{ aligner }} is applying filter: --exclude '{{ task_variables.somatic_variant_filtering[pair.gltype|lower|lower].vcfmerger_exclude_filter }}'{% endset %}
 {{ log(log_msg, level='WARNING') }}
 
 - name: vcfmerger2_filter_{{ caller }}_{{ pair.name }}_{{ aligner }}
@@ -92,7 +92,7 @@
 
     bcftools filter \
       --output-type v \
-      --exclude '{{ task_variables.somatic_variant_filtering[pair.gltype].vcfmerger_exclude_filter }}' \
+      --exclude '{{ task_variables.somatic_variant_filtering[pair.gltype|lower].vcfmerger_exclude_filter }}' \
       "{{ prepped_path }}" \
       > "{{ filtered_path }}"
 
