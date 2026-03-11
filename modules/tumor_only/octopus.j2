@@ -26,8 +26,13 @@
     - {{ temp_dir }}/{{ loop.index }}.realigned.bam
     - {{ temp_dir }}/{{ loop.index }}.octopus.vcf
   cpus: 8
+  {% if boost_resources | default(false) %}
+  mem: 32G
+  walltime: "48:00:00"
+  {% else %}
   mem: 24G
   walltime: "24:00:00"
+  {% endif %}
   queue_preset: "DEFAULT"
   container: {{ constants.tools.octopus.container }}
   digest: {{ constants.tools.octopus.digest }}
