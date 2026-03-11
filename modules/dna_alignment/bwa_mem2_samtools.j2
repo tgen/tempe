@@ -85,7 +85,9 @@
       - |\
     samtools sort \
       -T "{{ temp_dir }}/{{ rgid }}/{{ chunk_suffix }}_st_sort_temp/{{ chunk_suffix }}" \
+      {% if qc_only is defined and not qc_only %}
       -u \
+      {% endif %
       -m 3G \
       --threads 19 \
       --output-fmt BAM \
@@ -129,7 +131,9 @@
       --threads 4 \
       -c \
       -f \
+      {% if qc_only is defined and not qc_only %}
       -u \
+      {% endif %}
       {{ temp_dir }}/{{ sample.name }}_{{ rglb }}.{{ aligner }}.bam \
       {% for rgid in rg %}
       {% set r1fastq = rgid.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
