@@ -184,13 +184,8 @@
   cpus: 8
   mem: 16G
   queue_preset: "DEFAULT"
-  {% if fixmate_sort_star_fix | default(false) %}
-  container: quay.io/biocontainers/samtools:1.21--h50ea8bc_0
-  digest: 783c6646029a306ec5e4162009dc1a20d8f6c528f7c380e5b4affbf12d9112e5
-  {% else %}
   container: {{ constants.tools.samtools.container }}
   digest: {{ constants.tools.samtools.digest }}
-  {% endif %}
   cmd: |
     set -eu
     set -o pipefail
@@ -254,6 +249,7 @@
       --ASSUME_SORT_ORDER queryname \
       --CLEAR_DT false \
       --ADD_PG_TAG_TO_READS false \
+      --VALIDATION_STRINGENCY SILENT \
       --OPTICAL_DUPLICATE_PIXEL_DISTANCE {{ opt_dup_distance }} \
       --INPUT "{{ star_bam_sorted }}" \
       --METRICS_FILE "{{ results_dir }}/stats/{{ sample.name }}.star.bam.md_metrics" \
@@ -263,7 +259,7 @@
 - name: markduplicates_star_gatk_index_{{ sample.name }}
   tags: [{{ sample.gltype }}, alignment, rna_alignment, STAR, {{ sample.name }}]
   reset: predecessors
-  input: 
+  input:
     - {{ star_bam_final }}
   output:
     - {{ star_bam_final }}.bai
