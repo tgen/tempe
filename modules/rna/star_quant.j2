@@ -184,8 +184,13 @@
   cpus: 8
   mem: 16G
   queue_preset: "DEFAULT"
+  {% if fixmate_sort_star_fix | default(false) %}
+  container: quay.io/biocontainers/samtools:1.21--h50ea8bc_0
+  digest: 783c6646029a306ec5e4162009dc1a20d8f6c528f7c380e5b4affbf12d9112e5
+  {% else %}
   container: {{ constants.tools.samtools.container }}
   digest: {{ constants.tools.samtools.digest }}
+  {% endif %}
   cmd: |
     set -eu
     set -o pipefail
