@@ -133,7 +133,7 @@ fileTypes = {
         "help": "\"bam_name.fgbio_umi\" files manually generated during the fgbio umi alignment workflow. "
     },
     "fastp": {
-        "fastp": True,
+        "prefix": "fastp_",
         "help": "\"rgid_trim_report.json\" file generated from fastp"
     },
 }
