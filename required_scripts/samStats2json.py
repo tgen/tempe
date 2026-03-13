@@ -528,14 +528,14 @@ def add_to_json(input_json, json_object_name, sample_name=None, library_name=Non
 
             for readgroup in library["READGROUPS"]:
 
-                if 'ID' in readgroup:
-                    if readgroup["ID"] != readgroup_name:
+                if 'READ_GROUP' in readgroup:
+                    if readgroup["READ_GROUP"] != readgroup_name:
                         it3 += 1
                         continue
                     else:
                         final3 = it3
                 else:
-                    input_json["SAMPLES"][it1]["LIBRARIES"][it2]["READGROUPS"][it3]['ID'] = readgroup_name
+                    input_json["SAMPLES"][it1]["LIBRARIES"][it2]["READGROUPS"][it3]['READ_GROUP'] = readgroup_name
                     first_readgroup = True
 
                 flag_readgroup = True
@@ -558,7 +558,7 @@ def add_to_json(input_json, json_object_name, sample_name=None, library_name=Non
         final2 = it2
 
     if flag_readgroup is False and readgroup_name:
-        temp = {"ID": readgroup_name}
+        temp = {"READ_GROUP": readgroup_name}
         input_json["SAMPLES"][final1]["LIBRARIES"][final2]["READGROUPS"].append(temp)
         final3 = it3
 
