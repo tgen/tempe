@@ -1481,6 +1481,7 @@ task_variables:
       qualified_quality_phred: 15
       unqualified_percent_limit: 40
       trim_poly_g: true
+      trim_poly_g_by_percent: true
       poly_g_percent: 0.85
       trim_poly_g_read2only: true
     exome:
@@ -1489,13 +1490,11 @@ task_variables:
       qualified_quality_phred: 15
       unqualified_percent_limit: 40
       trim_poly_g: true
+      trim_poly_g_by_percent: true
       poly_g_percent: 0.85
       trim_poly_g_read2only: true
     rna:
       n_base_limit: 5
-      length_required: 75
+      length_required: 25
       qualified_quality_phred: 15
       unqualified_percent_limit: 40
-      trim_poly_g: true
-      poly_g_percent: 0.85
-      trim_poly_g_read2only: true

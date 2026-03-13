@@ -19,6 +19,17 @@
 {% do r1fastq.update({'basename': r1fastq_trimmed }) %}
 {% do r2fastq.update({'basename': r2fastq_trimmed }) %}
 
+{# argument builder #}
+{% set fastp_args = [] %}
+{% for k, v in task_variables.read_trimming[sample.gltype|lower].items() %}
+  {% if v is true %}
+    {% set arg_string %}{{ k }}{% endset %}
+  {% else %}
+    {% set arg_string %}{{ k }} {{ v }}{% endset %}
+  {% endif %}
+  {% do fastp_args.append(arg_string) %}
+{% endfor %}
+
 - name: preprocessing_{{ sample.name }}_{{ rgid }}_read_trimming
   input:
     - temp/fastqs/{{ r1fastq_basename }}
@@ -45,18 +56,18 @@
       --html {{ results_html }} \
       --json {{ results_json }} \
       --report_title "{{ rgid }} Trimming" \
+      {% if task_variables.read_trimming[sample.gltype|lower].custom_arguments is not defined %}
       --dont_eval_duplication \
-      {% if task_variables.read_trimming[sample.gltype|lower].trim_poly_g %}
-      --trim_poly_g \
-      --poly_g_percent {{ task_variables.read_trimming[sample.gltype|lower].poly_g_percent }} \
-      {% if task_variables.read_trimming[sample.gltype|lower].trim_poly_g_read2only %}
-      --trim_poly_g_read2only \
+      {% for arg in fastp_args %}
+      {% if not loop.last %}
+      --{{ arg }} \
+      {% else %}
+      --{{ arg }}
       {% endif %}
+      {% endfor %}
+      {% else %}
+      {{ task_variables.read_trimming[sample.gltype|lower].custom_arguments }}
       {% endif %}
-      --n_base_limit {{ task_variables.read_trimming[sample.gltype|lower].n_base_limit }} \
-      --length_required {{ task_variables.read_trimming[sample.gltype|lower].length_required }} \
-      --qualified_quality_phred {{ task_variables.read_trimming[sample.gltype|lower].qualified_quality_phred }} \
-      --unqualified_percent_limit {{ task_variables.read_trimming[sample.gltype|lower].unqualified_percent_limit }}
 
 
 {{- stats2json(sample.gltype, sample.name, task, results_json, minimal_json, "fastp", sample_name=sample.name, library_name=rg.rglb, read_group_name=rgid) }}
