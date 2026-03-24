@@ -16,7 +16,11 @@
   output:
     - {{ vcf_prefix }}.maf
   cpus: 1
+  {% if boost_resources | default(false) %}
+  mem: 16G
+  {% else %}
   mem: 2G
+  {% endif %}
   walltime: "1:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.vcf2maf.container }}

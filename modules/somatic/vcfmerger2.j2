@@ -111,7 +111,11 @@
     - {{ constants.tempe.reference_dict }}
   output: {{ merged_vcf_gz }}
   cpus: 4
+  {% if boost_resources | default(false) %}
+  mem: 32G
+  {% else %}
   mem: 8G
+  {% endif %}
   walltime: "4:00:00"
   queue_preset: "DEFAULT"
   container: {{ constants.tools.vcfmerger.container }}
