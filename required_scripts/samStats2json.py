@@ -1118,7 +1118,8 @@ def fastp_data_extract(stats_file_string, sample_index, library_index, read_grou
     data_dict.update({'FILTERED_TOO_MANY_N': stats_dict['filtering_result']['too_many_N_reads']})
     data_dict.update({'FILTERED_TOO_SHORT': stats_dict['filtering_result']['too_short_reads']})
     data_dict.update({'FILTERED_ADAPTER_DIMER': stats_dict['filtering_result']['adapter_dimer_reads']})
-    data_dict.update({'FILTERED_POLYG': stats_dict['polyg_trimming']['total_polyg_trimmed_reads']})
+    if 'polyg_trimming' in stats_dict:
+        data_dict.update({'FILTERED_POLYG': stats_dict['polyg_trimming']['total_polyg_trimmed_reads']})
 
     for key, value in data_dict.items():
         add_command = location_in_json + "[\"" + key + "\"] = " + str(value)
