@@ -16,6 +16,13 @@
       {% set opt_dup_distance = 100 %}
     {% endif %}
 
+    {% if tasks[sample.gltype|capitalize+'_preprocessing_trim_reads']|default(false) %}
+      {% from 'utilities/read_trimming.j2' import trim_reads with context %}
+      {% for rgid, rg in sample.read_groups.items() %}
+        {{- trim_reads(sample, rg, rgid) }}
+      {% endfor %}
+    {% endif %}
+
     {% if tasks['RNA_transcriptome_quantify_expression_salmon_fastqs']|default(false) %}
       {% set task %}salmon_quant_cdna_{{ sample.name }}{% endset %}
       {% do task_list.append(task) %}
