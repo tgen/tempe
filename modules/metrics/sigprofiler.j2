@@ -45,7 +45,7 @@
     set -eu
     set -o pipefail
 
-    rm -r {{ temp_vcf_dir }} || true
+    rm -r {{ temp_vcf_dir }}/{input,logs,output} || true
     mkdir -p {{ temp_vcf_dir }}
     mkdir -p {{ results_dir }}/{SBS,DBS}
 
